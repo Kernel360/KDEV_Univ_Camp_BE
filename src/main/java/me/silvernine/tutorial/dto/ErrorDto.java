@@ -1,34 +1,38 @@
 package me.silvernine.tutorial.dto;
 
-//Dto 클래스는 외부와의 통신에 사용할 클래스임
+import lombok.Getter;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.springframework.validation.FieldError;
 
+@Getter
 public class ErrorDto {
     private final int status;
     private final String message;
-    private List<FieldError> fieldErrors = new ArrayList<>();
+    private final List<FieldErrorInfo> fieldErrors;
 
     public ErrorDto(int status, String message) {
         this.status = status;
         this.message = message;
+        this.fieldErrors = new ArrayList<>();
     }
 
-    public int getStatus() {
-        return status;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void addFieldError(String objectName, String path, String message) {
-        FieldError error = new FieldError(objectName, path, message);
+    public void addFieldError(String objectName, String field, String message) {
+        FieldErrorInfo error = new FieldErrorInfo(objectName, field, message);
         fieldErrors.add(error);
     }
 
-    public List<FieldError> getFieldErrors() {
-        return fieldErrors;
+    @Getter
+    public static class FieldErrorInfo {
+        private final String objectName;
+        private final String field;
+        private final String message;
+
+        public FieldErrorInfo(String objectName, String field, String message) {
+            this.objectName = objectName;
+            this.field = field;
+            this.message = message;
+        }
+
     }
 }
