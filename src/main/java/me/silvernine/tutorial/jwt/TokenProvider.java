@@ -1,4 +1,3 @@
-//토큰의 생성 및 유효성 검증하는 파일
 package me.silvernine.tutorial.jwt;
 
 import io.jsonwebtoken.*;
@@ -24,72 +23,75 @@ import java.util.stream.Collectors;
 @Component
 public class TokenProvider implements InitializingBean {
 
-   private final Logger logger = LoggerFactory.getLogger(TokenProvider.class);
-   private static final String AUTHORITIES_KEY = "auth";
-   private final String secret;
-   private final long tokenValidityInMilliseconds;
-   private Key key;
+    private final Logger logger = LoggerFactory.getLogger(TokenProvider.class);
+    private static final String AUTHORITIES_KEY = "auth";
+    private final String secret;
+    private final long tokenValidityInMilliseconds;
+    private Key key;
 
-   public TokenProvider(
-      @Value("${jwt.secret}") String secret,
-      @Value("${jwt.token-validity-in-seconds}") long tokenValidityInSeconds) {
-      this.secret = secret;
-      this.tokenValidityInMilliseconds = tokenValidityInSeconds * 1000;
-   }
+    public TokenProvider(
+            @Value("${jwt.secret}") String secret,
+            @Value("${jwt.token-validity-in-seconds}") long tokenValidityInSeconds) {
+        this.secret = secret;
+        this.tokenValidityInMilliseconds = tokenValidityInSeconds * 1000;
+    }
 
-   @Override
-   public void afterPropertiesSet() {
-      byte[] keyBytes = Decoders.BASE64.decode(secret);
-      this.key = Keys.hmacShaKeyFor(keyBytes);
-   }
-   //권한 정보를 이용하여 토큰을 생성하는 메소드
-   public String createToken(Authentication authentication) {
-      String authorities = authentication.getAuthorities().stream()
-         .map(GrantedAuthority::getAuthority)
-         .collect(Collectors.joining(","));
+    @Override
+    public void afterPropertiesSet() {
+        byte[] keyBytes = Decoders.BASE64.decode(secret);
+        this.key = Keys.hmacShaKeyFor(keyBytes);
+    }
 
-      long now = (new Date()).getTime();
-      Date validity = new Date(now + this.tokenValidityInMilliseconds);
+    // JWT 생성 메서드
+    public String createToken(Authentication authentication) {
+        String authorities = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(",")); // 권한 정보를 콤마로 구분된 문자열로 변환
 
-      return Jwts.builder()
-         .setSubject(authentication.getName())
-         .claim(AUTHORITIES_KEY, authorities)
-         .signWith(key, SignatureAlgorithm.HS512)
-         .setExpiration(validity)
-         .compact();
-   }
+        long now = (new Date()).getTime(); // 현재 시간
+        Date validity = new Date(now + this.tokenValidityInMilliseconds); // 토큰 만료 시간 설정
 
-   public Authentication getAuthentication(String token) {
-      Claims claims = Jwts
-              .parserBuilder()
-              .setSigningKey(key)
-              .build()
-              .parseClaimsJws(token)
-              .getBody();
+        // JWT 생성
+        return Jwts.builder()
+                .setSubject(authentication.getName()) // 사용자 이름 설정
+                .claim(AUTHORITIES_KEY, authorities) // 권한 정보 설정
+                .signWith(key, SignatureAlgorithm.HS512) // 서명 알고리즘 및 키 설정
+                .setExpiration(validity) // 만료 시간 설정
+                .compact();
+    }
 
-      Collection<? extends GrantedAuthority> authorities =
-         Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
-            .map(SimpleGrantedAuthority::new)
-            .collect(Collectors.toList());
+    // JWT에서 인증 정보 추출
+    public Authentication getAuthentication(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody(); // JWT에서 클레임(Claims) 추출
 
-      User principal = new User(claims.getSubject(), "", authorities);
+        Collection<? extends GrantedAuthority> authorities =
+                Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
+                        .map(SimpleGrantedAuthority::new)
+                        .collect(Collectors.toList()); // 권한 정보 생성
 
-      return new UsernamePasswordAuthenticationToken(principal, token, authorities);
-   }
-   //토큰의 유효성 검증
-   public boolean validateToken(String token) {
-      try {
-         Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
-         return true;
-      } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-         logger.info("잘못된 JWT 서명입니다.");
-      } catch (ExpiredJwtException e) {
-         logger.info("만료된 JWT 토큰입니다.");
-      } catch (UnsupportedJwtException e) {
-         logger.info("지원되지 않는 JWT 토큰입니다.");
-      } catch (IllegalArgumentException e) {
-         logger.info("JWT 토큰이 잘못되었습니다.");
-      }
-      return false;
-   }
+        User principal = new User(claims.getSubject(), "", authorities); // 사용자 정보 생성
+
+        return new UsernamePasswordAuthenticationToken(principal, token, authorities); // 인증 객체 반환
+    }
+
+    // JWT 유효성 검증
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token); // JWT 서명 및 만료 시간 검증
+            return true;
+        } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
+            logger.info("잘못된 JWT 서명입니다.");
+        } catch (ExpiredJwtException e) {
+            logger.info("만료된 JWT 토큰입니다.");
+        } catch (UnsupportedJwtException e) {
+            logger.info("지원되지 않는 JWT 토큰입니다.");
+        } catch (IllegalArgumentException e) {
+            logger.info("JWT 토큰이 잘못되었습니다.");
+        }
+        return false;
+    }
 }

@@ -6,10 +6,13 @@ import me.silvernine.tutorial.service.CarService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.security.Principal;
 import java.util.List;
 
+@Tag(name = "Car Management", description = "APIs for managing car data and operations")
 @RestController
 @RequestMapping("/api/cars")
 @RequiredArgsConstructor
@@ -17,25 +20,25 @@ public class CarController {
 
     private final CarService carService;
 
-    // 차량 등록
+    @Operation(summary = "Register a new car", description = "Registers a new car for the authenticated user")
     @PostMapping
     public ResponseEntity<CarResponse> registerCar(@RequestBody CarRequest request, Principal principal) {
         return ResponseEntity.ok(carService.registerCar(request, principal));
     }
 
-    // 사용자 차량 목록 조회
+    @Operation(summary = "Get user's cars", description = "Fetches a list of cars registered by the authenticated user")
     @GetMapping("/user")
     public ResponseEntity<List<CarResponse>> getUserCars(Principal principal) {
         return ResponseEntity.ok(carService.getUserCars(principal));
     }
 
-    // 차량 단건 조회
+    @Operation(summary = "Get car by ID", description = "Fetches details of a specific car by its ID")
     @GetMapping("/{id}")
     public ResponseEntity<CarResponse> getCarById(@PathVariable Long id) {
         return ResponseEntity.ok(carService.getCarById(id));
     }
 
-    // 차량 전체 조회
+    @Operation(summary = "Get all cars", description = "Fetches a list of all cars in the system")
     @GetMapping
     public ResponseEntity<List<CarResponse>> getAllCars() {
         return ResponseEntity.ok(carService.getAllCars());
