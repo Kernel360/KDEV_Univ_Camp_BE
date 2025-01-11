@@ -40,4 +40,3 @@ public class ControlInfoResponseDto {
         private String storeTp;  // 저장 타입
     }
 }
-
