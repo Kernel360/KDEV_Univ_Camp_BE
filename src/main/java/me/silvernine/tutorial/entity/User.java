@@ -34,8 +34,8 @@ public class User {
    //유저 객체와 권한 객체의 1:다 다:1로 했다
    @ManyToMany
    @JoinTable(
-      name = "user_authority",
-      joinColumns = {@JoinColumn(name = "user_id", referencedColumnName = "user_id")},
-      inverseJoinColumns = {@JoinColumn(name = "authority_name", referencedColumnName = "authority_name")})
+           name = "user_authority",
+           joinColumns = {@JoinColumn(name = "user_id", referencedColumnName = "user_id")},
+           inverseJoinColumns = {@JoinColumn(name = "authority_name", referencedColumnName = "authority_name")})
    private Set<Authority> authorities;
 }

@@ -25,8 +25,8 @@ public class CustomUserDetailsService implements UserDetailsService {
    @Transactional
    public UserDetails loadUserByUsername(final String username) {
       return userRepository.findOneWithAuthoritiesByUsername(username)
-         .map(user -> createUser(username, user))
-         .orElseThrow(() -> new UsernameNotFoundException(username + " -> 데이터베이스에서 찾을 수 없습니다."));
+              .map(user -> createUser(username, user))
+              .orElseThrow(() -> new UsernameNotFoundException(username + " -> 데이터베이스에서 찾을 수 없습니다."));
    }
 
    private org.springframework.security.core.userdetails.User createUser(String username, User user) {
