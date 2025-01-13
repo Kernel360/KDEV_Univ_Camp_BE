@@ -37,7 +37,7 @@ public class UserController {
         response.sendRedirect("/api/user");
     }
 
-    @Operation(summary = "User signup", description = "Registers a new user in the system")
+    @Operation(summary = "회원 가입", description = "유저 회원 가입 페이지 입니다")
     @PostMapping("/signup")
     public ResponseEntity<UserDto> signup(
             @Valid @RequestBody UserDto userDto

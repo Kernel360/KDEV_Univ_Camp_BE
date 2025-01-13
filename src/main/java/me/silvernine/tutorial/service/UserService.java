@@ -1,7 +1,6 @@
 package me.silvernine.tutorial.service;
 
 import java.util.Collections;
-import java.util.Optional;
 import me.silvernine.tutorial.dto.UserDto;
 import me.silvernine.tutorial.entity.Authority;
 import me.silvernine.tutorial.entity.User;
@@ -22,10 +21,11 @@ public class UserService {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
-    //회원가입 로직을 수행하는 메서드
+
     @Transactional
     public UserDto signup(UserDto userDto) {
-        if (userRepository.findOneWithAuthoritiesByUsername(userDto.getUsername()).orElse(null) != null) {
+        // 중복 회원 확인
+        if (userRepository.existsByUsername(userDto.getUsername())) {
             throw new DuplicateMemberException("이미 가입되어 있는 유저입니다.");
         }
 

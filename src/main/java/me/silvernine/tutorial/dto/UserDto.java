@@ -1,6 +1,5 @@
 package me.silvernine.tutorial.dto;
 
-//Dto 클래스는 외부와의 통신에 사용할 클래스임
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import me.silvernine.tutorial.entity.User;
@@ -21,7 +20,7 @@ public class UserDto {
    @Size(min = 3, max = 50)
    private String username;
 
-   @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+   @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) // 클라이언트로 전송 시 비밀번호 제외
    @NotNull
    @Size(min = 3, max = 100)
    private String password;
@@ -33,7 +32,7 @@ public class UserDto {
    private Set<AuthorityDto> authorityDtoSet;
 
    public static UserDto from(User user) {
-      if(user == null) return null;
+      if (user == null) return null;
 
       return UserDto.builder()
               .username(user.getUsername())
