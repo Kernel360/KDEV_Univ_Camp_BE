@@ -1,5 +1,6 @@
 package me.silvernine.tutorial.config;
 
+import me.silvernine.tutorial.jwt.TokenProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -12,9 +13,15 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @Configuration
 public class SecurityConfig {
 
+    private final TokenProvider tokenProvider;
+
+    public SecurityConfig(TokenProvider tokenProvider) {
+        this.tokenProvider = tokenProvider;
+    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        // Swagger 및 H2 Console 요청 허용
+        // Swagger, H2 Console 및 Public API 요청 허용
         AntPathRequestMatcher[] publicMatchers = {
                 new AntPathRequestMatcher("/swagger-ui/**"),
                 new AntPathRequestMatcher("/swagger-ui.html"),
@@ -24,7 +31,9 @@ public class SecurityConfig {
                 new AntPathRequestMatcher("/h2-console/**"),
                 new AntPathRequestMatcher("/api/signup"),
                 new AntPathRequestMatcher("/api/authenticate"),
-                new AntPathRequestMatcher("/api/hello")
+                new AntPathRequestMatcher("/api/hello"),
+                new AntPathRequestMatcher("/api/auth-header-check"), // 추가된 엔드포인트
+                new AntPathRequestMatcher("/api/user")
         };
 
         return http

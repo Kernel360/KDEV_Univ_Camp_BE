@@ -29,7 +29,7 @@ public class AuthController {
         this.authenticationManagerBuilder = authenticationManagerBuilder;
     }
 
-    @Operation(summary = "Authenticate user", description = "Validates user credentials and returns a JWT token")
+    @Operation(summary = "로그인 페이지", description = "로그인을 한 후 JWT 토큰을 반환한다")
     @PostMapping("/authenticate")
     public ResponseEntity<TokenDto> authorize(@Valid @RequestBody LoginDto loginDto) {
 
@@ -47,4 +47,3 @@ public class AuthController {
         return new ResponseEntity<>(new TokenDto(jwt), httpHeaders, HttpStatus.OK);
     }
 }
-
