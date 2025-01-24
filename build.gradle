@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'war' // WAR 파일 생성 플러그인
+    id 'war'
     id 'org.springframework.boot' version '3.1.4'
     id 'io.spring.dependency-management' version '1.1.6'
 }
@@ -39,12 +39,4 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
-}
-
-springBoot {
-    mainClass = 'me.silvernine.Application' // 실제 Main 클래스 경로로 설정
-}
-
-war {
-    enabled = true // WAR 파일 생성을 명시적으로 활성화
 }
