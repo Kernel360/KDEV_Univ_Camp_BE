@@ -1,5 +1,6 @@
 package me.silvernine.tutorial.config;
 
+import me.silvernine.tutorial.jwt.JwtFilter;
 import me.silvernine.tutorial.jwt.TokenProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,6 +9,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
@@ -32,7 +34,7 @@ public class SecurityConfig {
                 new AntPathRequestMatcher("/api/signup"),
                 new AntPathRequestMatcher("/api/authenticate"),
                 new AntPathRequestMatcher("/api/hello"),
-                new AntPathRequestMatcher("/api/auth-header-check"), // 추가된 엔드포인트
+                new AntPathRequestMatcher("/api/auth-header-check"),
                 new AntPathRequestMatcher("/api/user")
         };
 
@@ -48,6 +50,8 @@ public class SecurityConfig {
                 .headers(headers -> headers
                         .frameOptions(frameOptions -> frameOptions.sameOrigin()) // H2 Console을 위해 동일 출처 허용
                 )
+                // JWT 필터 추가: JwtAuthenticationFilter를 UsernamePasswordAuthenticationFilter 전에 추가
+                .addFilterBefore(new JwtFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 

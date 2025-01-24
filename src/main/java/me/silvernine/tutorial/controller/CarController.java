@@ -20,7 +20,7 @@ public class CarController {
 
     private final CarService carService;
 
-    @Operation(summary = "Register a new car", description = "Registers a new car for the authenticated user")
+    @Operation(summary = "차량 등록", description = "차량 데이터를 관리하는 API로, 차량을 등록하거나 조회하는 기능을 제공합니다")
     @PostMapping
     public ResponseEntity<CarResponse> registerCar(@RequestBody CarRequest request, Principal principal) {
         return ResponseEntity.ok(carService.registerCar(request, principal));
