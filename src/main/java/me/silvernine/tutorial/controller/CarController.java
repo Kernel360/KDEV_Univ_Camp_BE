@@ -12,7 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.security.Principal;
 import java.util.List;
 
-@Tag(name = "Car Management", description = "APIs for managing car data and operations")
+@Tag(name = "차량 전체 조회", description = "차량 데이터를 관리하는 API로, 차량을 조회하는 기능을 제공합니다")
 @RestController
 @RequestMapping("/api/cars")
 @RequiredArgsConstructor
@@ -26,7 +26,7 @@ public class CarController {
         return ResponseEntity.ok(carService.registerCar(request, principal));
     }
 
-    @Operation(summary = "차량 전체 조회", description = "차량 데이터를 관리하는 API로, 차량을 조회하는 기능을 제공합니다")
+    @Operation(summary = "..", description = "..")
     @GetMapping("/user")
     public ResponseEntity<List<CarResponse>> getUserCars(Principal principal) {
         return ResponseEntity.ok(carService.getUserCars(principal));
