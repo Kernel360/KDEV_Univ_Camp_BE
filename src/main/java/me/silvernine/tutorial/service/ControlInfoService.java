@@ -11,6 +11,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ControlInfoService {
 
+    // 기존 getControlInfo 메서드 유지
     public ControlInfoResponseDto getControlInfo(ControlInfoRequestDto request) {
         // 입력값 검증
         if (request.getMdn() == null || request.getTid() == null) {
@@ -70,5 +71,19 @@ public class ControlInfoService {
         response.setGeoList(List.of(geo1, geo2));
 
         return response;
+    }
+
+    // 새로운 processCycleInfo 메서드 추가
+    public boolean processCycleInfo(ControlInfoRequestDto request) {
+        if (request.getCList() == null || request.getCList().isEmpty()) {
+            return false; // 데이터가 없을 경우 실패 처리
+        }
+
+        // 요청 데이터를 처리
+        request.getCList().forEach(data -> {
+            System.out.println("Processing cycle data: " + data.toString());
+        });
+
+        return true; // 성공적으로 처리한 경우
     }
 }
