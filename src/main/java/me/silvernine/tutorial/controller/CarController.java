@@ -32,7 +32,7 @@ public class CarController {
         return ResponseEntity.ok(carService.getUserCars(principal));
     }
 
-    @Operation(summary = "Get car by ID", description = "Fetches details of a specific car by its ID")
+    @Operation(summary = "차량 단건 조회", description = "차량 데이터를 관리하는 API로, 차량 ID를 사용하여 차량 단건 조회하는 기능을 제공합니다")
     @GetMapping("/{id}")
     public ResponseEntity<CarResponse> getCarById(@PathVariable Long id) {
         return ResponseEntity.ok(carService.getCarById(id));
