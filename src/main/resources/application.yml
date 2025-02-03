@@ -2,25 +2,26 @@ spring:
   datasource:
     url: jdbc:mysql://todo-car.cv8eyc8867ij.ap-northeast-2.rds.amazonaws.com:3306/todo-car
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: admin  # 환경 변수 사용
-    password: 1q2w3e4r!!  # 환경 변수 사용
+    username: admin
+    password: 1q2w3e4r!!
 
   jpa:
     database-platform: org.hibernate.dialect.MySQL8Dialect
     hibernate:
-      ddl-auto: create  # 기존 데이터 유지 (필요에 따라 create, create-drop, update 선택)
+      ddl-auto: create  # 기존 데이터를 유지하려면 update로 변경
     properties:
       hibernate:
         format_sql: true
         show_sql: true
     defer-datasource-initialization: true
 
+  sql:
+    init:
+      mode: always  # Hibernate가 테이블을 만든 후 data.sql 실행
+
 jwt:
   header: Authorization
-  #HS512 알고리즘을 사용할 것이기 때문에 512bit, 즉 64byte 이상의 secret key를 사용해야 한다.
-  #echo 'silvernine-tech-spring-boot-jwt-tutorial-secret-silvernine-tech-spring-boot-jwt-tutorial-secret'|base64
   secret: c2lsdmVybmluZS10ZWNoLXNwcmluZy1ib290LWp3dC10dXRvcmlhbC1zZWNyZXQtc2lsdmVybmluZS10ZWNoLXNwcmluZy1ib290LWp3dC10dXRvcmlhbC1zZWNyZXQK
-  #토큰의 만료시간
   token-validity-in-seconds: 86400
 
 logging:
