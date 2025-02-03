@@ -8,16 +8,16 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.MySQL8Dialect
     hibernate:
-      ddl-auto: create  # 기존 데이터를 유지하려면 update로 변경
+      ddl-auto: update  # create → update 변경
     properties:
       hibernate:
         format_sql: true
         show_sql: true
-    defer-datasource-initialization: true
+    defer-datasource-initialization: true  # data.sql 실행 보장
 
   sql:
     init:
-      mode: always  # Hibernate가 테이블을 만든 후 data.sql 실행
+      mode: always  # Hibernate 실행 후 data.sql 실행
 
 jwt:
   header: Authorization
