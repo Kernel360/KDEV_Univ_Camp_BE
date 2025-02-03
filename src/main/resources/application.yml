@@ -1,21 +1,14 @@
 spring:
-  h2:
-    console:
-      enabled: true
-      path: /h2-console # 기존 properties에서 포함된 내용 추가
-      settings:
-        web-allow-others: true # 외부 접속 허용
-
   datasource:
-    url: jdbc:h2:mem:testdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: jdbc:mysql://todo-car.cv8eyc8867ij.ap-northeast-2.rds.amazonaws.com:3306/todo-car
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: admin  # 환경 변수 사용
+    password: 1q2w3e4r!!  # 환경 변수 사용
 
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
+    database-platform: org.hibernate.dialect.MySQL8Dialect
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: create  # 기존 데이터 유지 (필요에 따라 create, create-drop, update 선택)
     properties:
       hibernate:
         format_sql: true
