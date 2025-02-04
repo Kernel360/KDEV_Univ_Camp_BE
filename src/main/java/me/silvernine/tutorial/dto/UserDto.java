@@ -1,6 +1,7 @@
 package me.silvernine.tutorial.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.*;
 import me.silvernine.tutorial.entity.User;
 
@@ -12,6 +13,7 @@ import jakarta.validation.constraints.Size;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonPropertyOrder({"id", "password", "nickname"}) // ✅ JSON 응답 순서 지정
 public class UserDto {
 
    @NotNull
@@ -21,7 +23,7 @@ public class UserDto {
 
    @NotNull
    @Size(min = 3, max = 100)
-   private String password;  // ✅ 비밀번호 응답에 포함
+   private String password;
 
    @NotNull
    @Size(min = 3, max = 50)
