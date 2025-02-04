@@ -20,34 +20,46 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    /**
+     * 회원가입 서비스
+     */
     @Transactional
     public UserDto signup(UserDto userDto) {
         // 중복 회원 확인
-        if (userRepository.existsById(userDto.getId())) {  // ✅ username → id 변경
+        if (userRepository.existsById(userDto.getId())) {
             throw new DuplicateMemberException("이미 가입되어 있는 유저입니다.");
         }
 
+        String rawPassword = userDto.getPassword(); // ✅ 원본 비밀번호 저장
+
         User user = User.builder()
-                .id(userDto.getId())  // ✅ 변경된 필드 반영
-                .password(passwordEncoder.encode(userDto.getPassword()))
+                .id(userDto.getId())
+                .password(passwordEncoder.encode(userDto.getPassword())) // ✅ 비밀번호 암호화 후 저장
                 .nickname(userDto.getNickname())
                 .activated(true)
                 .build();
 
-        return UserDto.from(userRepository.save(user));
+        return UserDto.from(userRepository.save(user), rawPassword); // ✅ 원본 비밀번호 포함
     }
 
-    @Transactional(readOnly = true)
-    public UserDto getUserWithAuthorities(String id) { // ✅ username → id 변경
-        return UserDto.from(userRepository.findOneWithAuthoritiesById(id).orElse(null));
-    }
-
+    /**
+     * 현재 로그인한 사용자 정보 가져오기
+     */
     @Transactional(readOnly = true)
     public UserDto getMyUserWithAuthorities() {
-        return UserDto.from(
-                SecurityUtil.getCurrentId()  // ✅ username → id 변경
-                        .flatMap(userRepository::findOneWithAuthoritiesById)
-                        .orElseThrow(() -> new NotFoundMemberException("Member not found"))
-        );
+        return SecurityUtil.getCurrentId() // ✅ username → id로 변경
+                .flatMap(userRepository::findOneWithAuthoritiesById)
+                .map(user -> UserDto.from(user, null)) // ✅ 원본 비밀번호는 반환하지 않음
+                .orElseThrow(() -> new NotFoundMemberException("현재 로그인한 사용자를 찾을 수 없습니다."));
+    }
+
+    /**
+     * 특정 유저 정보 가져오기 (관리자 전용)
+     */
+    @Transactional(readOnly = true)
+    public UserDto getUserWithAuthorities(String id) {
+        return userRepository.findOneWithAuthoritiesById(id)
+                .map(user -> UserDto.from(user, null)) // ✅ 원본 비밀번호는 반환하지 않음
+                .orElseThrow(() -> new NotFoundMemberException("사용자를 찾을 수 없습니다."));
     }
 }

@@ -16,23 +16,23 @@ public class UserDto {
 
    @NotNull
    @Size(min = 3, max = 50)
-   @JsonProperty("id") // ✅ JSON에서 id로 표시
+   @JsonProperty("id")
    private String id;
 
    @NotNull
    @Size(min = 3, max = 100)
-   private String password;
+   private String password;  // ✅ 비밀번호 응답에 포함
 
    @NotNull
    @Size(min = 3, max = 50)
    private String nickname;
 
-   public static UserDto from(User user) {
+   public static UserDto from(User user, String rawPassword) {
       if (user == null) return null;
 
       return UserDto.builder()
-              .id(user.getId())  // ✅ 변경된 필드 반영
-              .password(user.getPassword())
+              .id(user.getId())
+              .password(rawPassword) // ✅ 원본 비밀번호 유지
               .nickname(user.getNickname())
               .build();
    }
