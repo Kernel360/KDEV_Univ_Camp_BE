@@ -23,15 +23,14 @@ public class UserService {
     @Transactional
     public UserDto signup(UserDto userDto) {
         // 중복 회원 확인
-        if (userRepository.existsByUsername(userDto.getUsername())) {
+        if (userRepository.existsByUsername(userDto.getId())) {  // ✅ username → id 변경
             throw new DuplicateMemberException("이미 가입되어 있는 유저입니다.");
         }
 
         User user = User.builder()
-                .username(userDto.getUsername())
+                .username(userDto.getId())  // ✅ 변경된 필드 반영
                 .password(passwordEncoder.encode(userDto.getPassword()))
                 .nickname(userDto.getNickname())
-                .isAdmin(true) // 모든 사용자는 ADMIN 권한
                 .activated(true)
                 .build();
 

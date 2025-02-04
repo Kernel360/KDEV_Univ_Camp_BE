@@ -46,14 +46,14 @@ public class UserController {
     }
 
     @Operation(
-            summary = "Get user information by username",
-            description = "Fetches the information of a specific user by their username. Only accessible to admins",
+            summary = "Get user information by id",
+            description = "Fetches the information of a specific user by their id. Only accessible to admins",
             security = @SecurityRequirement(name = "bearerAuth")
     )
-    @GetMapping("/user/{username}")
+    @GetMapping("/user/{id}")  // ✅ username → id 변경
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserDto> getUserInfo(@PathVariable String username) {
-        return ResponseEntity.ok(userService.getUserWithAuthorities(username));
+    public ResponseEntity<UserDto> getUserInfo(@PathVariable String id) {
+        return ResponseEntity.ok(userService.getUserWithAuthorities(id));
     }
 
     @Operation(
