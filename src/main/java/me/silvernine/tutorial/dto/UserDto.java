@@ -6,8 +6,6 @@ import me.silvernine.tutorial.entity.User;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -20,7 +18,7 @@ public class UserDto {
    @Size(min = 3, max = 50)
    private String username;
 
-   @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) // 클라이언트로 전송 시 비밀번호 제외
+   @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
    @NotNull
    @Size(min = 3, max = 100)
    private String password;
@@ -29,17 +27,13 @@ public class UserDto {
    @Size(min = 3, max = 50)
    private String nickname;
 
-   private Set<AuthorityDto> authorityDtoSet;
-
+   // from 메서드에서 authorityDtoSet 제거
    public static UserDto from(User user) {
       if (user == null) return null;
 
       return UserDto.builder()
               .username(user.getUsername())
               .nickname(user.getNickname())
-              .authorityDtoSet(user.getAuthorities().stream()
-                      .map(authority -> AuthorityDto.builder().authorityName(authority.getAuthorityName()).build())
-                      .collect(Collectors.toSet()))
               .build();
    }
 }

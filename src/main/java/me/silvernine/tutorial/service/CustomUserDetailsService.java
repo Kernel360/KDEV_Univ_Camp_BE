@@ -10,8 +10,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component("userDetailsService")
 public class CustomUserDetailsService implements UserDetailsService {
@@ -25,21 +25,24 @@ public class CustomUserDetailsService implements UserDetailsService {
    @Transactional
    public UserDetails loadUserByUsername(final String username) {
       return userRepository.findOneWithAuthoritiesByUsername(username)
-              .map(user -> createUser(username, user))
+              .map(this::createUser)
               .orElseThrow(() -> new UsernameNotFoundException(username + " -> 데이터베이스에서 찾을 수 없습니다."));
    }
 
-   private org.springframework.security.core.userdetails.User createUser(String username, User user) {
+   private org.springframework.security.core.userdetails.User createUser(User user) {
       if (!user.isActivated()) {
-         throw new RuntimeException(username + " -> 활성화되어 있지 않습니다.");
+         throw new RuntimeException(user.getUsername() + " -> 활성화되어 있지 않습니다.");
       }
 
-      List<GrantedAuthority> grantedAuthorities = user.getAuthorities().stream()
-              .map(authority -> new SimpleGrantedAuthority(authority.getAuthorityName()))
-              .collect(Collectors.toList());
+      // **수정된 부분**: isAdmin 값에 따라 권한 설정
+      List<GrantedAuthority> grantedAuthorities = user.isAdmin()
+              ? List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
+              : Collections.emptyList();
 
-      return new org.springframework.security.core.userdetails.User(user.getUsername(),
+      return new org.springframework.security.core.userdetails.User(
+              user.getUsername(),
               user.getPassword(),
-              grantedAuthorities);
+              grantedAuthorities
+      );
    }
 }

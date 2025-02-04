@@ -2,7 +2,6 @@ package me.silvernine.tutorial.entity;
 
 import lombok.*;
 import jakarta.persistence.*;
-import java.util.Set;
 
 @Entity
 @Table(name = "`user`")
@@ -30,12 +29,6 @@ public class User {
    @Column(name = "activated")
    private boolean activated;
 
-
-   //유저 객체와 권한 객체의 1:다 다:1로 했다
-   @ManyToMany
-   @JoinTable(
-           name = "user_authority",
-           joinColumns = {@JoinColumn(name = "user_id", referencedColumnName = "user_id")},
-           inverseJoinColumns = {@JoinColumn(name = "authority_name", referencedColumnName = "authority_name")})
-   private Set<Authority> authorities;
+   @Column(name = "is_admin")
+   private boolean isAdmin; // 관리자인지 여부 추가
 }

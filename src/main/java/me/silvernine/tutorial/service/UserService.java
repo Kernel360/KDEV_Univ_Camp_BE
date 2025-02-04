@@ -1,8 +1,6 @@
 package me.silvernine.tutorial.service;
 
-import java.util.Collections;
 import me.silvernine.tutorial.dto.UserDto;
-import me.silvernine.tutorial.entity.Authority;
 import me.silvernine.tutorial.entity.User;
 import me.silvernine.tutorial.exception.DuplicateMemberException;
 import me.silvernine.tutorial.exception.NotFoundMemberException;
@@ -29,15 +27,11 @@ public class UserService {
             throw new DuplicateMemberException("이미 가입되어 있는 유저입니다.");
         }
 
-        Authority authority = Authority.builder()
-                .authorityName("ROLE_USER")
-                .build();
-
         User user = User.builder()
                 .username(userDto.getUsername())
                 .password(passwordEncoder.encode(userDto.getPassword()))
                 .nickname(userDto.getNickname())
-                .authorities(Collections.singleton(authority))
+                .isAdmin(true) // 모든 사용자는 ADMIN 권한
                 .activated(true)
                 .build();
 
