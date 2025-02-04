@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,6 +23,15 @@ public class UserController {
 
     public UserController(UserService userService) {
         this.userService = userService;
+    }
+
+    @Operation(
+            summary = "회원가입",
+            description = "새로운 사용자를 등록합니다"
+    )
+    @PostMapping("/signup")
+    public ResponseEntity<UserDto> signup(@Valid @RequestBody UserDto userDto) {
+        return ResponseEntity.ok(userService.signup(userDto));
     }
 
     @Operation(
