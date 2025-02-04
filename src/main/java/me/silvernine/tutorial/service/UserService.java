@@ -23,12 +23,12 @@ public class UserService {
     @Transactional
     public UserDto signup(UserDto userDto) {
         // 중복 회원 확인
-        if (userRepository.existsByUsername(userDto.getId())) {  // ✅ username → id 변경
+        if (userRepository.existsById(userDto.getId())) {  // ✅ username → id 변경
             throw new DuplicateMemberException("이미 가입되어 있는 유저입니다.");
         }
 
         User user = User.builder()
-                .username(userDto.getId())  // ✅ 변경된 필드 반영
+                .id(userDto.getId())  // ✅ 변경된 필드 반영
                 .password(passwordEncoder.encode(userDto.getPassword()))
                 .nickname(userDto.getNickname())
                 .activated(true)
@@ -38,15 +38,15 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserDto getUserWithAuthorities(String username) {
-        return UserDto.from(userRepository.findOneWithAuthoritiesByUsername(username).orElse(null));
+    public UserDto getUserWithAuthorities(String id) { // ✅ username → id 변경
+        return UserDto.from(userRepository.findOneWithAuthoritiesById(id).orElse(null));
     }
 
     @Transactional(readOnly = true)
     public UserDto getMyUserWithAuthorities() {
         return UserDto.from(
-                SecurityUtil.getCurrentUsername()
-                        .flatMap(userRepository::findOneWithAuthoritiesByUsername)
+                SecurityUtil.getCurrentId()  // ✅ username → id 변경
+                        .flatMap(userRepository::findOneWithAuthoritiesById)
                         .orElseThrow(() -> new NotFoundMemberException("Member not found"))
         );
     }

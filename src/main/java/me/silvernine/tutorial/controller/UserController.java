@@ -55,16 +55,4 @@ public class UserController {
     public ResponseEntity<UserDto> getUserInfo(@PathVariable String id) {
         return ResponseEntity.ok(userService.getUserWithAuthorities(id));
     }
-
-    @Operation(
-            summary = "승인 헤더 확인",
-            description = "테스트 목적으로 승인 헤더의 값을 반환합니다"
-    )
-    @GetMapping("/auth-header-check")
-    public ResponseEntity<Object> authHeaderChecker(HttpServletRequest request) {
-        Map<String, String> response = new HashMap<>() {{
-            put("Authorization", request.getHeader("Authorization"));
-        }};
-        return ResponseEntity.ok(response);
-    }
 }

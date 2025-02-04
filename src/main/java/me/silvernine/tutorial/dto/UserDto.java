@@ -16,8 +16,8 @@ public class UserDto {
 
    @NotNull
    @Size(min = 3, max = 50)
-   @JsonProperty("id")  // ✅ JSON 응답에서 "id"로 표시
-   private String username;
+   @JsonProperty("id") // ✅ JSON에서 id로 표시
+   private String id;
 
    @NotNull
    @Size(min = 3, max = 100)
@@ -27,17 +27,12 @@ public class UserDto {
    @Size(min = 3, max = 50)
    private String nickname;
 
-   // ✅ getId() 추가 (username 필드를 id처럼 사용)
-   public String getId() {
-      return this.username;
-   }
-
    public static UserDto from(User user) {
       if (user == null) return null;
 
       return UserDto.builder()
-              .username(user.getUsername())  // ✅ id로 변경됨
-              .password(user.getPassword())  // ✅ 응답에 비밀번호 포함
+              .id(user.getId())  // ✅ 변경된 필드 반영
+              .password(user.getPassword())
               .nickname(user.getNickname())
               .build();
    }

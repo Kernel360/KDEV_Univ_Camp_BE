@@ -14,8 +14,8 @@ public class SecurityUtil {
 
    private SecurityUtil() {}
 
-   //유저 이름 리터하는 메서드
-   public static Optional<String> getCurrentUsername() {
+   // ✅ 기존 getCurrentUsername()을 getCurrentId()로 변경
+   public static Optional<String> getCurrentId() {
       final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
       if (authentication == null) {
@@ -23,14 +23,14 @@ public class SecurityUtil {
          return Optional.empty();
       }
 
-      String username = null;
+      String id = null;  // ✅ username → id 변경
       if (authentication.getPrincipal() instanceof UserDetails) {
          UserDetails springSecurityUser = (UserDetails) authentication.getPrincipal();
-         username = springSecurityUser.getUsername();
+         id = springSecurityUser.getUsername();  // ✅ id를 가져옴
       } else if (authentication.getPrincipal() instanceof String) {
-         username = (String) authentication.getPrincipal();
+         id = (String) authentication.getPrincipal();
       }
 
-      return Optional.ofNullable(username);
+      return Optional.ofNullable(id);
    }
 }
