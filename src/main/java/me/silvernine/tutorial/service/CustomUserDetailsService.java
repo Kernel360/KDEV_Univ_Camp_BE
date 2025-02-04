@@ -23,24 +23,24 @@ public class CustomUserDetailsService implements UserDetailsService {
 
    @Override
    @Transactional
-   public UserDetails loadUserByUsername(final String username) {
-      return userRepository.findOneWithAuthoritiesByUsername(username)
+   public UserDetails loadUserByUsername(final String id) {  // ✅ username → id 변경
+      return userRepository.findOneWithAuthoritiesById(id)  // ✅ findOneWithAuthoritiesByUsername → findOneWithAuthoritiesById 변경
               .map(this::createUser)
-              .orElseThrow(() -> new UsernameNotFoundException(username + " -> 데이터베이스에서 찾을 수 없습니다."));
+              .orElseThrow(() -> new UsernameNotFoundException(id + " -> 데이터베이스에서 찾을 수 없습니다."));
    }
 
    private org.springframework.security.core.userdetails.User createUser(User user) {
       if (!user.isActivated()) {
-         throw new RuntimeException(user.getUsername() + " -> 활성화되어 있지 않습니다.");
+         throw new RuntimeException(user.getId() + " -> 활성화되어 있지 않습니다."); // ✅ username → id 변경
       }
 
-      // **수정된 부분**: isAdmin 값에 따라 권한 설정
+      // ✅ isAdmin 값에 따라 권한 설정
       List<GrantedAuthority> grantedAuthorities = user.isAdmin()
               ? List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
               : Collections.emptyList();
 
       return new org.springframework.security.core.userdetails.User(
-              user.getUsername(),
+              user.getId(),  // ✅ username → id 변경
               user.getPassword(),
               grantedAuthorities
       );

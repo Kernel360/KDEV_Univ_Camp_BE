@@ -1,6 +1,5 @@
 package me.silvernine.tutorial.entity;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,8 +17,7 @@ public class User {
    private Long userId;
 
    @Column(nullable = false, unique = true)
-   @JsonProperty("id") // ✅ JSON에서 id로 표시
-   private String id;
+   private String id;  // ✅ username → id 변경
 
    @Column(nullable = false)
    private String password;
@@ -29,4 +27,12 @@ public class User {
 
    @Column(nullable = false)
    private boolean activated;
+
+   @Column(nullable = false)
+   private boolean isAdmin; // ✅ isAdmin 필드 추가
+
+   // ✅ Getter 추가 (CustomUserDetailsService에서 사용 가능하도록)
+   public boolean isAdmin() {
+      return isAdmin;
+   }
 }
