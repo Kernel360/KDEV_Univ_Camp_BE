@@ -1,5 +1,7 @@
 package me.silvernine.tutorial.service;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import me.silvernine.tutorial.dto.UserDto;
 import me.silvernine.tutorial.entity.User;
 import me.silvernine.tutorial.exception.DuplicateMemberException;
@@ -57,9 +59,13 @@ public class UserService {
      * 특정 유저 정보 가져오기 (관리자 전용)
      */
     @Transactional(readOnly = true)
-    public UserDto getUserWithAuthorities(String id) {
-        return userRepository.findOneWithAuthoritiesById(id)
-                .map(user -> UserDto.from(user, null)) // ✅ 원본 비밀번호는 반환하지 않음
-                .orElseThrow(() -> new NotFoundMemberException("사용자를 찾을 수 없습니다."));
+    public UserDto getUserWithAuthorities(String Id) {
+        return null;
+    }
+
+    public String getUserNickname(String id) {
+        return userRepository.findById(Long.parseLong(id)) // String → Long 변환
+                .map(User::getNickname)
+                .orElseThrow(() -> new IllegalArgumentException("해당 ID에 대한 닉네임을 찾을 수 없습니다."));
     }
 }

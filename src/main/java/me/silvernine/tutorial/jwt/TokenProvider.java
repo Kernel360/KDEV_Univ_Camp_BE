@@ -25,6 +25,7 @@ public class TokenProvider implements InitializingBean {
 
     private final Logger logger = LoggerFactory.getLogger(TokenProvider.class);
     private static final String AUTHORITIES_KEY = "auth";
+    private static final String NICKNAME_KEY = "nickname";
     private final String secret;
     private final long tokenValidityInMilliseconds;
     private Key key;
@@ -43,7 +44,7 @@ public class TokenProvider implements InitializingBean {
     }
 
     // JWT 생성 메서드
-    public String createToken(Authentication authentication) {
+    public String createToken(Authentication authentication, String nickname) {
         String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(",")); // 권한 정보를 콤마로 구분된 문자열로 변환
@@ -55,6 +56,7 @@ public class TokenProvider implements InitializingBean {
         return Jwts.builder()
                 .setSubject(authentication.getName()) // 사용자 이름 설정
                 .claim(AUTHORITIES_KEY, authorities) // 권한 정보 설정
+                .claim(NICKNAME_KEY, nickname)
                 .signWith(key, SignatureAlgorithm.HS512) // 서명 알고리즘 및 키 설정
                 .setExpiration(validity) // 만료 시간 설정
                 .compact();
