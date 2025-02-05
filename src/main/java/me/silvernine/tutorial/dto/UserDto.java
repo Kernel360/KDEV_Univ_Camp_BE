@@ -29,12 +29,24 @@ public class UserDto {
    @Size(min = 3, max = 50)
    private String nickname;
 
+   // ✅ 기존 메서드 (password 포함)
    public static UserDto from(User user, String rawPassword) {
       if (user == null) return null;
 
       return UserDto.builder()
               .id(user.getId())
               .password(rawPassword) // ✅ 원본 비밀번호 유지
+              .nickname(user.getNickname())
+              .build();
+   }
+
+   // ✅ 새로 추가된 메서드 (Optional.map() 사용 가능)
+   public static UserDto from(User user) {
+      if (user == null) return null;
+
+      return UserDto.builder()
+              .id(user.getId())
+              .password(null) // ✅ 패스워드 숨김
               .nickname(user.getNickname())
               .build();
    }

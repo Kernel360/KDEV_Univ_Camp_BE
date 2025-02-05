@@ -33,4 +33,10 @@ public class SecurityUtil {
 
       return Optional.ofNullable(id);
    }
+
+   // ✅ `getCurrentUserId()`를 `getCurrentId()`를 활용하여 구현
+   public static String getCurrentUserId() {
+      return getCurrentId().orElseThrow(() ->
+              new IllegalArgumentException("현재 인증된 사용자의 ID를 찾을 수 없습니다."));
+   }
 }

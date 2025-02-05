@@ -2,7 +2,6 @@ package me.silvernine.tutorial.controller;
 
 import me.silvernine.tutorial.dto.LoginDto;
 import me.silvernine.tutorial.dto.TokenDto;
-import me.silvernine.tutorial.dto.UserDto;
 import me.silvernine.tutorial.jwt.JwtFilter;
 import me.silvernine.tutorial.jwt.TokenProvider;
 import me.silvernine.tutorial.service.UserService;
