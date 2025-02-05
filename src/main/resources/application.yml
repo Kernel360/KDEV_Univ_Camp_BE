@@ -6,35 +6,24 @@ spring:
     password: 1q2w3e4r!!
 
   jpa:
-    database-platform: org.hibernate.dialect.MySQLDialect  # ✅ MySQL8Dialect 대신 최신 버전 사용
+    database-platform: org.hibernate.dialect.MySQL8Dialect
     hibernate:
-      ddl-auto: update  # ✅ 기존 테이블 유지하며 새로운 테이블 추가 가능하게 변경
+      ddl-auto: create  # create → update 변경 가능
     properties:
       hibernate:
         format_sql: true
         show_sql: true
-    defer-datasource-initialization: true  # ✅ data.sql 실행 보장
+    defer-datasource-initialization: true  # data.sql 실행 보장
 
   sql:
     init:
-      mode: always  # ✅ Hibernate 실행 후 data.sql 실행
-
-  security:
-    user:
-      name: user
-      password: password
+      mode: always  # Hibernate 실행 후 data.sql 실행
 
 jwt:
   header: Authorization
   secret: c2lsdmVybmluZS10ZWNoLXNwcmluZy1ib290LWp3dC10dXRvcmlhbC1zZWNyZXQtc2lsdmVybmluZS10ZWNoLXNwcmluZy1ib290LWp3dC10dXRvcmlhbC1zZWNyZXQK
   token-validity-in-seconds: 86400
 
-server:
-  port: 8080
-
 logging:
   level:
-    root: INFO
     me.silvernine: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.springframework.security: DEBUG
