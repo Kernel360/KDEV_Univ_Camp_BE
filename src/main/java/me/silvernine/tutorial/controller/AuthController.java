@@ -43,20 +43,11 @@ public class AuthController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         String nickname = userService.getUserNickname(loginDto.getId());
-
         String jwt = tokenProvider.createToken(authentication, nickname);
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add(JwtFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
 
-        // ✅ JSON 응답 형태로 토큰 반환
         return ResponseEntity.ok().headers(httpHeaders).body(new TokenDto(jwt));
-    }
-
-    @Operation(summary = "회원가입", description = "새로운 사용자를 등록한다")
-    @PostMapping("/signup")
-    public ResponseEntity<String> signup(@Valid @RequestBody UserDto userDto) {
-        userService.signup(userDto);
-        return ResponseEntity.ok("회원가입이 성공적으로 완료되었습니다.");
     }
 }
