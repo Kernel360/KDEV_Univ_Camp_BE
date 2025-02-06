@@ -25,7 +25,7 @@ public class UserService {
      */
     @Transactional
     public UserDto signup(UserDto userDto) {
-        if (userRepository.existsById(userDto.getId())) {
+        if (userRepository.existsById(userDto.getId())) { // ✅ id 필드 기준 중복 체크
             throw new IllegalArgumentException("이미 사용 중인 ID입니다.");
         }
 
@@ -45,7 +45,7 @@ public class UserService {
      * ✅ 특정 ID의 사용자 닉네임 가져오기
      */
     public String getUserNickname(String id) {
-        return userRepository.findById(id)
+        return userRepository.findOneWithAuthoritiesById(id) // ✅ id 필드 기준 검색
                 .map(User::getNickname)
                 .orElseThrow(() -> new IllegalArgumentException("해당 ID에 대한 닉네임을 찾을 수 없습니다."));
     }
@@ -55,7 +55,7 @@ public class UserService {
      */
     public UserDto getMyUserWithAuthorities() {
         return SecurityUtil.getCurrentId()
-                .flatMap(userRepository::findById)
+                .flatMap(userRepository::findOneWithAuthoritiesById) // ✅ id 필드 기준 검색
                 .map(user -> new UserDto(user.getId(), null, user.getNickname())) // ✅ 비밀번호 제외 후 반환
                 .orElseThrow(() -> new IllegalArgumentException("로그인한 사용자의 정보를 찾을 수 없습니다."));
     }
@@ -64,7 +64,7 @@ public class UserService {
      * ✅ 특정 사용자 정보 가져오기 (관리자 전용)
      */
     public UserDto getUserWithAuthorities(String id) {
-        return userRepository.findById(id)
+        return userRepository.findOneWithAuthoritiesById(id) // ✅ id 필드 기준 검색
                 .map(user -> new UserDto(user.getId(), null, user.getNickname())) // ✅ 비밀번호 제외 후 반환
                 .orElseThrow(() -> new IllegalArgumentException("해당 ID의 사용자를 찾을 수 없습니다."));
     }
