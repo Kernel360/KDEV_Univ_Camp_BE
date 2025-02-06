@@ -25,12 +25,14 @@ public class UserService {
      */
     @Transactional
     public UserDto signup(UserDto userDto) {
-        if (userRepository.findByUserId(userDto.getId()).isPresent()) { // ✅ userId 필드 기준 중복 체크
+        // ❌ 잘못된 중복 체크 방식 (userId(UUID) 대신 사용자 입력 ID(id)로 체크해야 함)
+        if (userRepository.findOneWithAuthoritiesById(userDto.getId()).isPresent()) { // ✅ 사용자가 입력한 ID(id) 기준 중복 체크
             throw new IllegalArgumentException("이미 사용 중인 ID입니다.");
         }
 
+        // ✅ userId(UUID) 자동 생성 추가
         User user = User.builder()
-                .id(userDto.getId())
+                .id(userDto.getId()) // 사용자 입력 ID 저장
                 .password(passwordEncoder.encode(userDto.getPassword())) // ✅ 비밀번호 암호화 저장
                 .nickname(userDto.getNickname())
                 .activated(true) // ✅ 계정 활성화 기본값 true
@@ -45,7 +47,7 @@ public class UserService {
      * ✅ 특정 ID의 사용자 닉네임 가져오기
      */
     public String getUserNickname(String id) {
-        return userRepository.findByUserId(id) // ✅ userId 필드 기준 검색
+        return userRepository.findOneWithAuthoritiesById(id) // ✅ 사용자 입력 ID(id) 기준 검색
                 .map(User::getNickname)
                 .orElseThrow(() -> new IllegalArgumentException("해당 ID에 대한 닉네임을 찾을 수 없습니다."));
     }
@@ -55,7 +57,7 @@ public class UserService {
      */
     public UserDto getMyUserWithAuthorities() {
         return SecurityUtil.getCurrentId()
-                .flatMap(userRepository::findByUserId) // ✅ userId 필드 기준 검색
+                .flatMap(userRepository::findOneWithAuthoritiesByUserId) // ✅ UUID 기반 검색으로 변경
                 .map(user -> new UserDto(user.getId(), null, user.getNickname())) // ✅ 비밀번호 제외 후 반환
                 .orElseThrow(() -> new IllegalArgumentException("로그인한 사용자의 정보를 찾을 수 없습니다."));
     }
@@ -64,7 +66,7 @@ public class UserService {
      * ✅ 특정 사용자 정보 가져오기 (관리자 전용)
      */
     public UserDto getUserWithAuthorities(String id) {
-        return userRepository.findByUserId(id) // ✅ userId 필드 기준 검색
+        return userRepository.findOneWithAuthoritiesById(id) // ✅ 사용자 입력 ID 기준 검색
                 .map(user -> new UserDto(user.getId(), null, user.getNickname())) // ✅ 비밀번호 제외 후 반환
                 .orElseThrow(() -> new IllegalArgumentException("해당 ID의 사용자를 찾을 수 없습니다."));
     }
