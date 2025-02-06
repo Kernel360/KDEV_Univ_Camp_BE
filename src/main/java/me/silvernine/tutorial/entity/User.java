@@ -40,6 +40,7 @@ public class User {
            joinColumns = @JoinColumn(name = "user_id"),
            inverseJoinColumns = @JoinColumn(name = "authority_name")
    )
+   @Builder.Default
    private Set<Authority> authorities = new HashSet<>();
 
    // ✅ userId를 자동 생성하는 로직 추가
