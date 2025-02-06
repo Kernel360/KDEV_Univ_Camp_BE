@@ -30,7 +30,7 @@ public class UserService {
                 .password(passwordEncoder.encode(userDto.getPassword())) // 비밀번호 암호화
                 .nickname(userDto.getNickname())
                 .activated(true) // 기본적으로 활성화된 계정으로 설정
-                .isAdmin(false) // 기본적으로 일반 사용자
+                .admin(false) // 기본적으로 일반 사용자
                 .build();
 
         userRepository.save(user);

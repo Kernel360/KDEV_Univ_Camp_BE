@@ -6,7 +6,7 @@ spring:
     password: 1q2w3e4r!!
 
   jpa:
-    database-platform: org.hibernate.dialect.MySQLDialect  # ✅ MySQL8Dialect → 최신 MySQLDialect 사용
+    database-platform: org.hibernate.dialect.MySQLDialect  # ✅ 최신 MySQLDialect 사용
     hibernate:
       ddl-auto: update  # ✅ create → update 변경하여 기존 데이터 유지
     properties:
@@ -21,7 +21,7 @@ spring:
 
 jwt:
   header: Authorization
-  secret: c2lsdmVybmluZS10ZWNoLXNwcmluZy1ib290LWp3dC10dXRvcmlhbC1zZWNyZXQK  # ✅ Base64 인코딩된 Secret Key로 변경
+  secret: c2lsdmVybmluZS10ZWNoLXNwcmluZy1ib290LWp3dC10dXRvcmlhbC1zZWNyZXQK  # ✅ Base64 인코딩된 Secret Key
   token-validity-in-seconds: 86400  # ✅ 초 단위 설정 (1일)
 
 logging:

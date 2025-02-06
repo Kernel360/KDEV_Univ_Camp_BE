@@ -29,10 +29,10 @@ public class User {
    private boolean activated;
 
    @Column(nullable = false)
-   private boolean isAdmin; // ✅ isAdmin 필드 추가
+   private boolean admin; // ✅ 필드명 변경 (isAdmin → admin)
 
    // ✅ Getter 추가 (CustomUserDetailsService에서 사용 가능하도록)
-   public boolean isAdmin() {
-      return isAdmin;
+   public boolean getAdmin() { // ✅ getter 이름을 수정하여 JPA 매핑 문제 방지
+      return admin;
    }
 }
