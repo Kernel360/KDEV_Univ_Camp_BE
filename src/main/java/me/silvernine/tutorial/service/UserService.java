@@ -1,6 +1,7 @@
 package me.silvernine.tutorial.service;
 
 import me.silvernine.tutorial.dto.UserDto;
+import me.silvernine.tutorial.entity.Authority;
 import me.silvernine.tutorial.entity.User;
 import me.silvernine.tutorial.repository.UserRepository;
 import me.silvernine.tutorial.util.SecurityUtil;
@@ -8,6 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.Optional;
 
 @Service
@@ -21,7 +23,7 @@ public class UserService {
     }
 
     /**
-     * ✅ 회원가입 기능
+     * ✅ 회원가입 기능 (ROLE_USER 권한 추가)
      */
     @Transactional
     public UserDto signup(UserDto userDto) {
@@ -36,6 +38,10 @@ public class UserService {
                 .activated(true) // ✅ 계정 활성화 기본값 true
                 .isAdmin(false) // ✅ 기본적으로 일반 사용자
                 .build();
+
+        // ✅ 기본 권한 부여 (ROLE_USER)
+        Authority userAuthority = new Authority("ROLE_USER");
+        user.setAuthorities(Collections.singleton(userAuthority));
 
         userRepository.save(user);
         return new UserDto(user.getId(), userDto.getPassword(), user.getNickname());
