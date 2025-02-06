@@ -10,7 +10,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -24,15 +23,15 @@ public class CustomUserDetailsService implements UserDetailsService {
 
    @Override
    @Transactional
-   public UserDetails loadUserByUsername(final String id) { // ✅ 로그인 시 사용자가 입력한 ID로 검색
-      return userRepository.findOneWithAuthoritiesById(id) // ✅ 사용자 입력 ID(id) 기준 검색
+   public UserDetails loadUserByUsername(final String userId) { // ✅ userId 기준으로 변경
+      return userRepository.findOneWithAuthoritiesByUserId(userId) // ✅ 수정됨
               .map(this::createUser)
-              .orElseThrow(() -> new UsernameNotFoundException(id + " -> 데이터베이스에서 찾을 수 없습니다."));
+              .orElseThrow(() -> new UsernameNotFoundException(userId + " -> 데이터베이스에서 찾을 수 없습니다."));
    }
 
    private org.springframework.security.core.userdetails.User createUser(User user) {
       if (!user.isActivated()) {
-         throw new RuntimeException(user.getId() + " -> 활성화되어 있지 않습니다.");
+         throw new RuntimeException(user.getUserId() + " -> 활성화되어 있지 않습니다.");
       }
 
       Set<GrantedAuthority> grantedAuthorities = user.getAuthorities().stream()
@@ -40,7 +39,7 @@ public class CustomUserDetailsService implements UserDetailsService {
               .collect(Collectors.toSet());
 
       return new org.springframework.security.core.userdetails.User(
-              user.getId(),
+              user.getUserId(), // ✅ userId 기준으로 수정
               user.getPassword(),
               grantedAuthorities
       );

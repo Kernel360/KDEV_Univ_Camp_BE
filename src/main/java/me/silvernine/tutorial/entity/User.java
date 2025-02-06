@@ -17,10 +17,10 @@ import java.util.UUID;
 public class User {
 
    @Id
-   private String userId; // ✅ String 타입으로 변경
+   private String userId; // ✅ userId를 String으로 변경
 
    @Column(nullable = false, unique = true)
-   private String id;  // ✅ 사용자가 입력하는 ID (예: username)
+   private String id;  // ✅ 사용자가 입력하는 ID (username 역할)
 
    @Column(nullable = false)
    private String password;
