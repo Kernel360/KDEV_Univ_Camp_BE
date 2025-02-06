@@ -17,10 +17,11 @@ import java.util.UUID;
 public class User {
 
    @Id
-   private String userId; // ✅ userId를 String으로 변경
+   @Column(name = "user_id", nullable = false, unique = true)
+   private String userId; // ✅ String 타입으로 변경
 
    @Column(nullable = false, unique = true)
-   private String id;  // ✅ 사용자가 입력하는 ID (username 역할)
+   private String id;  // ✅ 사용자가 입력하는 ID (예: username)
 
    @Column(nullable = false)
    private String password;
@@ -46,6 +47,8 @@ public class User {
    // ✅ userId를 자동 생성하는 로직 추가
    @PrePersist
    public void prePersist() {
-      this.userId = UUID.randomUUID().toString();
+      if (this.userId == null || this.userId.isEmpty()) {
+         this.userId = UUID.randomUUID().toString();
+      }
    }
 }
