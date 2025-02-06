@@ -33,7 +33,7 @@ public class TokenProvider {
     }
 
     /**
-     * JWT 생성 (닉네임 포함)
+     * ✅ JWT 생성 (닉네임 포함)
      */
     public String createToken(Authentication authentication, String nickname) {
         if (nickname == null || nickname.isEmpty()) {
@@ -57,7 +57,26 @@ public class TokenProvider {
     }
 
     /**
-     * JWT에서 Authentication 객체를 추출하는 메서드
+     * ✅ 새로운 JWT 생성 메서드 (userId 및 authorities 기반)
+     */
+    public String createToken(String userId, Collection<? extends GrantedAuthority> authorities) {
+        String authString = authorities.stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(",")); // ✅ 권한 목록을 문자열로 변환
+
+        long now = (new Date()).getTime();
+        Date validity = new Date(now + tokenValidityInMilliseconds);
+
+        return Jwts.builder()
+                .setSubject(userId) // ✅ userId 저장
+                .claim(AUTHORITIES_KEY, authString) // ✅ 권한 저장
+                .signWith(key, SignatureAlgorithm.HS512) // ✅ 서명 및 암호화
+                .setExpiration(validity) // ✅ 만료 시간 설정
+                .compact();
+    }
+
+    /**
+     * ✅ JWT에서 Authentication 객체를 추출하는 메서드
      */
     public Authentication getAuthentication(String token) {
         Claims claims = Jwts.parserBuilder()
@@ -78,7 +97,7 @@ public class TokenProvider {
     }
 
     /**
-     * JWT 유효성 검증
+     * ✅ JWT 유효성 검증
      */
     public boolean validateToken(String token) {
         try {
