@@ -46,6 +46,11 @@ public class User {
 
    @PrePersist
    public void prePersist() {
-      this.userId = UUID.randomUUID().toString(); // ✅ userId 자동 생성
+      if (this.userId == null || this.userId.isEmpty()) {
+         this.userId = UUID.randomUUID().toString(); // ✅ userId 자동 생성
+      }
+      if (this.id == null || this.id.isEmpty()) {
+         throw new IllegalArgumentException("ID는 필수 입력값입니다."); // ✅ id가 없는 경우 예외 발생
+      }
    }
 }

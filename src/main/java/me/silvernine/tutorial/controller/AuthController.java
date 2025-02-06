@@ -42,6 +42,9 @@ public class AuthController {
     @Operation(summary = "회원가입", description = "새로운 사용자를 등록합니다.")
     @PostMapping("/signup")
     public ResponseEntity<UserDto> signup(@Valid @RequestBody UserDto userDto) {
+        if (userDto.getId() == null || userDto.getId().trim().isEmpty()) {
+            throw new IllegalArgumentException("ID 필드는 필수입니다.");
+        }
         return ResponseEntity.ok(userService.signup(userDto));
     }
 
@@ -51,7 +54,6 @@ public class AuthController {
     @Operation(summary = "로그인", description = "로그인을 한 후 JWT 토큰을 반환합니다.")
     @PostMapping("/authenticate")
     public ResponseEntity<TokenDto> authorize(@Valid @RequestBody LoginDto loginDto) {
-        // ✅ id 기반으로 사용자 검색
         Optional<User> userOptional = userService.findByLoginId(loginDto.getId());
         if (userOptional.isEmpty()) {
             throw new IllegalArgumentException("존재하지 않는 사용자 ID입니다.");
@@ -59,14 +61,12 @@ public class AuthController {
 
         User user = userOptional.get();
 
-        // ✅ 로그인 ID를 Principal로 사용하도록 수정
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(loginDto.getId(), loginDto.getPassword());
 
         Authentication authentication = authenticationManager.authenticate(authenticationToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // ✅ 변경된 부분: userId와 authorities를 함께 전달
         String jwt = tokenProvider.createToken(user.getUserId(), authentication.getAuthorities());
 
         HttpHeaders httpHeaders = new HttpHeaders();

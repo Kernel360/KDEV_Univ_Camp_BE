@@ -49,7 +49,9 @@ public class UserService {
         Authority userAuthority = new Authority("ROLE_USER");
         user.setAuthorities(Collections.singleton(userAuthority));
 
+        // ✅ 데이터 저장
         userRepository.save(user);
+
         return new UserDto(user.getId(), userDto.getPassword(), user.getNickname());
     }
 
@@ -57,7 +59,11 @@ public class UserService {
      * ✅ 특정 ID의 사용자 닉네임 가져오기
      */
     public String getUserNickname(String id) {
-        return userRepository.findById(id) // ✅ 사용자 입력 ID로 검색
+        if (id == null || id.trim().isEmpty()) {
+            throw new IllegalArgumentException("ID는 필수 입력값입니다.");
+        }
+
+        return userRepository.findById(id)
                 .map(User::getNickname)
                 .orElseThrow(() -> new IllegalArgumentException("해당 ID에 대한 닉네임을 찾을 수 없습니다."));
     }
@@ -66,8 +72,8 @@ public class UserService {
      * ✅ 현재 로그인한 사용자 정보 가져오기 (id 기반 검색)
      */
     public UserDto getMyUserWithAuthorities() {
-        return SecurityUtil.getCurrentId() // ✅ 현재 로그인한 ID 가져오기
-                .flatMap(userRepository::findById) // ✅ 사용자 입력 ID로 검색
+        return SecurityUtil.getCurrentId()
+                .flatMap(userRepository::findById)
                 .map(user -> new UserDto(user.getId(), null, user.getNickname())) // ✅ 비밀번호 제외 후 반환
                 .orElseThrow(() -> new IllegalArgumentException("로그인한 사용자의 정보를 찾을 수 없습니다."));
     }
@@ -76,7 +82,11 @@ public class UserService {
      * ✅ 특정 사용자 정보 가져오기 (관리자 전용)
      */
     public UserDto getUserWithAuthorities(String id) {
-        return userRepository.findById(id) // ✅ 사용자 입력 ID로 검색
+        if (id == null || id.trim().isEmpty()) {
+            throw new IllegalArgumentException("ID는 필수 입력값입니다.");
+        }
+
+        return userRepository.findById(id)
                 .map(user -> new UserDto(user.getId(), null, user.getNickname())) // ✅ 비밀번호 제외 후 반환
                 .orElseThrow(() -> new IllegalArgumentException("해당 ID의 사용자를 찾을 수 없습니다."));
     }
@@ -86,6 +96,10 @@ public class UserService {
      */
     @Transactional
     public Optional<User> findByLoginId(String id) {
+        if (id == null || id.trim().isEmpty()) {
+            throw new IllegalArgumentException("ID는 필수 입력값입니다.");
+        }
+
         return userRepository.findById(id);
     }
 }
