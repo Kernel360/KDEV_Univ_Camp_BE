@@ -42,7 +42,6 @@ public class SecurityConfig {
                 new AntPathRequestMatcher("/h2-console/**"),
                 new AntPathRequestMatcher("/api/signup"),
                 new AntPathRequestMatcher("/api/authenticate"),
-                new AntPathRequestMatcher("/api/hello"),
                 new AntPathRequestMatcher("/api/auth-header-check"),
                 new AntPathRequestMatcher("/api/user")
         };
