@@ -5,21 +5,17 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import me.silvernine.tutorial.dto.LoginDto;
 import me.silvernine.tutorial.dto.TokenDto;
 import me.silvernine.tutorial.dto.UserDto;
-import me.silvernine.tutorial.entity.User;
 import me.silvernine.tutorial.jwt.JwtFilter;
 import me.silvernine.tutorial.jwt.TokenProvider;
 import me.silvernine.tutorial.service.UserService;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-
 import jakarta.validation.Valid;
-import java.util.Optional;
 
 @Tag(name = "Authentication", description = "회원가입 및 로그인 API")
 @RestController
@@ -27,12 +23,12 @@ import java.util.Optional;
 public class AuthController {
 
     private final TokenProvider tokenProvider;
-    private final AuthenticationManager authenticationManager;
+    private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final UserService userService;
 
-    public AuthController(TokenProvider tokenProvider, AuthenticationManager authenticationManager, UserService userService) {
+    public AuthController(TokenProvider tokenProvider, AuthenticationManagerBuilder authenticationManagerBuilder, UserService userService) {
         this.tokenProvider = tokenProvider;
-        this.authenticationManager = authenticationManager;
+        this.authenticationManagerBuilder = authenticationManagerBuilder;
         this.userService = userService;
     }
 
@@ -42,9 +38,6 @@ public class AuthController {
     @Operation(summary = "회원가입", description = "새로운 사용자를 등록합니다.")
     @PostMapping("/signup")
     public ResponseEntity<UserDto> signup(@Valid @RequestBody UserDto userDto) {
-        if (userDto.getId() == null || userDto.getId().trim().isEmpty()) {
-            throw new IllegalArgumentException("ID 필드는 필수입니다.");
-        }
         return ResponseEntity.ok(userService.signup(userDto));
     }
 
@@ -54,24 +47,18 @@ public class AuthController {
     @Operation(summary = "로그인", description = "로그인을 한 후 JWT 토큰을 반환합니다.")
     @PostMapping("/authenticate")
     public ResponseEntity<TokenDto> authorize(@Valid @RequestBody LoginDto loginDto) {
-        Optional<User> userOptional = userService.findByLoginId(loginDto.getId());
-        if (userOptional.isEmpty()) {
-            throw new IllegalArgumentException("존재하지 않는 사용자 ID입니다.");
-        }
-
-        User user = userOptional.get();
-
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(loginDto.getId(), loginDto.getPassword());
 
-        Authentication authentication = authenticationManager.authenticate(authenticationToken);
+        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        String jwt = tokenProvider.createToken(user.getUserId(), authentication.getAuthorities());
+        String nickname = userService.getUserNickname(loginDto.getId());
+        String jwt = tokenProvider.createToken(authentication, nickname);
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add(JwtFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
 
-        return new ResponseEntity<>(new TokenDto(jwt), httpHeaders, HttpStatus.OK);
+        return ResponseEntity.ok().headers(httpHeaders).body(new TokenDto(jwt));
     }
 }

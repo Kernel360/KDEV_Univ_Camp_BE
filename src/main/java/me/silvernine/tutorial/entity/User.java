@@ -17,11 +17,11 @@ import java.util.UUID;
 public class User {
 
    @Id
-   @Column(name = "user_id", unique = true, nullable = false)
-   private String userId;  // ✅ user_id를 PK로 유지
+   @Column(name = "user_id", nullable = false, unique = true)
+   private String userId; // ✅ String 타입으로 변경
 
    @Column(nullable = false, unique = true)
-   private String id;  // ✅ 사용자 입력 ID (로그인 시 사용)
+   private String id;  // ✅ 사용자가 입력하는 ID (예: username)
 
    @Column(nullable = false)
    private String password;
@@ -38,19 +38,17 @@ public class User {
    @ManyToMany
    @JoinTable(
            name = "user_authority",
-           joinColumns = @JoinColumn(name = "user_id"), // ✅ FK는 user_id 사용
+           joinColumns = @JoinColumn(name = "user_id"),
            inverseJoinColumns = @JoinColumn(name = "authority_name")
    )
    @Builder.Default
    private Set<Authority> authorities = new HashSet<>();
 
+   // ✅ userId 자동 생성 보장
    @PrePersist
    public void prePersist() {
       if (this.userId == null || this.userId.isEmpty()) {
-         this.userId = UUID.randomUUID().toString(); // ✅ userId 자동 생성
-      }
-      if (this.id == null || this.id.isEmpty()) {
-         throw new IllegalArgumentException("ID는 필수 입력값입니다."); // ✅ id가 없는 경우 예외 발생
+         this.userId = UUID.randomUUID().toString();
       }
    }
 }

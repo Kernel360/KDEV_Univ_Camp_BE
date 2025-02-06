@@ -6,11 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface UserRepository extends JpaRepository<User, String> { // ✅ user_id가 PK
+public interface UserRepository extends JpaRepository<User, String> { // ✅ id(String) 기준으로 검색
 
     @EntityGraph(attributePaths = "authorities")
-    Optional<User> findByUserId(String userId); // ✅ PK인 user_id로 검색
-
-    @EntityGraph(attributePaths = "authorities")
-    Optional<User> findById(String id);  // ✅ 사용자 입력 ID 기반 검색 추가
+    Optional<User> findById(String id); // ✅ 사용자가 입력한 ID 기준 조회
 }
