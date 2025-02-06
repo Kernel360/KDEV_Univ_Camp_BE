@@ -3,6 +3,9 @@ package me.silvernine.tutorial.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Entity
 @Table(name = "user")
 @Getter
@@ -17,7 +20,7 @@ public class User {
    private Long userId;
 
    @Column(nullable = false, unique = true)
-   private String id;
+   private String id;  // ✅ username → id 변경
 
    @Column(nullable = false)
    private String password;
@@ -29,5 +32,13 @@ public class User {
    private boolean activated;
 
    @Column(nullable = false)
-   private boolean admin; // ✅ 필드명 유지 (Getter 자동 생성됨)
+   private boolean isAdmin; // ✅ 필드명 변경 (Lombok이 isAdmin() 자동 생성)
+
+   @ManyToMany
+   @JoinTable(
+           name = "user_authority",
+           joinColumns = @JoinColumn(name = "user_id"),
+           inverseJoinColumns = @JoinColumn(name = "authority_name")
+   )
+   private Set<Authority> authorities = new HashSet<>();
 }
