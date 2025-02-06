@@ -5,7 +5,6 @@ import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 
 @Entity
 @Table(name = "user")
@@ -17,11 +16,7 @@ import java.util.UUID;
 public class User {
 
    @Id
-   @Column(name = "user_id", nullable = false, unique = true)
-   private String userId; // ✅ String 타입으로 변경
-
-   @Column(nullable = false, unique = true)
-   private String id;  // ✅ 사용자가 입력하는 ID (예: username)
+   private String id;  // ✅ id가 PK이므로 유지
 
    @Column(nullable = false)
    private String password;
@@ -38,17 +33,9 @@ public class User {
    @ManyToMany
    @JoinTable(
            name = "user_authority",
-           joinColumns = @JoinColumn(name = "user_id"),
+           joinColumns = @JoinColumn(name = "id"),
            inverseJoinColumns = @JoinColumn(name = "authority_name")
    )
    @Builder.Default
    private Set<Authority> authorities = new HashSet<>();
-
-   // ✅ userId를 자동 생성하는 로직 추가
-   @PrePersist
-   public void prePersist() {
-      if (this.userId == null || this.userId.isEmpty()) {
-         this.userId = UUID.randomUUID().toString();
-      }
-   }
 }

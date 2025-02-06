@@ -10,8 +10,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -25,8 +23,8 @@ public class CustomUserDetailsService implements UserDetailsService {
 
    @Override
    @Transactional
-   public UserDetails loadUserByUsername(final String id) {  // ✅ username → id 변경
-      return userRepository.findOneWithAuthoritiesById(id)
+   public UserDetails loadUserByUsername(final String id) {  // ✅ id 기준 검색
+      return userRepository.findById(id)
               .map(this::createUser)
               .orElseThrow(() -> new UsernameNotFoundException(id + " -> 데이터베이스에서 찾을 수 없습니다."));
    }
@@ -36,6 +34,7 @@ public class CustomUserDetailsService implements UserDetailsService {
          throw new RuntimeException(user.getId() + " -> 활성화되어 있지 않습니다.");
       }
 
+      // ✅ 권한 설정 유지
       Set<GrantedAuthority> grantedAuthorities = user.getAuthorities().stream()
               .map(authority -> new SimpleGrantedAuthority(authority.getAuthorityName()))
               .collect(Collectors.toSet());
