@@ -23,11 +23,17 @@ public class UserService {
     }
 
     /**
-     * ✅ 회원가입 기능 (ROLE_USER 권한 추가)
+     * ✅ 회원가입 기능 (ROLE_USER 권한 추가, ID 필수 입력 및 중복 체크 강화)
      */
     @Transactional
     public UserDto signup(UserDto userDto) {
-        if (userRepository.findById(userDto.getId()).isPresent()) { // ✅ 사용자 입력 ID 중복 체크
+        // ✅ 사용자 입력 ID가 null이거나 공백이면 예외 발생
+        if (userDto.getId() == null || userDto.getId().trim().isEmpty()) {
+            throw new IllegalArgumentException("사용자 ID는 필수 입력값입니다.");
+        }
+
+        // ✅ 중복 체크 (ID가 이미 존재하는 경우 예외 발생)
+        if (userRepository.findById(userDto.getId()).isPresent()) {
             throw new IllegalArgumentException("이미 사용 중인 ID입니다.");
         }
 
