@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -25,8 +24,8 @@ public class CustomUserDetailsService implements UserDetailsService {
 
    @Override
    @Transactional
-   public UserDetails loadUserByUsername(final String id) {
-      return userRepository.findOneWithAuthoritiesById(id) // ✅ 사용자가 입력한 ID 기준 검색
+   public UserDetails loadUserByUsername(final String id) { // ✅ 로그인 시 사용자가 입력한 ID로 검색
+      return userRepository.findOneWithAuthoritiesById(id) // ✅ 사용자 입력 ID(id) 기준 검색
               .map(this::createUser)
               .orElseThrow(() -> new UsernameNotFoundException(id + " -> 데이터베이스에서 찾을 수 없습니다."));
    }
@@ -36,7 +35,6 @@ public class CustomUserDetailsService implements UserDetailsService {
          throw new RuntimeException(user.getId() + " -> 활성화되어 있지 않습니다.");
       }
 
-      // ✅ 권한 설정 수정
       Set<GrantedAuthority> grantedAuthorities = user.getAuthorities().stream()
               .map(authority -> new SimpleGrantedAuthority(authority.getAuthorityName()))
               .collect(Collectors.toSet());
