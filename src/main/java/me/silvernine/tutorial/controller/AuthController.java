@@ -65,35 +65,24 @@ public class AuthController {
     @Operation(summary = "로그인", description = "로그인을 한 후 JWT 토큰을 반환합니다.")
     @PostMapping("/authenticate")
     public ResponseEntity<TokenDto> authorize(@Valid @RequestBody LoginDto loginDto) {
-        System.out.println("🚀 [로그인 요청] ID: " + loginDto.getId() + ", 비밀번호: " + loginDto.getPassword());
+        System.out.println("🚀 [로그인 요청] ID: " + loginDto.getId());
 
-        // ✅ 사용자가 입력한 ID(username)를 기반으로 user_id(UUID) 조회
+        // ✅ ID가 일반 ID인지 UUID인지 구분하여 조회
         User user = userRepository.findById(loginDto.getId())
-                .or(() -> userRepository.findByUserId(loginDto.getId())) // ✅ UUID 조회 추가
+                .or(() -> userRepository.findByUserId(loginDto.getId()))
                 .orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
 
-        String userUUID = user.getUserId();
-        System.out.println("✅ 조회된 user_id(UUID): " + userUUID);
+        System.out.println("✅ 조회된 user_id(UUID): " + user.getUserId());
 
-        // ✅ user_authority 테이블에서 user_id(UUID)가 존재하는지 확인
-        boolean hasAuthority = userAuthorityRepository.existsByUserUserId(userUUID);
-        System.out.println("✅ user_authority 조회 결과 (UUID 존재 여부): " + hasAuthority);
-
-        if (!hasAuthority) {
-            throw new IllegalArgumentException("권한이 존재하지 않는 사용자입니다.");
-        }
-
-        // ✅ 비밀번호 검증 (암호화된 비밀번호와 비교)
+        // ✅ 비밀번호 검증
         if (!passwordEncoder.matches(loginDto.getPassword(), user.getPassword())) {
             System.out.println("❌ 비밀번호가 일치하지 않습니다.");
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
         System.out.println("✅ 비밀번호 검증 통과");
 
-        // ✅ 사용자 권한 가져오기
+        // ✅ 사용자 권한 가져오기 및 기본 권한 추가
         Collection<? extends GrantedAuthority> authorities = user.getAuthorities();
-
-        // ✅ 권한 변환 (getAuthorityName() → getAuthority())
         List<SimpleGrantedAuthority> grantedAuthorities = authorities.stream()
                 .map(authority -> new SimpleGrantedAuthority(authority.getAuthority()))
                 .collect(Collectors.toList());
@@ -103,32 +92,16 @@ public class AuthController {
             grantedAuthorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
         }
 
-        // ✅ UUID를 기반으로 인증 토큰 생성 (비밀번호 제거, Spring Security에서 재인증 수행)
+        // ✅ UUID를 기반으로 인증 토큰 생성
         UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(userUUID, null, grantedAuthorities);
+                new UsernamePasswordAuthenticationToken(user.getUserId(), null, grantedAuthorities);
 
-        System.out.println("✅ 인증 토큰 생성 완료");
+        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        System.out.println("✅ Spring Security 인증 성공");
 
-        // ✅ Spring Security에서 인증 수행
-        Authentication authentication;
-        try {
-            authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            System.out.println("✅ Spring Security 인증 성공: " + authentication.getName());
-        } catch (Exception e) {
-            System.out.println("❌ Spring Security 인증 실패: " + e.getMessage());
-            throw new IllegalArgumentException("로그인 실패: 아이디 또는 비밀번호를 확인하세요.");
-        }
-
-        // ✅ user_id(UUID)를 기반으로 JWT 생성
-        String nickname = user.getNickname();
-        String jwt = tokenProvider.createToken(authentication, nickname);
-        System.out.println("✅ JWT 생성 결과: " + jwt);
-
-        if (jwt == null) {
-            throw new RuntimeException("❌ JWT 생성 실패!");
-        }
-
+        // ✅ JWT 생성 및 반환
+        String jwt = tokenProvider.createToken(authentication, user.getNickname());
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add(JwtFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
 
