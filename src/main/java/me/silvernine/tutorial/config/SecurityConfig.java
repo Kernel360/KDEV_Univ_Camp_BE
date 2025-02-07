@@ -45,18 +45,20 @@ public class SecurityConfig {
         };
 
         return http
-                .csrf(csrf -> csrf.disable())
+                .csrf(csrf -> csrf.disable()) // ✅ CSRF 보호 비활성화 (JWT 사용 시 필요 없음)
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // ✅ 세션을 사용하지 않는 Stateless 정책 설정
                 )
                 .authorizeHttpRequests(auth -> auth
+                        // ✅ Swagger 및 공용 API는 인증 없이 접근 가능
                         .requestMatchers(publicMatchers).permitAll()
+                        // ✅ 모든 요청에 대해 JWT 인증 요구
                         .anyRequest().authenticated()
                 )
                 .headers(headers -> headers
-                        .frameOptions(frameOptions -> frameOptions.sameOrigin())
+                        .frameOptions(frameOptions -> frameOptions.sameOrigin()) // ✅ H2 콘솔 사용을 위해 동일 출처 허용
                 )
-                .addFilterBefore(new JwtFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class) // ✅ JWT 필터 적용
                 .build();
     }
 }
