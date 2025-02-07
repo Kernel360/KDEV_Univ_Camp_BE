@@ -54,7 +54,7 @@ public class AuthController {
     public ResponseEntity<TokenDto> authorize(@Valid @RequestBody LoginDto loginDto) {
         System.out.println("🚀 [로그인 요청] ID: " + loginDto.getId() + ", 비밀번호: " + loginDto.getPassword());
 
-        // ✅ 사용자가 입력한 id로 user_id(UUID) 조회
+        // ✅ 사용자가 입력한 id를 기반으로 user_id(UUID) 조회
         User user = userRepository.findById(loginDto.getId())
                 .orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
 
@@ -68,7 +68,7 @@ public class AuthController {
         }
         System.out.println("✅ 비밀번호 검증 통과");
 
-        // ✅ 인증 토큰 생성 (UUID 사용)
+        // ✅ UUID를 기반으로 인증 토큰 생성 (기존 ID 사용 방식 변경)
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(userUUID, loginDto.getPassword());
 
@@ -85,7 +85,7 @@ public class AuthController {
             throw new IllegalArgumentException("로그인 실패: 아이디 또는 비밀번호를 확인하세요.");
         }
 
-        // ✅ JWT 생성 (UUID 사용)
+        // ✅ user_id(UUID)를 기반으로 JWT 생성
         String nickname = user.getNickname();
         String jwt = tokenProvider.createToken(authentication, nickname);
         System.out.println("✅ JWT 생성 결과: " + jwt);
