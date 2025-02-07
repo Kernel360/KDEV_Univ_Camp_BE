@@ -18,7 +18,7 @@ import java.io.IOException;
 /**
  * JWT 인증 필터
  */
-@Component
+@Component  // ✅ @Component 추가하여 Spring Bean으로 등록
 public class JwtFilter extends GenericFilterBean {
     public static final String AUTHORIZATION_HEADER = "Authorization";
     private final TokenProvider tokenProvider;
