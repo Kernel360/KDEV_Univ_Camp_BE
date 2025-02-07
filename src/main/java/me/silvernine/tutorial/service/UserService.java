@@ -36,7 +36,7 @@ public class UserService {
             throw new IllegalArgumentException("이미 사용 중인 ID입니다.");
         }
 
-        // 비밀번호 암호화 적용
+        // ✅ 비밀번호 암호화 적용
         String encryptedPassword = passwordEncoder.encode(userDto.getPassword());
 
         User user = User.builder()
@@ -49,14 +49,16 @@ public class UserService {
                 .build();
 
         userRepository.save(user);
-        return new UserDto(user.getId(), null, user.getNickname()); // 보안상 비밀번호 반환 X
+
+        // ✅ 비밀번호를 응답에서 제거한 UserDto 반환
+        return UserDto.from(user);
     }
 
     /**
      * 특정 ID의 사용자 닉네임 가져오기
      */
     public String getUserNickname(String id) {
-        return userRepository.findById(id) // id 기준 검색
+        return userRepository.findById(id)
                 .map(User::getNickname)
                 .orElseThrow(() -> new NotFoundMemberException("해당 ID에 대한 닉네임을 찾을 수 없습니다."));
     }
@@ -66,8 +68,8 @@ public class UserService {
      */
     public UserDto getMyUserWithAuthorities() {
         return SecurityUtil.getCurrentId()
-                .flatMap(userRepository::findById) // id 기준 검색
-                .map(user -> new UserDto(user.getId(), null, user.getNickname()))
+                .flatMap(userRepository::findById)
+                .map(UserDto::from) // ✅ 비밀번호 제거된 DTO 반환
                 .orElseThrow(() -> new NotFoundMemberException("로그인한 사용자의 정보를 찾을 수 없습니다."));
     }
 
@@ -75,8 +77,8 @@ public class UserService {
      * 특정 사용자 정보 가져오기 (관리자 전용)
      */
     public UserDto getUserWithAuthorities(String id) {
-        return userRepository.findById(id) // id 기준 검색
-                .map(user -> new UserDto(user.getId(), null, user.getNickname())) // ✅ 비밀번호 제외 후 반환
+        return userRepository.findById(id)
+                .map(UserDto::from) // ✅ 비밀번호 제거된 DTO 반환
                 .orElseThrow(() -> new NotFoundMemberException("해당 ID의 사용자를 찾을 수 없습니다."));
     }
 }
