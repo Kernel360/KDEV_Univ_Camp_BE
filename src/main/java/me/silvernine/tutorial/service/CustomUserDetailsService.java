@@ -26,8 +26,9 @@ public class CustomUserDetailsService implements UserDetailsService {
       System.out.println("🔍 [DEBUG] CustomUserDetailsService.loadUserByUsername() 호출됨, username: " + username);
 
       return userRepository.findById(username)
+              .or(() -> userRepository.findByUserId(username)) // ✅ 추가: UUID 조회
               .map(user -> {
-                 System.out.println("✅ [DEBUG] 사용자 조회 성공: " + user.getId());
+                 System.out.println("✅ [DEBUG] 사용자 조회 성공: ID = " + user.getId() + ", UUID = " + user.getUserId());
                  return createUser(username, user);
               })
               .orElseThrow(() -> {
@@ -44,7 +45,7 @@ public class CustomUserDetailsService implements UserDetailsService {
          throw new RuntimeException(username + " -> 활성화되어 있지 않습니다.");
       }
 
-      // ✅ 권한 매핑 변경 (디버깅 코드 추가)
+      // ✅ 권한 매핑 (디버깅 코드 추가)
       System.out.println("🔍 [DEBUG] 사용자 권한 조회 시작: " + username);
       List<GrantedAuthority> grantedAuthorities = user.getAuthorities().stream()
               .map(authority -> {

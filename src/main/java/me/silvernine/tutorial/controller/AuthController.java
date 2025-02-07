@@ -67,11 +67,12 @@ public class AuthController {
     public ResponseEntity<TokenDto> authorize(@Valid @RequestBody LoginDto loginDto) {
         System.out.println("🚀 [로그인 요청] ID: " + loginDto.getId() + ", 비밀번호: " + loginDto.getPassword());
 
-        // ✅ 사용자가 입력한 ID를 기반으로 user_id(UUID) 조회
+        // ✅ 사용자가 입력한 ID(username)를 기반으로 user_id(UUID) 조회
         User user = userRepository.findById(loginDto.getId())
+                .or(() -> userRepository.findByUserId(loginDto.getId())) // ✅ UUID 조회 추가
                 .orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
 
-        String userUUID = user.getUserId(); // ✅ UUID 조회
+        String userUUID = user.getUserId();
         System.out.println("✅ 조회된 user_id(UUID): " + userUUID);
 
         // ✅ user_authority 테이블에서 user_id(UUID)가 존재하는지 확인
@@ -94,7 +95,7 @@ public class AuthController {
 
         // ✅ 권한 변환 (getAuthorityName() → getAuthority())
         List<SimpleGrantedAuthority> grantedAuthorities = authorities.stream()
-                .map(authority -> new SimpleGrantedAuthority(authority.getAuthority())) // 변경된 부분
+                .map(authority -> new SimpleGrantedAuthority(authority.getAuthority()))
                 .collect(Collectors.toList());
 
         if (grantedAuthorities.isEmpty()) {

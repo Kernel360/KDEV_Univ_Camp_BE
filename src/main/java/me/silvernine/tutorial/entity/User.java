@@ -22,24 +22,24 @@ public class User {
 
    @Id
    @Column(name = "user_id", nullable = false, unique = true)
-   private String userId; // ✅ String 타입의 UUID 자동 생성 ID
+   private String userId;
 
    @Column(nullable = false, unique = true)
-   private String id;  // ✅ 사용자가 입력하는 ID (예: username)
+   private String id;
 
    @Column(nullable = false)
-   private String password;  // ✅ 암호화된 비밀번호 저장
+   private String password;
 
    @Column(nullable = false)
-   private String nickname;  // ✅ 닉네임 저장
+   private String nickname;
 
    @Column(nullable = false)
-   private boolean activated;  // ✅ 계정 활성화 여부
+   private boolean activated;
 
    @Column(nullable = false)
-   private boolean isAdmin;  // ✅ 관리자 여부
+   private boolean isAdmin;
 
-   @ManyToMany(fetch = FetchType.EAGER) // ⚠️ 지연 로딩(LAZY) → 즉시 로딩(EAGER) 변경
+   @ManyToMany(fetch = FetchType.EAGER)
    @JoinTable(
            name = "user_authority",
            joinColumns = @JoinColumn(name = "user_id"),
@@ -48,20 +48,22 @@ public class User {
    @Builder.Default
    private Set<Authority> authorities = new HashSet<>();
 
-   // ✅ Spring Security가 인식할 수 있도록 GrantedAuthority로 변환 (디버깅 추가)
    public Collection<? extends GrantedAuthority> getAuthorities() {
       System.out.println("🔍 [DEBUG] User.getAuthorities() 호출됨");
 
-      authorities.forEach(auth ->
-              System.out.println("✅ 사용자 권한 로드: " + auth.getAuthority())
-      );
+      if (authorities.isEmpty()) {
+         System.out.println("❌ [ERROR] 사용자에게 할당된 권한이 없습니다!");
+      } else {
+         authorities.forEach(auth ->
+                 System.out.println("✅ [DEBUG] 사용자 권한 로드: " + auth.getAuthority())
+         );
+      }
 
       return authorities.stream()
-              .map(auth -> new SimpleGrantedAuthority(auth.getAuthority())) // 변경된 부분
+              .map(auth -> new SimpleGrantedAuthority(auth.getAuthority()))
               .collect(Collectors.toList());
    }
 
-   // ✅ userId가 없을 경우 UUID 자동 생성 (디버깅 추가)
    @PrePersist
    public void prePersist() {
       if (this.userId == null || this.userId.isEmpty()) {
