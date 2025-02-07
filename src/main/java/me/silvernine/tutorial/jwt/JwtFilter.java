@@ -5,6 +5,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
@@ -18,6 +20,7 @@ import java.io.IOException;
 public class JwtFilter extends GenericFilterBean {
     public static final String AUTHORIZATION_HEADER = "Authorization";
     private final TokenProvider tokenProvider;
+    private static final Logger log = LoggerFactory.getLogger(JwtFilter.class); //  로그 추가
 
     public JwtFilter(TokenProvider tokenProvider) {
         this.tokenProvider = tokenProvider;
@@ -28,10 +31,14 @@ public class JwtFilter extends GenericFilterBean {
             throws IOException, ServletException {
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
         String jwt = resolveToken(httpServletRequest); // 요청에서 JWT 추출
+        String requestURI = httpServletRequest.getRequestURI(); //  요청 URI 추가
 
         if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) { // 토큰 검증
             Authentication authentication = tokenProvider.getAuthentication(jwt); // 인증 정보 생성
             SecurityContextHolder.getContext().setAuthentication(authentication); // SecurityContext에 저장
+            log.debug("✅ SecurityContext에 '{}' 인증 정보를 저장했습니다. 요청 URI: {}", jwt, requestURI);
+        } else {
+            log.error("❌ Invalid JWT token: {}, 요청 URI: {}", jwt, requestURI); //  추가: JWT 검증 실패 로그
         }
 
         chain.doFilter(request, response); // 다음 필터로 요청 전달
