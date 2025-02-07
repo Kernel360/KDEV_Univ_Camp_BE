@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import me.silvernine.tutorial.util.SecurityUtil;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
 import java.util.UUID;
 
 @Service
@@ -79,5 +78,44 @@ public class UserService {
 
         // ✅ 비밀번호를 응답에서 제거한 UserDto 반환
         return UserDto.from(user);
+    }
+
+    /**
+     * ✅ 로그인 시 비밀번호 검증 기능 추가
+     */
+    public boolean validatePassword(String id, String rawPassword) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundMemberException("해당 ID의 사용자를 찾을 수 없습니다."));
+
+        // ✅ 로그인할 때 암호화된 비밀번호와 비교
+        return passwordEncoder.matches(rawPassword, user.getPassword());
+    }
+
+    /**
+     * ✅ 특정 ID의 사용자 닉네임 가져오기
+     */
+    public String getUserNickname(String id) {
+        return userRepository.findById(id)
+                .map(User::getNickname)
+                .orElseThrow(() -> new NotFoundMemberException("해당 ID에 대한 닉네임을 찾을 수 없습니다."));
+    }
+
+    /**
+     * ✅ 현재 로그인한 사용자 정보 가져오기
+     */
+    public UserDto getMyUserWithAuthorities() {
+        return SecurityUtil.getCurrentId()
+                .flatMap(userRepository::findById)
+                .map(UserDto::from) // ✅ 비밀번호 제거된 DTO 반환
+                .orElseThrow(() -> new NotFoundMemberException("로그인한 사용자의 정보를 찾을 수 없습니다."));
+    }
+
+    /**
+     * ✅ 특정 사용자 정보 가져오기 (관리자 전용)
+     */
+    public UserDto getUserWithAuthorities(String id) {
+        return userRepository.findById(id)
+                .map(UserDto::from) // ✅ 비밀번호 제거된 DTO 반환
+                .orElseThrow(() -> new NotFoundMemberException("해당 ID의 사용자를 찾을 수 없습니다."));
     }
 }
