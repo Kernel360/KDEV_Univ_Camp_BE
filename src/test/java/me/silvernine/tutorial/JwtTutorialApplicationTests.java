@@ -9,7 +9,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(classes = JwtTutorialApplication.class)  // ✅ 명확한 설정 추가
+@SpringBootTest(classes = JwtTutorialApplication.class)  // ✅ 올바른 mainClass 설정
 public class JwtTutorialApplicationTests {
 
 	@MockBean
