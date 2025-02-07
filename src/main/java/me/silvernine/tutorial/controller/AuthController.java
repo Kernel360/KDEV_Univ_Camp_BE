@@ -47,22 +47,40 @@ public class AuthController {
     @Operation(summary = "로그인", description = "로그인을 한 후 JWT 토큰을 반환합니다.")
     @PostMapping("/authenticate")
     public ResponseEntity<TokenDto> authorize(@Valid @RequestBody LoginDto loginDto) {
-        System.out.println("로그인 요청 ID: " + loginDto.getId());
-        System.out.println("로그인 요청 비밀번호: " + loginDto.getPassword());
+        System.out.println("🚀 [로그인 요청] ID: " + loginDto.getId() + ", 비밀번호: " + loginDto.getPassword());
 
-        // ✅ 비밀번호 검증 추가
+        // ✅ 비밀번호 검증
         if (!userService.validatePassword(loginDto.getId(), loginDto.getPassword())) {
+            System.out.println("❌ 비밀번호가 일치하지 않습니다.");
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
+        System.out.println("✅ 비밀번호 검증 통과");
 
+        // ✅ 인증 토큰 생성
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(loginDto.getId(), loginDto.getPassword());
 
-        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        System.out.println("✅ 인증 토큰 생성 완료");
 
+        // ✅ Spring Security에서 인증 수행
+        Authentication authentication;
+        try {
+            authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            System.out.println("✅ Spring Security 인증 성공: " + authentication.getName());
+        } catch (Exception e) {
+            System.out.println("❌ Spring Security 인증 실패: " + e.getMessage());
+            throw new IllegalArgumentException("로그인 실패: 아이디 또는 비밀번호를 확인하세요.");
+        }
+
+        // ✅ JWT 생성
         String nickname = userService.getUserNickname(loginDto.getId());
         String jwt = tokenProvider.createToken(authentication, nickname);
+        System.out.println("✅ JWT 생성 결과: " + jwt);
+
+        if (jwt == null) {
+            throw new RuntimeException("❌ JWT 생성 실패!");
+        }
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add(JwtFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
