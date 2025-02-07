@@ -42,7 +42,7 @@ public class UserService {
         User user = User.builder()
                 .userId(UUID.randomUUID().toString()) // userId 자동 생성
                 .id(userDto.getId()) // 사용자가 입력한 ID
-                .password(encryptedPassword) // 비밀번호 암호화 후 저장
+                .password(encryptedPassword) // ✅ 비밀번호 암호화 후 저장
                 .nickname(userDto.getNickname())
                 .activated(true) // 계정 활성화 기본값 true
                 .isAdmin(false) // 기본적으로 일반 사용자
@@ -52,6 +52,17 @@ public class UserService {
 
         // ✅ 비밀번호를 응답에서 제거한 UserDto 반환
         return UserDto.from(user);
+    }
+
+    /**
+     * ✅ 로그인 시 비밀번호 검증 기능 추가
+     */
+    public boolean validatePassword(String id, String rawPassword) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundMemberException("해당 ID의 사용자를 찾을 수 없습니다."));
+
+        // ✅ 로그인할 때 암호화된 비밀번호와 비교
+        return passwordEncoder.matches(rawPassword, user.getPassword());
     }
 
     /**
