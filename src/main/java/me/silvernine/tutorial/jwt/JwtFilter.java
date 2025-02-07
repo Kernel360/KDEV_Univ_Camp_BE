@@ -14,6 +14,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * JWT 인증 필터
@@ -24,6 +25,20 @@ public class JwtFilter extends GenericFilterBean {
     private final TokenProvider tokenProvider;
     private static final Logger log = LoggerFactory.getLogger(JwtFilter.class); //  로그 추가
 
+    // ✅ JWT 인증을 제외할 엔드포인트 목록
+    private static final List<String> EXCLUDED_URLS = List.of(
+            "/swagger-ui/",
+            "/swagger-ui.html",
+            "/swagger-resources/",
+            "/v3/api-docs/",
+            "/webjars/",
+            "/h2-console/",
+            "/api/signup",
+            "/api/authenticate",
+            "/api/auth-header-check",
+            "/api/user"
+    );
+
     public JwtFilter(TokenProvider tokenProvider) {
         this.tokenProvider = tokenProvider;
     }
@@ -33,7 +48,14 @@ public class JwtFilter extends GenericFilterBean {
             throws IOException, ServletException {
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
         String jwt = resolveToken(httpServletRequest); // 요청에서 JWT 추출
-        String requestURI = httpServletRequest.getRequestURI(); //  요청 URI 추가
+        String requestURI = httpServletRequest.getRequestURI(); // 요청 URI 추가
+
+        // ✅ 인증 제외 URL인지 확인
+        if (EXCLUDED_URLS.stream().anyMatch(requestURI::startsWith)) {
+            log.debug("✅ 인증 제외 URL 접근: {}", requestURI);
+            chain.doFilter(request, response);
+            return;
+        }
 
         if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) { // 토큰 검증
             Authentication authentication = tokenProvider.getAuthentication(jwt); // 인증 정보 생성
