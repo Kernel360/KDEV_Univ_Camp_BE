@@ -16,9 +16,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+
 import jakarta.validation.Valid;
+import java.util.Collection;
+import java.util.List;
 
 @Tag(name = "Authentication", description = "회원가입 및 로그인 API")
 @RestController
@@ -30,14 +36,17 @@ public class AuthController {
     private final UserService userService;
     private final UserRepository userRepository;
     private final UserAuthorityRepository userAuthorityRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public AuthController(TokenProvider tokenProvider, AuthenticationManagerBuilder authenticationManagerBuilder,
-                          UserService userService, UserRepository userRepository, UserAuthorityRepository userAuthorityRepository) {
+                          UserService userService, UserRepository userRepository,
+                          UserAuthorityRepository userAuthorityRepository, PasswordEncoder passwordEncoder) {
         this.tokenProvider = tokenProvider;
         this.authenticationManagerBuilder = authenticationManagerBuilder;
         this.userService = userService;
         this.userRepository = userRepository;
         this.userAuthorityRepository = userAuthorityRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /**
@@ -61,7 +70,7 @@ public class AuthController {
         User user = userRepository.findById(loginDto.getId())
                 .orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
 
-        String userUUID = user.getUserId(); // ✅ UUID 기반으로 로그인
+        String userUUID = user.getUserId(); // ✅ UUID 조회
         System.out.println("✅ 조회된 user_id(UUID): " + userUUID);
 
         // ✅ user_authority 테이블에서 user_id(UUID)가 존재하는지 확인
@@ -72,16 +81,23 @@ public class AuthController {
             throw new IllegalArgumentException("권한이 존재하지 않는 사용자입니다.");
         }
 
-        // ✅ 비밀번호 검증
-        if (!userService.validatePassword(loginDto.getId(), loginDto.getPassword())) {
+        // ✅ 비밀번호 검증 (암호화된 비밀번호와 비교)
+        if (!passwordEncoder.matches(loginDto.getPassword(), user.getPassword())) {
             System.out.println("❌ 비밀번호가 일치하지 않습니다.");
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
         System.out.println("✅ 비밀번호 검증 통과");
 
-        // ✅ UUID를 기반으로 인증 토큰 생성
+        // ✅ 사용자 권한 가져오기 (기본적으로 ROLE_USER 포함)
+        Collection<? extends GrantedAuthority> authorities = user.getAuthorities();
+        if (authorities == null || authorities.isEmpty()) {
+            System.out.println("⚠️ 사용자 권한이 없어서 기본 권한 추가 (ROLE_USER)");
+            authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        }
+
+        // ✅ UUID를 기반으로 인증 토큰 생성 (비밀번호 제거, Spring Security에서 재인증 수행)
         UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(userUUID, loginDto.getPassword());
+                new UsernamePasswordAuthenticationToken(userUUID, null, authorities);
 
         System.out.println("✅ 인증 토큰 생성 완료");
 

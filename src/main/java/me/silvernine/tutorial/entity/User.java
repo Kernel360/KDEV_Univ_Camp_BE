@@ -2,10 +2,14 @@ package me.silvernine.tutorial.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "user")
@@ -35,7 +39,7 @@ public class User {
    @Column(nullable = false)
    private boolean isAdmin;  // ✅ 관리자 여부
 
-   @ManyToMany
+   @ManyToMany(fetch = FetchType.LAZY)
    @JoinTable(
            name = "user_authority",
            joinColumns = @JoinColumn(name = "user_id"),
@@ -43,6 +47,13 @@ public class User {
    )
    @Builder.Default
    private Set<Authority> authorities = new HashSet<>();
+
+   // ✅ Spring Security가 인식할 수 있도록 GrantedAuthority로 변환
+   public Collection<? extends GrantedAuthority> getAuthorities() {
+      return authorities.stream()
+              .map(auth -> new SimpleGrantedAuthority(auth.getAuthorityName()))
+              .collect(Collectors.toList());
+   }
 
    // ✅ userId가 없을 경우 UUID 자동 생성
    @PrePersist
