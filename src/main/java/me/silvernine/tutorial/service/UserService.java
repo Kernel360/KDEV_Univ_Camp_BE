@@ -1,8 +1,10 @@
 package me.silvernine.tutorial.service;
 
 import me.silvernine.tutorial.dto.UserDto;
+import me.silvernine.tutorial.entity.Authority;
 import me.silvernine.tutorial.entity.User;
 import me.silvernine.tutorial.repository.UserRepository;
+import me.silvernine.tutorial.repository.AuthorityRepository;
 import me.silvernine.tutorial.exception.NotFoundMemberException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -10,21 +12,24 @@ import org.springframework.stereotype.Service;
 import me.silvernine.tutorial.util.SecurityUtil;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.UUID;
 
 @Service
 public class UserService {
     private final UserRepository userRepository;
+    private final AuthorityRepository authorityRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, AuthorityRepository authorityRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.authorityRepository = authorityRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
     /**
-     * ✅ 회원가입 기능 (비밀번호 암호화 후 저장)
+     * ✅ 회원가입 기능 (ROLE_USER 권한 추가)
      */
     @Transactional
     public UserDto signup(UserDto userDto) {
@@ -39,6 +44,10 @@ public class UserService {
         // ✅ 비밀번호 암호화 적용
         String encryptedPassword = passwordEncoder.encode(userDto.getPassword());
 
+        // ✅ 기본 권한 추가 (ROLE_USER)
+        Authority userAuthority = authorityRepository.findById("ROLE_USER")
+                .orElseThrow(() -> new RuntimeException("권한 정보가 없습니다."));
+
         User user = User.builder()
                 .userId(UUID.randomUUID().toString()) // userId 자동 생성
                 .id(userDto.getId()) // 사용자가 입력한 ID
@@ -46,6 +55,7 @@ public class UserService {
                 .nickname(userDto.getNickname())
                 .activated(true) // 계정 활성화 기본값 true
                 .isAdmin(false) // 기본적으로 일반 사용자
+                .authorities(Collections.singleton(userAuthority)) // ✅ 기본 권한 추가
                 .build();
 
         userRepository.save(user);
