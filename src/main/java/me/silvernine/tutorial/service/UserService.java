@@ -33,7 +33,7 @@ public class UserService {
     }
 
     /**
-     * ✅ 회원가입 기능 (기존 기능 유지 + 권한 저장 추가)
+     * ✅ 회원가입 기능 (UUID 기반, 기존 기능 유지)
      */
     @Transactional
     public UserDto signup(UserDto userDto) {
@@ -41,54 +41,55 @@ public class UserService {
             throw new IllegalArgumentException("ID는 반드시 입력해야 합니다.");
         }
 
-        if (userRepository.existsById(userDto.getId())) { // 중복 체크
+        if (userRepository.existsById(userDto.getId())) {
             throw new IllegalArgumentException("이미 사용 중인 ID입니다.");
         }
 
         // ✅ 비밀번호 암호화 적용
         String encryptedPassword = passwordEncoder.encode(userDto.getPassword());
 
+        // ✅ UUID 기반의 user_id 생성
+        String generatedUserUUID = UUID.randomUUID().toString();
+
         // ✅ User 엔티티 생성
         User user = User.builder()
-                .userId(UUID.randomUUID().toString()) // userId 자동 생성
-                .id(userDto.getId()) // 사용자가 입력한 ID
-                .password(encryptedPassword) // ✅ 비밀번호 암호화 후 저장
+                .userId(generatedUserUUID)
+                .id(userDto.getId())
+                .password(encryptedPassword)
                 .nickname(userDto.getNickname())
-                .activated(true) // 계정 활성화 기본값 true
-                .isAdmin(false) // 기본적으로 일반 사용자
+                .activated(true)
+                .isAdmin(false)
                 .build();
 
-        // ✅ 유저 저장
         userRepository.save(user);
+        System.out.println("✅ 회원가입 성공: user_id(UUID) = " + user.getUserId());
 
         // ✅ 기본 권한(ROLE_USER) 추가
         Authority authority = authorityRepository.findById("ROLE_USER")
-                .orElseGet(() -> {
-                    Authority newAuthority = new Authority("ROLE_USER");
-                    return authorityRepository.save(newAuthority);
-                });
+                .orElseGet(() -> authorityRepository.save(new Authority("ROLE_USER")));
 
         UserAuthority userAuthority = UserAuthority.builder()
                 .user(user)
                 .authority(authority)
                 .build();
 
-        // ✅ user_authority 테이블에 저장
         userAuthorityRepository.save(userAuthority);
+        System.out.println("✅ user_authority 저장 완료: user_id(UUID) = " + user.getUserId());
 
-        // ✅ 비밀번호를 응답에서 제거한 UserDto 반환
         return UserDto.from(user);
     }
 
     /**
-     * ✅ 로그인 시 비밀번호 검증 기능 추가
+     * ✅ 로그인 시 비밀번호 검증 기능 (UUID 기반)
      */
     public boolean validatePassword(String id, String rawPassword) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundMemberException("해당 ID의 사용자를 찾을 수 없습니다."));
 
         // ✅ 로그인할 때 암호화된 비밀번호와 비교
-        return passwordEncoder.matches(rawPassword, user.getPassword());
+        boolean isValid = passwordEncoder.matches(rawPassword, user.getPassword());
+        System.out.println("✅ 비밀번호 검증: 입력값=" + rawPassword + ", DB 저장값=" + user.getPassword() + ", 검증결과=" + isValid);
+        return isValid;
     }
 
     /**
@@ -106,7 +107,7 @@ public class UserService {
     public UserDto getMyUserWithAuthorities() {
         return SecurityUtil.getCurrentId()
                 .flatMap(userRepository::findById)
-                .map(UserDto::from) // ✅ 비밀번호 제거된 DTO 반환
+                .map(UserDto::from)
                 .orElseThrow(() -> new NotFoundMemberException("로그인한 사용자의 정보를 찾을 수 없습니다."));
     }
 
@@ -115,7 +116,7 @@ public class UserService {
      */
     public UserDto getUserWithAuthorities(String id) {
         return userRepository.findById(id)
-                .map(UserDto::from) // ✅ 비밀번호 제거된 DTO 반환
+                .map(UserDto::from)
                 .orElseThrow(() -> new NotFoundMemberException("해당 ID의 사용자를 찾을 수 없습니다."));
     }
 }
