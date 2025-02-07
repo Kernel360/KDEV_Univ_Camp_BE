@@ -1,11 +1,7 @@
 package me.silvernine.tutorial.entity;
 
+import jakarta.persistence.*;
 import lombok.*;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "authority")
@@ -18,5 +14,9 @@ public class Authority {
 
    @Id
    @Column(name = "authority_name", length = 50)
-   private String authorityName;
+   private String authority;
+
+   public String getAuthority() {
+      return authority;
+   }
 }

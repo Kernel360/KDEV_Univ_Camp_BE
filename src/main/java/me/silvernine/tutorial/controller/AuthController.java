@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Tag(name = "Authentication", description = "회원가입 및 로그인 API")
 @RestController
@@ -88,16 +89,22 @@ public class AuthController {
         }
         System.out.println("✅ 비밀번호 검증 통과");
 
-        // ✅ 사용자 권한 가져오기 (기본적으로 ROLE_USER 포함)
+        // ✅ 사용자 권한 가져오기
         Collection<? extends GrantedAuthority> authorities = user.getAuthorities();
-        if (authorities == null || authorities.isEmpty()) {
+
+        // ✅ 권한 변환 (getAuthorityName() → getAuthority())
+        List<SimpleGrantedAuthority> grantedAuthorities = authorities.stream()
+                .map(authority -> new SimpleGrantedAuthority(authority.getAuthority())) // 변경된 부분
+                .collect(Collectors.toList());
+
+        if (grantedAuthorities.isEmpty()) {
             System.out.println("⚠️ 사용자 권한이 없어서 기본 권한 추가 (ROLE_USER)");
-            authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
+            grantedAuthorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
         }
 
         // ✅ UUID를 기반으로 인증 토큰 생성 (비밀번호 제거, Spring Security에서 재인증 수행)
         UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(userUUID, null, authorities);
+                new UsernamePasswordAuthenticationToken(userUUID, null, grantedAuthorities);
 
         System.out.println("✅ 인증 토큰 생성 완료");
 

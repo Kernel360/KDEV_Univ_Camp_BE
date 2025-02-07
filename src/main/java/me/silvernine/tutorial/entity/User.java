@@ -51,7 +51,7 @@ public class User {
    // ✅ Spring Security가 인식할 수 있도록 GrantedAuthority로 변환
    public Collection<? extends GrantedAuthority> getAuthorities() {
       return authorities.stream()
-              .map(auth -> new SimpleGrantedAuthority(auth.getAuthorityName()))
+              .map(auth -> new SimpleGrantedAuthority(auth.getAuthority())) // 변경된 부분
               .collect(Collectors.toList());
    }
 
