@@ -22,7 +22,7 @@ public class UserDto {
    @JsonProperty("id")
    private String id;
 
-   @JsonIgnore // ✅ JSON 응답에서 제외
+   @JsonIgnore // ✅ JSON 응답에서 비밀번호 제외
    @NotNull
    @Size(min = 3, max = 100)
    private String password;
@@ -31,6 +31,7 @@ public class UserDto {
    @Size(min = 3, max = 50)
    private String nickname;
 
+   // ✅ 비밀번호를 제외한 응답용 DTO 생성
    public static UserDto from(User user) {
       if (user == null) return null;
 
