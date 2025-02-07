@@ -31,8 +31,14 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.security:spring-security-test'
+    // ✅ 테스트 관련 의존성 추가
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'  // ✅ Spring Boot 테스트 지원
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'  // ✅ JUnit 5 API
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'  // ✅ JUnit 5 실행 엔진
+    testImplementation 'org.mockito:mockito-core:4.3.1'  // ✅ Mockito (Mocking 지원)
+    testImplementation 'org.mockito:mockito-junit-jupiter:4.3.1'  // ✅ JUnit 5에서 Mockito 사용 가능하도록 설정
+    testImplementation 'org.assertj:assertj-core:3.22.0'  // ✅ AssertJ (더 나은 테스트 Assertions 지원)
+    testImplementation 'org.springframework.security:spring-security-test'  // ✅ Spring Security 테스트 지원
 
     implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.5'
     runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.5'
@@ -46,5 +52,3 @@ tasks.named('test') {
 bootWar {
     mainClass = 'me.silvernine.tutorial.JwtTutorialApplication'
 }
-
-

@@ -2,6 +2,7 @@ package me.silvernine.tutorial.config;
 
 import me.silvernine.tutorial.jwt.JwtFilter;
 import me.silvernine.tutorial.jwt.TokenProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -15,7 +16,8 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @Configuration
 public class SecurityConfig {
 
-    private final TokenProvider tokenProvider;
+    @Autowired
+    private TokenProvider tokenProvider;
 
     public SecurityConfig(TokenProvider tokenProvider) {
         this.tokenProvider = tokenProvider;

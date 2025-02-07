@@ -4,6 +4,7 @@ import me.silvernine.tutorial.dto.UserDto;
 import me.silvernine.tutorial.entity.User;
 import me.silvernine.tutorial.repository.UserRepository;
 import me.silvernine.tutorial.exception.NotFoundMemberException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import me.silvernine.tutorial.util.SecurityUtil;
@@ -16,6 +17,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Autowired
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
