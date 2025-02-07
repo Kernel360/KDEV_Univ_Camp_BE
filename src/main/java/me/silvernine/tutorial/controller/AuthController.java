@@ -5,9 +5,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import me.silvernine.tutorial.dto.LoginDto;
 import me.silvernine.tutorial.dto.TokenDto;
 import me.silvernine.tutorial.dto.UserDto;
+import me.silvernine.tutorial.entity.User;
 import me.silvernine.tutorial.jwt.JwtFilter;
 import me.silvernine.tutorial.jwt.TokenProvider;
 import me.silvernine.tutorial.service.UserService;
+import me.silvernine.tutorial.repository.UserRepository;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,11 +27,14 @@ public class AuthController {
     private final TokenProvider tokenProvider;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final UserService userService;
+    private final UserRepository userRepository;
 
-    public AuthController(TokenProvider tokenProvider, AuthenticationManagerBuilder authenticationManagerBuilder, UserService userService) {
+    public AuthController(TokenProvider tokenProvider, AuthenticationManagerBuilder authenticationManagerBuilder,
+                          UserService userService, UserRepository userRepository) {
         this.tokenProvider = tokenProvider;
         this.authenticationManagerBuilder = authenticationManagerBuilder;
         this.userService = userService;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -49,6 +54,13 @@ public class AuthController {
     public ResponseEntity<TokenDto> authorize(@Valid @RequestBody LoginDto loginDto) {
         System.out.println("🚀 [로그인 요청] ID: " + loginDto.getId() + ", 비밀번호: " + loginDto.getPassword());
 
+        // ✅ 사용자가 입력한 id로 user_id(UUID) 조회
+        User user = userRepository.findById(loginDto.getId())
+                .orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
+
+        String userUUID = user.getUserId(); // ✅ UUID 기반으로 로그인
+        System.out.println("✅ 조회된 user_id(UUID): " + userUUID);
+
         // ✅ 비밀번호 검증
         if (!userService.validatePassword(loginDto.getId(), loginDto.getPassword())) {
             System.out.println("❌ 비밀번호가 일치하지 않습니다.");
@@ -56,9 +68,9 @@ public class AuthController {
         }
         System.out.println("✅ 비밀번호 검증 통과");
 
-        // ✅ 인증 토큰 생성
+        // ✅ 인증 토큰 생성 (UUID 사용)
         UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(loginDto.getId(), loginDto.getPassword());
+                new UsernamePasswordAuthenticationToken(userUUID, loginDto.getPassword());
 
         System.out.println("✅ 인증 토큰 생성 완료");
 
@@ -73,8 +85,8 @@ public class AuthController {
             throw new IllegalArgumentException("로그인 실패: 아이디 또는 비밀번호를 확인하세요.");
         }
 
-        // ✅ JWT 생성
-        String nickname = userService.getUserNickname(loginDto.getId());
+        // ✅ JWT 생성 (UUID 사용)
+        String nickname = user.getNickname();
         String jwt = tokenProvider.createToken(authentication, nickname);
         System.out.println("✅ JWT 생성 결과: " + jwt);
 
