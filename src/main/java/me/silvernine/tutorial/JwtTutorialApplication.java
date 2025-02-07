@@ -1,11 +1,7 @@
 package me.silvernine.tutorial;
 
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "me.silvernine.tutorial")  // ✅ 패키지 명시
 public class JwtTutorialApplication {
-	public static void main(String[] args) {
-		SpringApplication.run(JwtTutorialApplication.class, args);
-	}
 }
