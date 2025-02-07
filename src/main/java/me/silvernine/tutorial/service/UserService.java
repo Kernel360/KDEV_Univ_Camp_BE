@@ -24,7 +24,7 @@ public class UserService {
     }
 
     /**
-     * 회원가입 기능 (수정)
+     * ✅ 회원가입 기능 (비밀번호 암호화 후 저장)
      */
     @Transactional
     public UserDto signup(UserDto userDto) {
@@ -55,7 +55,7 @@ public class UserService {
     }
 
     /**
-     * 특정 ID의 사용자 닉네임 가져오기
+     * ✅ 특정 ID의 사용자 닉네임 가져오기
      */
     public String getUserNickname(String id) {
         return userRepository.findById(id)
@@ -64,7 +64,7 @@ public class UserService {
     }
 
     /**
-     * 현재 로그인한 사용자 정보 가져오기
+     * ✅ 현재 로그인한 사용자 정보 가져오기
      */
     public UserDto getMyUserWithAuthorities() {
         return SecurityUtil.getCurrentId()
@@ -74,7 +74,7 @@ public class UserService {
     }
 
     /**
-     * 특정 사용자 정보 가져오기 (관리자 전용)
+     * ✅ 특정 사용자 정보 가져오기 (관리자 전용)
      */
     public UserDto getUserWithAuthorities(String id) {
         return userRepository.findById(id)

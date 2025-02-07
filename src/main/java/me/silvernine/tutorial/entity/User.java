@@ -18,22 +18,22 @@ public class User {
 
    @Id
    @Column(name = "user_id", nullable = false, unique = true)
-   private String userId; // ✅ String 타입으로 변경
+   private String userId; // ✅ String 타입의 UUID 자동 생성 ID
 
    @Column(nullable = false, unique = true)
    private String id;  // ✅ 사용자가 입력하는 ID (예: username)
 
    @Column(nullable = false)
-   private String password;
+   private String password;  // ✅ 암호화된 비밀번호 저장
 
    @Column(nullable = false)
-   private String nickname;
+   private String nickname;  // ✅ 닉네임 저장
 
    @Column(nullable = false)
-   private boolean activated;
+   private boolean activated;  // ✅ 계정 활성화 여부
 
    @Column(nullable = false)
-   private boolean isAdmin;
+   private boolean isAdmin;  // ✅ 관리자 여부
 
    @ManyToMany
    @JoinTable(
@@ -44,7 +44,7 @@ public class User {
    @Builder.Default
    private Set<Authority> authorities = new HashSet<>();
 
-   // ✅ userId 자동 생성 보장
+   // ✅ userId가 없을 경우 UUID 자동 생성
    @PrePersist
    public void prePersist() {
       if (this.userId == null || this.userId.isEmpty()) {
