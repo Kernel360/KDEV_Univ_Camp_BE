@@ -24,24 +24,20 @@ public class TokenProvider {
     private final Key key;
     private final long tokenValidityInMilliseconds;
 
-    // ✅ application.yml에서 Secret Key 및 토큰 유효시간을 주입받음
     public TokenProvider(@Value("${jwt.secret}") String secretKey,
                          @Value("${jwt.token-validity-in-seconds}") long tokenValidityInSeconds) {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
-        this.tokenValidityInMilliseconds = tokenValidityInSeconds * 1000; // 초 → 밀리초 변환
+        this.tokenValidityInMilliseconds = tokenValidityInSeconds * 1000;
         System.out.println("✅ [JWT 초기화] Secret Key 설정 완료, 유효시간(ms): " + tokenValidityInMilliseconds);
     }
 
-    /**
-     * ✅ JWT 생성 (닉네임 포함) + 디버깅 로그 추가
-     */
     public String createToken(Authentication authentication, String nickname) {
         System.out.println("🚀 [JWT 생성 시작] Authentication Name: " + authentication.getName());
 
         if (nickname == null || nickname.isEmpty()) {
             System.out.println("❌ 닉네임이 존재하지 않음. 기본값 'DefaultUser' 설정");
-            nickname = "DefaultUser"; // 🚨 닉네임이 null이면 기본값 설정
+            nickname = "DefaultUser";
         }
 
         String authorities = authentication.getAuthorities().stream()
@@ -62,23 +58,21 @@ public class TokenProvider {
                     .setExpiration(validity)
                     .compact();
 
-            System.out.println("✅ [JWT 생성 완료] " + jwt);
+            System.out.println("🔑 생성된 JWT: " + jwt);
             return jwt;
         } catch (Exception e) {
             System.out.println("❌ JWT 생성 실패: " + e.getMessage());
+            e.printStackTrace();
             return null;
         }
     }
 
-    /**
-     * ✅ 새로운 JWT 생성 메서드 (userId 및 authorities 기반)
-     */
     public String createToken(String userId, Collection<? extends GrantedAuthority> authorities) {
         System.out.println("🚀 [JWT 생성 시작] userId: " + userId);
 
         String authString = authorities.stream()
                 .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(",")); // ✅ 권한 목록을 문자열로 변환
+                .collect(Collectors.joining(","));
 
         System.out.println("✅ [JWT 생성] 권한 목록: " + authString);
 
@@ -87,23 +81,21 @@ public class TokenProvider {
 
         try {
             String jwt = Jwts.builder()
-                    .setSubject(userId) // ✅ userId 저장
-                    .claim(AUTHORITIES_KEY, authString) // ✅ 권한 저장
-                    .signWith(key, SignatureAlgorithm.HS512) // ✅ 서명 및 암호화
-                    .setExpiration(validity) // ✅ 만료 시간 설정
+                    .setSubject(userId)
+                    .claim(AUTHORITIES_KEY, authString)
+                    .signWith(key, SignatureAlgorithm.HS512)
+                    .setExpiration(validity)
                     .compact();
 
-            System.out.println("✅ [JWT 생성 완료] " + jwt);
+            System.out.println("🔑 생성된 JWT: " + jwt);
             return jwt;
         } catch (Exception e) {
             System.out.println("❌ JWT 생성 실패: " + e.getMessage());
+            e.printStackTrace();
             return null;
         }
     }
 
-    /**
-     * ✅ JWT에서 Authentication 객체를 추출하는 메서드
-     */
     public Authentication getAuthentication(String token) {
         System.out.println("🚀 [JWT 검증] 토큰 값: " + token);
 
@@ -127,9 +119,6 @@ public class TokenProvider {
         return new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(principal, token, authorities);
     }
 
-    /**
-     * ✅ JWT 유효성 검증
-     */
     public boolean validateToken(String token) {
         System.out.println("🚀 [JWT 유효성 검사 시작] 토큰: " + token);
 
