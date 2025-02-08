@@ -27,7 +27,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         // ✅ ID가 일반 ID인지 UUID인지 구분하여 조회 (이중 조회 방지)
         User user = userRepository.findById(username)
-                .or(() -> userRepository.findByUserId(username))
+                .or(() -> userRepository.findById(username))  // ✅ id(문자열) 기준 조회
                 .orElseThrow(() -> {
                     System.out.println("❌ [ERROR] 사용자 조회 실패: " + username);
                     return new UsernameNotFoundException(username + " -> 데이터베이스에서 찾을 수 없습니다.");
