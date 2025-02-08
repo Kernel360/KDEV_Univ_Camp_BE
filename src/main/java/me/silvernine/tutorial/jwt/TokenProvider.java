@@ -1,7 +1,6 @@
 package me.silvernine.tutorial.jwt;
 
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +14,7 @@ import org.springframework.stereotype.Component;
 import java.security.Key;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.Base64;  // 이 줄을 추가
 
 @Component
 public class TokenProvider {
@@ -26,8 +26,9 @@ public class TokenProvider {
 
     public TokenProvider(@Value("${jwt.secret}") String secretKey,
                          @Value("${jwt.token-validity-in-seconds}") long tokenValidityInSeconds) {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
-        this.key = Keys.hmacShaKeyFor(keyBytes);
+        // BASE64 디코딩을 위해 Java 표준 라이브러리 Base64 사용
+        byte[] keyBytes = Base64.getDecoder().decode(secretKey);  // Base64로 디코딩
+        this.key = Keys.hmacShaKeyFor(keyBytes);  // 비밀 키 크기를 512비트 이상으로 보장
         this.tokenValidityInMilliseconds = tokenValidityInSeconds * 1000;
         System.out.println("✅ [JWT 초기화] Secret Key 설정 완료, 유효시간(ms): " + tokenValidityInMilliseconds);
     }
@@ -54,7 +55,7 @@ public class TokenProvider {
                     .setSubject(authentication.getName())
                     .claim(AUTHORITIES_KEY, authorities)
                     .claim(NICKNAME_KEY, nickname)
-                    .signWith(key, SignatureAlgorithm.HS512)
+                    .signWith(key, SignatureAlgorithm.HS512) // HS512 알고리즘 사용
                     .setExpiration(validity)
                     .compact();
 
@@ -83,7 +84,7 @@ public class TokenProvider {
             String jwt = Jwts.builder()
                     .setSubject(userId)
                     .claim(AUTHORITIES_KEY, authString)
-                    .signWith(key, SignatureAlgorithm.HS512)
+                    .signWith(key, SignatureAlgorithm.HS512) // HS512 알고리즘 사용
                     .setExpiration(validity)
                     .compact();
 
