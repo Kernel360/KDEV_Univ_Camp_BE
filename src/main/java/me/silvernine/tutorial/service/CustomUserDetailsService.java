@@ -61,19 +61,19 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         System.out.println("✅ [DEBUG] 최종 권한 리스트: " + grantedAuthorities);
 
-        // ✅ 비밀번호 디버깅 추가
-        System.err.println("🔍 [DEBUG] loadUserByUsername() 반환하는 UserDetails:");
-        System.err.println("🔍 ID: " + user.getId());
-        System.err.println("🔍 Password (Hashed): " + user.getPassword());
-        System.err.println("🔍 Password Matches (입력값: '123'): " + passwordEncoder.matches("123", user.getPassword()));
+        // ✅ 추가된 디버깅 로그
+        System.err.println("🔍 [DEBUG] User 활성화 상태: " + user.isActivated());
+        System.err.println("🔍 [DEBUG] accountNonExpired: " + true);
+        System.err.println("🔍 [DEBUG] credentialsNonExpired: " + true);
+        System.err.println("🔍 [DEBUG] accountNonLocked: " + true);
 
         return new org.springframework.security.core.userdetails.User(
                 user.getId(),
                 user.getPassword(),
-                user.isActivated(),   // ✅ 계정 활성화 여부
-                true,                // ✅ 계정 만료 여부 (true: 만료되지 않음)
-                true,                // ✅ 비밀번호 만료 여부 (true: 만료되지 않음)
-                true,                // ✅ 계정 잠김 여부 (true: 잠김 없음)
+                user.isActivated(),   // ✅ enabled (활성화 여부)
+                true,                // ✅ accountNonExpired (계정 만료 여부)
+                true,                // ✅ credentialsNonExpired (비밀번호 만료 여부)
+                true,                // ✅ accountNonLocked (계정 잠김 여부)
                 grantedAuthorities
         );
     }
