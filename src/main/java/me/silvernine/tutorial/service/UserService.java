@@ -83,14 +83,14 @@ public class UserService {
      * ✅ 로그인 시 비밀번호 검증 기능 (UUID 기반)
      */
     public boolean validatePassword(String id, String rawPassword) {
-        User user = userRepository.findById(id)
+        User user = userRepository.findById(id)  // ✅ user_id(UUID) 말고 id(문자열)로 검색
                 .orElseThrow(() -> new NotFoundMemberException("해당 ID의 사용자를 찾을 수 없습니다."));
 
-        // ✅ 로그인할 때 암호화된 비밀번호와 비교
         boolean isValid = passwordEncoder.matches(rawPassword, user.getPassword());
         System.out.println("✅ 비밀번호 검증: 입력값=" + rawPassword + ", DB 저장값=" + user.getPassword() + ", 검증결과=" + isValid);
         return isValid;
     }
+
 
     /**
      * ✅ 특정 ID의 사용자 닉네임 가져오기
