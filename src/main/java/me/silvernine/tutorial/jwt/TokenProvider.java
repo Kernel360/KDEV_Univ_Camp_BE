@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 import java.security.Key;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.Base64;  // 이 줄을 추가
 
 @Component
 public class TokenProvider {
@@ -24,11 +23,10 @@ public class TokenProvider {
     private final Key key;
     private final long tokenValidityInMilliseconds;
 
+    // secretKey를 디코딩하는 대신, HS512에 맞는 안전한 키를 자동으로 생성합니다.
     public TokenProvider(@Value("${jwt.secret}") String secretKey,
                          @Value("${jwt.token-validity-in-seconds}") long tokenValidityInSeconds) {
-        // BASE64 디코딩을 위해 Java 표준 라이브러리 Base64 사용
-        byte[] keyBytes = Base64.getDecoder().decode(secretKey);  // Base64로 디코딩
-        this.key = Keys.hmacShaKeyFor(keyBytes);  // 비밀 키 크기를 512비트 이상으로 보장
+        this.key = Keys.secretKeyFor(SignatureAlgorithm.HS512);  // 512비트 키 생성
         this.tokenValidityInMilliseconds = tokenValidityInSeconds * 1000;
         System.out.println("✅ [JWT 초기화] Secret Key 설정 완료, 유효시간(ms): " + tokenValidityInMilliseconds);
     }
@@ -55,7 +53,7 @@ public class TokenProvider {
                     .setSubject(authentication.getName())
                     .claim(AUTHORITIES_KEY, authorities)
                     .claim(NICKNAME_KEY, nickname)
-                    .signWith(key, SignatureAlgorithm.HS512) // HS512 알고리즘 사용
+                    .signWith(key, SignatureAlgorithm.HS512)
                     .setExpiration(validity)
                     .compact();
 
@@ -84,7 +82,7 @@ public class TokenProvider {
             String jwt = Jwts.builder()
                     .setSubject(userId)
                     .claim(AUTHORITIES_KEY, authString)
-                    .signWith(key, SignatureAlgorithm.HS512) // HS512 알고리즘 사용
+                    .signWith(key, SignatureAlgorithm.HS512)
                     .setExpiration(validity)
                     .compact();
 
