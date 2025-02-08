@@ -17,6 +17,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
+
+import java.util.List;
 
 @Configuration
 public class SecurityConfig {
@@ -31,7 +36,7 @@ public class SecurityConfig {
     // PasswordEncoder를 Bean으로 등록
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();  // BCrypt 기반 암호화 적용
+        return new BCryptPasswordEncoder();
     }
 
     // UserDetailsService 빈을 Bean으로 등록
@@ -52,7 +57,20 @@ public class SecurityConfig {
                 .userDetailsService(userDetailsService)
                 .passwordEncoder(passwordEncoder);
 
-        return authenticationManagerBuilder.build(); // .and() 대신 직접 build() 호출
+        return authenticationManagerBuilder.build();
+    }
+
+    // CORS 필터 추가
+    @Bean
+    public CorsFilter corsFilter() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.setAllowedOrigins(List.of("http://localhost:5173")); // 프론트엔드 도메인 설정
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        source.registerCorsConfiguration("/**", config);
+        return new CorsFilter(source);
     }
 
     // SecurityFilterChain 정의
@@ -72,15 +90,16 @@ public class SecurityConfig {
         };
 
         return http
-                .csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(request -> new CorsConfiguration().applyPermitDefaultValues())) // CORS 설정
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless 설정
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(publicMatchers).permitAll() // 공용 API는 인증 없이 접근 가능
-                        .anyRequest().authenticated()) // 나머지 요청은 인증 필요
+                        .requestMatchers(publicMatchers).permitAll()
+                        .anyRequest().authenticated())
                 .headers(headers -> headers
-                        .frameOptions(frameOptions -> frameOptions.sameOrigin())) // H2 콘솔 사용 허용
-                .addFilterBefore(new JwtFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class) // JWT 필터 적용
+                        .frameOptions(frameOptions -> frameOptions.sameOrigin()))
+                .addFilterBefore(new JwtFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 }
