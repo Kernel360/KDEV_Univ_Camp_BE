@@ -97,14 +97,16 @@ public class AuthController {
         System.out.println("✅ Spring Security 인증 성공");
 
         System.out.println("🚀 [JWT 생성 시작] 사용자 UUID: " + user.getUserId());
-        String jwt = tokenProvider.createToken(user.getUserId(), grantedAuthorities);
+
+        System.err.println("🚀 [DEBUG] tokenProvider.createToken() 호출 직전! userId: " + user.getUserId());
+        String jwt = tokenProvider.createToken(authentication, user.getNickname());
 
         if (jwt == null || jwt.isEmpty()) {
-            System.out.println("❌ [ERROR] JWT 생성 실패: null 또는 빈 값 반환됨!");
+            System.out.println("❌ [ERROR] JWT 생성 실패: tokenProvider.createToken()에서 null 반환됨");
             throw new IllegalArgumentException("JWT 생성 실패");
         }
 
-        System.out.println("✅ [JWT 생성 완료] " + jwt);
+        System.out.println("✅ [JWT 발급 성공] " + jwt);
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add(JwtFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
