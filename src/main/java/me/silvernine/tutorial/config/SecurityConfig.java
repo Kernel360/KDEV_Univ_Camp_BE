@@ -33,19 +33,19 @@ public class SecurityConfig {
         this.tokenProvider = tokenProvider;
     }
 
-    // PasswordEncoder를 Bean으로 등록
+    // ✅ PasswordEncoder Bean 등록 (필수)
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // UserDetailsService 빈을 Bean으로 등록
+    // ✅ UserDetailsService Bean 등록
     @Bean
     public UserDetailsService userDetailsService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         return new CustomUserDetailsService(userRepository, passwordEncoder);
     }
 
-    // AuthenticationManager 추가
+    // ✅ AuthenticationManager 추가
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http,
                                                        UserDetailsService userDetailsService,
@@ -60,20 +60,22 @@ public class SecurityConfig {
         return authenticationManagerBuilder.build();
     }
 
-    // CORS 필터 추가
+    // ✅ CORS 설정 추가 (중복 제거 및 보완)
     @Bean
     public CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
+
         config.setAllowCredentials(true);
-        config.setAllowedOrigins(List.of("http://localhost:5173")); // 프론트엔드 도메인 설정
+        config.setAllowedOriginPatterns(List.of("http://localhost:5173")); // 서브도메인까지 허용
         config.setAllowedHeaders(List.of("*"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
     }
 
-    // SecurityFilterChain 정의
+    // ✅ SecurityFilterChain 정의
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         AntPathRequestMatcher[] publicMatchers = {
@@ -91,15 +93,15 @@ public class SecurityConfig {
 
         return http
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.configurationSource(request -> new CorsConfiguration().applyPermitDefaultValues())) // CORS 설정
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .cors(cors -> cors.disable())  // ✅ CORS 필터를 따로 등록했으므로 중복 방지
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(publicMatchers).permitAll()
-                        .anyRequest().authenticated())
-                .headers(headers -> headers
-                        .frameOptions(frameOptions -> frameOptions.sameOrigin()))
+                        .anyRequest().authenticated()
+                )
+                .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()))
                 .addFilterBefore(new JwtFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(corsFilter(), JwtFilter.class) // ✅ CORS 필터를 JWT 필터보다 먼저 실행
                 .build();
     }
 }
