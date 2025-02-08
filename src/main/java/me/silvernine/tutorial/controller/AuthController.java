@@ -50,24 +50,17 @@ public class AuthController {
         this.passwordEncoder = passwordEncoder;
     }
 
-    /**
-     * ✅ 회원가입 API
-     */
     @Operation(summary = "회원가입", description = "새로운 사용자를 등록합니다.")
     @PostMapping("/signup")
     public ResponseEntity<UserDto> signup(@Valid @RequestBody UserDto userDto) {
         return ResponseEntity.ok(userService.signup(userDto));
     }
 
-    /**
-     * ✅ 로그인 API (JWT 발급)
-     */
     @Operation(summary = "로그인", description = "로그인을 한 후 JWT 토큰을 반환합니다.")
     @PostMapping("/authenticate")
     public ResponseEntity<TokenDto> authorize(@Valid @RequestBody LoginDto loginDto) {
         System.out.println("🚀 [로그인 요청] ID: " + loginDto.getId());
 
-        // ✅ 사용자가 입력한 ID로 사용자 조회
         User user = userRepository.findByIdEquals(loginDto.getId())
                 .orElseThrow(() -> {
                     System.out.println("❌ [ERROR] 사용자가 존재하지 않음: " + loginDto.getId());
@@ -77,14 +70,12 @@ public class AuthController {
         System.out.println("✅ 조회된 user_id(UUID): " + user.getUserId());
         System.out.println("✅ 조회된 사용자 닉네임: " + user.getNickname());
 
-        // ✅ 비밀번호 검증
         if (!passwordEncoder.matches(loginDto.getPassword(), user.getPassword())) {
             System.out.println("❌ 비밀번호가 일치하지 않습니다.");
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
         System.out.println("✅ 비밀번호 검증 통과");
 
-        // ✅ 사용자 권한 가져오기
         Collection<? extends GrantedAuthority> authorities = user.getAuthorities();
         System.out.println("🔍 [DEBUG] User.getAuthorities() 호출됨");
         List<SimpleGrantedAuthority> grantedAuthorities = authorities.stream()
@@ -98,7 +89,6 @@ public class AuthController {
 
         System.out.println("✅ [DEBUG] 최종 권한 리스트: " + grantedAuthorities);
 
-        // ✅ Spring Security 인증 정보 설정 (네 기존 코드 유지!)
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(user.getUserId(), null, grantedAuthorities);
 
@@ -106,15 +96,8 @@ public class AuthController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         System.out.println("✅ Spring Security 인증 성공");
 
-        // ✅ JWT 생성 과정 디버깅
-        String nickname = user.getNickname();
-        if (nickname == null || nickname.isEmpty()) {
-            System.out.println("⚠️ 닉네임이 NULL 또는 EMPTY, 기본값 'DefaultUser' 설정");
-            nickname = "DefaultUser"; // 🚨 닉네임이 null이면 기본값 설정 (에러 방지)
-        }
-
-        System.out.println("🚀 [JWT 생성] 사용자 ID: " + user.getId() + ", 닉네임: " + nickname);
-        String jwt = tokenProvider.createToken(user.getUserId(), grantedAuthorities); // ✅ JWT 생성 (네 기존 코드 방식)
+        System.out.println("🚀 [JWT 생성 시작] 사용자 UUID: " + user.getUserId());
+        String jwt = tokenProvider.createToken(user.getUserId(), grantedAuthorities);
 
         if (jwt == null || jwt.isEmpty()) {
             System.out.println("❌ [ERROR] JWT 생성 실패: null 또는 빈 값 반환됨!");
@@ -123,7 +106,6 @@ public class AuthController {
 
         System.out.println("✅ [JWT 생성 완료] " + jwt);
 
-        // ✅ JWT를 HTTP 응답 헤더에 추가
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add(JwtFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
 
