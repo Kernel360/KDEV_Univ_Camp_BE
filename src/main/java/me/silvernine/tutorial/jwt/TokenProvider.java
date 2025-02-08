@@ -46,7 +46,7 @@ public class TokenProvider {
 
         String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(",")); // ✅ 사용자 권한 설정
+                .collect(Collectors.joining(","));
 
         System.out.println("✅ [JWT 생성] 권한 목록: " + authorities);
 
@@ -55,11 +55,11 @@ public class TokenProvider {
 
         try {
             String jwt = Jwts.builder()
-                    .setSubject(authentication.getName()) // ✅ ID 저장
-                    .claim(AUTHORITIES_KEY, authorities) // ✅ 권한 저장
-                    .claim(NICKNAME_KEY, nickname) // ✅ 닉네임 저장
-                    .signWith(key, SignatureAlgorithm.HS512) // ✅ 서명 및 암호화
-                    .setExpiration(validity) // ✅ 만료 시간 설정
+                    .setSubject(authentication.getName())
+                    .claim(AUTHORITIES_KEY, authorities)
+                    .claim(NICKNAME_KEY, nickname)
+                    .signWith(key, SignatureAlgorithm.HS512)
+                    .setExpiration(validity)
                     .compact();
 
             System.out.println("✅ [JWT 생성 완료] " + jwt);
