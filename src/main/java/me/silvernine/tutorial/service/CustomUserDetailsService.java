@@ -14,11 +14,14 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder; // ✅ PasswordEncoder 추가
 
     @Override
     @Transactional
@@ -59,10 +62,17 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         System.out.println("✅ [DEBUG] 최종 권한 리스트: " + grantedAuthorities);
 
+        // ✅ 비밀번호 디버깅 추가
+        System.err.println("🔍 [DEBUG] loadUserByUsername() 반환하는 UserDetails:");
+        System.err.println("🔍 ID: " + user.getId());
+        System.err.println("🔍 Password: " + user.getPassword());
+        System.err.println("🔍 Password Matches: " + passwordEncoder.matches("123", user.getPassword())); // ✅ 디버깅 추가
+
         return new org.springframework.security.core.userdetails.User(
                 user.getId(),
-                user.getPassword(),
+                user.getPassword(), // ✅ 여기서 암호화된 비밀번호가 들어가는지 확인!
                 grantedAuthorities
         );
     }
 }
+
