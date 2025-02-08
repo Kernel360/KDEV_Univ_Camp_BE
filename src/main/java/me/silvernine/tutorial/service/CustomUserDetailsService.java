@@ -61,12 +61,6 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         System.out.println("✅ [DEBUG] 최종 권한 리스트: " + grantedAuthorities);
 
-        // ✅ 추가된 디버깅 로그
-        System.err.println("🔍 [DEBUG] User 활성화 상태: " + user.isActivated());
-        System.err.println("🔍 [DEBUG] accountNonExpired: " + true);
-        System.err.println("🔍 [DEBUG] credentialsNonExpired: " + true);
-        System.err.println("🔍 [DEBUG] accountNonLocked: " + true);
-
         return new org.springframework.security.core.userdetails.User(
                 user.getId(),
                 user.getPassword(),

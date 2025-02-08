@@ -60,7 +60,9 @@ public class AuthController {
     @PostMapping("/authenticate")
     public ResponseEntity<TokenDto> authorize(@Valid @RequestBody LoginDto loginDto) {
         System.out.println("🚀 [로그인 요청] ID: " + loginDto.getId());
+        System.out.println("🚀 [DEBUG] 입력된 비밀번호: " + loginDto.getPassword());
 
+        // 🔍 사용자 조회
         User user = userRepository.findByIdEquals(loginDto.getId())
                 .orElseThrow(() -> {
                     System.out.println("❌ [ERROR] 사용자가 존재하지 않음: " + loginDto.getId());
@@ -70,15 +72,22 @@ public class AuthController {
         System.out.println("✅ 조회된 user_id(UUID): " + user.getUserId());
         System.out.println("✅ 조회된 사용자 닉네임: " + user.getNickname());
 
-        if (!passwordEncoder.matches(loginDto.getPassword(), user.getPassword())) {
+        // 🔍 비밀번호 검증
+        String rawPassword = loginDto.getPassword();
+        String storedPassword = user.getPassword();
+        boolean passwordMatches = passwordEncoder.matches(rawPassword, storedPassword);
+
+        System.out.println("🔍 입력된 비밀번호: " + rawPassword);
+        System.out.println("🔍 저장된 해시 비밀번호: " + storedPassword);
+        System.out.println("🔍 passwordEncoder.matches() 결과: " + passwordMatches);
+
+        if (!passwordMatches) {
             System.err.println("❌ 비밀번호가 일치하지 않습니다.");
-            System.err.println("🔍 입력된 비밀번호: " + loginDto.getPassword());
-            System.err.println("🔍 저장된 암호화 비밀번호: " + user.getPassword());
-            System.err.println("🔍 passwordEncoder.matches() 결과: " + passwordEncoder.matches(loginDto.getPassword(), user.getPassword()));
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
         System.out.println("✅ 비밀번호 검증 통과");
 
+        // 🔍 사용자 권한 가져오기
         Collection<? extends GrantedAuthority> authorities = user.getAuthorities();
         System.out.println("🔍 [DEBUG] User.getAuthorities() 호출됨");
         List<SimpleGrantedAuthority> grantedAuthorities = authorities.stream()
@@ -92,9 +101,10 @@ public class AuthController {
 
         System.out.println("✅ [DEBUG] 최종 권한 리스트: " + grantedAuthorities);
 
+        // 🔍 Spring Security 인증 토큰 생성
         System.err.println("🚀 [DEBUG] AuthenticationToken 생성 완료! userId: " + user.getId());
         UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(user.getId(), user.getPassword(), grantedAuthorities);
+                new UsernamePasswordAuthenticationToken(user.getId(), rawPassword, grantedAuthorities);
 
         System.err.println("🚀 [DEBUG] authenticationManagerBuilder.getObject().authenticate() 호출 직전!");
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
@@ -103,9 +113,10 @@ public class AuthController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         System.out.println("✅ Spring Security 인증 성공");
 
+        // 🔍 JWT 생성
         System.out.println("🚀 [JWT 생성 시작] 사용자 UUID: " + user.getUserId());
-
         System.err.println("🚀 [DEBUG] tokenProvider.createToken() 호출 직전! userId: " + user.getUserId());
+
         String jwt = tokenProvider.createToken(authentication, user.getNickname());
 
         if (jwt == null || jwt.isEmpty()) {
@@ -115,6 +126,7 @@ public class AuthController {
 
         System.out.println("✅ [JWT 발급 성공] " + jwt);
 
+        // 🔍 HTTP 헤더에 JWT 추가
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add(JwtFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
 
