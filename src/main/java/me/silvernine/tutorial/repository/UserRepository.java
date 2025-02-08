@@ -10,5 +10,8 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, String> {
 
     @EntityGraph(attributePaths = "authorities")
-    Optional<User> findById(String id);
+    Optional<User> findById(String id);  // ✅ id(문자열) 기준으로 검색하도록 유지!
+
+    // 🚨 UUID가 아닌 id(문자열) 기준으로 검색하는 메서드를 확실하게 추가
+    Optional<User> findByIdEquals(String id);
 }
