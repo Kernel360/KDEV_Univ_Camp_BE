@@ -67,6 +67,7 @@ public class AuthController {
     public ResponseEntity<TokenDto> authorize(@Valid @RequestBody LoginDto loginDto) {
         System.out.println("🚀 [로그인 요청] ID: " + loginDto.getId());
 
+        // ✅ 사용자가 입력한 ID로 사용자 조회
         User user = userRepository.findByIdEquals(loginDto.getId())
                 .orElseThrow(() -> {
                     System.out.println("❌ [ERROR] 사용자가 존재하지 않음: " + loginDto.getId());
@@ -113,10 +114,16 @@ public class AuthController {
         }
 
         System.out.println("🚀 [JWT 생성] 사용자 ID: " + user.getId() + ", 닉네임: " + nickname);
-        String jwt = tokenProvider.createToken(authentication, nickname); // ✅ JWT 생성 (네 기존 코드 방식)
+        String jwt = tokenProvider.createToken(user.getUserId(), grantedAuthorities); // ✅ JWT 생성 (네 기존 코드 방식)
+
+        if (jwt == null || jwt.isEmpty()) {
+            System.out.println("❌ [ERROR] JWT 생성 실패: null 또는 빈 값 반환됨!");
+            throw new IllegalArgumentException("JWT 생성 실패");
+        }
 
         System.out.println("✅ [JWT 생성 완료] " + jwt);
 
+        // ✅ JWT를 HTTP 응답 헤더에 추가
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add(JwtFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
 
