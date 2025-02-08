@@ -28,4 +28,3 @@ logging:
   level:
     root: DEBUG
     me.silvernine: DEBUG  # 프로젝트 패키지 전체를 DEBUG 레벨로 설정
-

@@ -89,10 +89,14 @@ public class AuthController {
 
         System.out.println("✅ [DEBUG] 최종 권한 리스트: " + grantedAuthorities);
 
+        System.err.println("🚀 [DEBUG] AuthenticationToken 생성 완료! userId: " + user.getId());
         UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(user.getUserId(), null, grantedAuthorities);
+                new UsernamePasswordAuthenticationToken(user.getId(), null, grantedAuthorities);
 
+        System.err.println("🚀 [DEBUG] authenticationManagerBuilder.getObject().authenticate() 호출 직전!");
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+        System.err.println("✅ [DEBUG] 인증 성공! authentication: " + authentication);
+
         SecurityContextHolder.getContext().setAuthentication(authentication);
         System.out.println("✅ Spring Security 인증 성공");
 

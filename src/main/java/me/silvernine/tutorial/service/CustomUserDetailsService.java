@@ -23,17 +23,15 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     @Transactional
     public UserDetails loadUserByUsername(final String username) {
-        System.out.println("🔍 [DEBUG] CustomUserDetailsService.loadUserByUsername() 호출됨, username: " + username);
+        System.err.println("🚀 [DEBUG] UserDetailsService.loadUserByUsername() 호출됨, username: " + username);
 
-        // ✅ ID가 일반 ID인지 UUID인지 구분하여 조회 (이중 조회 방지)
-        User user = userRepository.findById(username)
-                .or(() -> userRepository.findById(username))  // ✅ id(문자열) 기준 조회
+        User user = userRepository.findByIdEquals(username)
                 .orElseThrow(() -> {
-                    System.out.println("❌ [ERROR] 사용자 조회 실패: " + username);
-                    return new UsernameNotFoundException(username + " -> 데이터베이스에서 찾을 수 없습니다.");
+                    System.err.println("❌ [ERROR] User not found for username: " + username);
+                    return new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username);
                 });
 
-        System.out.println("✅ [DEBUG] 사용자 조회 성공: ID = " + user.getId() + ", UUID = " + user.getUserId());
+        System.err.println("✅ [DEBUG] UserDetails 로드 성공! userId: " + user.getUserId());
 
         return createUser(user);
     }
@@ -46,7 +44,6 @@ public class CustomUserDetailsService implements UserDetailsService {
             throw new RuntimeException(user.getId() + " -> 활성화되어 있지 않습니다.");
         }
 
-        // ✅ 권한 매핑 개선
         System.out.println("🔍 [DEBUG] 사용자 권한 조회 시작: " + user.getId());
         List<GrantedAuthority> grantedAuthorities = user.getAuthorities().stream()
                 .map(authority -> {
