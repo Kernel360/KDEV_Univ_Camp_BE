@@ -7,6 +7,8 @@ import me.silvernine.tutorial.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -19,11 +21,6 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @Configuration
 public class SecurityConfig {
 
-    @Bean
-    public UserDetailsService userDetailsService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-        return new CustomUserDetailsService(userRepository, passwordEncoder);
-    }
-
     @Autowired
     private TokenProvider tokenProvider;
 
@@ -31,12 +28,34 @@ public class SecurityConfig {
         this.tokenProvider = tokenProvider;
     }
 
-    // ✅ PasswordEncoder를 Bean으로 등록 (필수)
+    // PasswordEncoder를 Bean으로 등록
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();  // ✅ BCrypt 기반 암호화 적용
+        return new BCryptPasswordEncoder();  // BCrypt 기반 암호화 적용
     }
 
+    // UserDetailsService 빈을 Bean으로 등록
+    @Bean
+    public UserDetailsService userDetailsService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        return new CustomUserDetailsService(userRepository, passwordEncoder);
+    }
+
+    // AuthenticationManager 추가
+    @Bean
+    public AuthenticationManager authenticationManager(HttpSecurity http,
+                                                       UserDetailsService userDetailsService,
+                                                       PasswordEncoder passwordEncoder) throws Exception {
+        AuthenticationManagerBuilder authenticationManagerBuilder =
+                http.getSharedObject(AuthenticationManagerBuilder.class);
+
+        authenticationManagerBuilder
+                .userDetailsService(userDetailsService)
+                .passwordEncoder(passwordEncoder);
+
+        return authenticationManagerBuilder.build(); // .and() 대신 직접 build() 호출
+    }
+
+    // SecurityFilterChain 정의
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         AntPathRequestMatcher[] publicMatchers = {
@@ -53,20 +72,15 @@ public class SecurityConfig {
         };
 
         return http
-                .csrf(csrf -> csrf.disable()) // ✅ CSRF 보호 비활성화 (JWT 사용 시 필요 없음)
+                .csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // ✅ 세션을 사용하지 않는 Stateless 정책 설정
-                )
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Stateless 설정
                 .authorizeHttpRequests(auth -> auth
-                        // ✅ Swagger 및 공용 API는 인증 없이 접근 가능
-                        .requestMatchers(publicMatchers).permitAll()
-                        // ✅ 모든 요청에 대해 JWT 인증 요구
-                        .anyRequest().authenticated()
-                )
+                        .requestMatchers(publicMatchers).permitAll() // 공용 API는 인증 없이 접근 가능
+                        .anyRequest().authenticated()) // 나머지 요청은 인증 필요
                 .headers(headers -> headers
-                        .frameOptions(frameOptions -> frameOptions.sameOrigin()) // ✅ H2 콘솔 사용을 위해 동일 출처 허용
-                )
-                .addFilterBefore(new JwtFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class) // ✅ JWT 필터 적용
+                        .frameOptions(frameOptions -> frameOptions.sameOrigin())) // H2 콘솔 사용 허용
+                .addFilterBefore(new JwtFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class) // JWT 필터 적용
                 .build();
     }
 }

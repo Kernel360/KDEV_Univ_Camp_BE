@@ -13,6 +13,7 @@ import me.silvernine.tutorial.repository.UserRepository;
 import me.silvernine.tutorial.service.UserService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -33,17 +34,21 @@ import java.util.stream.Collectors;
 public class AuthController {
 
     private final TokenProvider tokenProvider;
-    private final AuthenticationManagerBuilder authenticationManagerBuilder;
+    private final AuthenticationManager authenticationManager;
     private final UserService userService;
     private final UserRepository userRepository;
     private final UserAuthorityRepository userAuthorityRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public AuthController(TokenProvider tokenProvider, AuthenticationManagerBuilder authenticationManagerBuilder,
-                          UserService userService, UserRepository userRepository,
-                          UserAuthorityRepository userAuthorityRepository, PasswordEncoder passwordEncoder) {
+    // constructor 수정 - authenticationManager 주입
+    public AuthController(TokenProvider tokenProvider,
+                          AuthenticationManager authenticationManager,
+                          UserService userService,
+                          UserRepository userRepository,
+                          UserAuthorityRepository userAuthorityRepository,
+                          PasswordEncoder passwordEncoder) {
         this.tokenProvider = tokenProvider;
-        this.authenticationManagerBuilder = authenticationManagerBuilder;
+        this.authenticationManager = authenticationManager; // authenticationManager 주입
         this.userService = userService;
         this.userRepository = userRepository;
         this.userAuthorityRepository = userAuthorityRepository;
@@ -106,8 +111,8 @@ public class AuthController {
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(user.getId(), rawPassword, grantedAuthorities);
 
-        System.err.println("🚀 [DEBUG] authenticationManagerBuilder.getObject().authenticate() 호출 직전!");
-        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+        // authenticationManager를 사용하여 인증을 수행
+        Authentication authentication = authenticationManager.authenticate(authenticationToken);
         System.err.println("✅ [DEBUG] 인증 성공! authentication: " + authentication);
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
