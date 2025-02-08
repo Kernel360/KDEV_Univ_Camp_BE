@@ -67,10 +67,12 @@ public class AuthController {
     public ResponseEntity<TokenDto> authorize(@Valid @RequestBody LoginDto loginDto) {
         System.out.println("🚀 [로그인 요청] ID: " + loginDto.getId());
 
-        // ✅ ID가 일반 ID인지 UUID인지 구분하여 조회
-        User user = userRepository.findById(loginDto.getId())
-                .or(() -> userRepository.findById(loginDto.getId()))  // ✅ id(문자열) 기준 조회
-                .orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
+        User user = userRepository.findById(loginDto.getId()) // ✅ id(문자열) 기준으로 조회
+                .orElseThrow(() -> {
+                    System.out.println("❌ [ERROR] 사용자가 존재하지 않음: " + loginDto.getId());
+                    return new IllegalArgumentException("사용자가 존재하지 않습니다.");
+                });
+
 
         System.out.println("✅ 조회된 user_id(UUID): " + user.getUserId());
 
