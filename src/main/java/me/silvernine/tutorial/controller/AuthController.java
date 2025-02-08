@@ -71,7 +71,10 @@ public class AuthController {
         System.out.println("✅ 조회된 사용자 닉네임: " + user.getNickname());
 
         if (!passwordEncoder.matches(loginDto.getPassword(), user.getPassword())) {
-            System.out.println("❌ 비밀번호가 일치하지 않습니다.");
+            System.err.println("❌ 비밀번호가 일치하지 않습니다.");
+            System.err.println("🔍 입력된 비밀번호: " + loginDto.getPassword());
+            System.err.println("🔍 저장된 암호화 비밀번호: " + user.getPassword());
+            System.err.println("🔍 passwordEncoder.matches() 결과: " + passwordEncoder.matches(loginDto.getPassword(), user.getPassword()));
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
         System.out.println("✅ 비밀번호 검증 통과");
