@@ -69,7 +69,7 @@ public class AuthController {
 
         // ✅ ID가 일반 ID인지 UUID인지 구분하여 조회
         User user = userRepository.findById(loginDto.getId())
-                .or(() -> userRepository.findById(loginDto.getId()))  // ✅ id(문자열) 기준 조회
+                .or(() -> userRepository.findByUserId(loginDto.getId()))
                 .orElseThrow(() -> new IllegalArgumentException("사용자가 존재하지 않습니다."));
 
         System.out.println("✅ 조회된 user_id(UUID): " + user.getUserId());

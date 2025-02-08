@@ -51,13 +51,14 @@ public class User {
    public Collection<? extends GrantedAuthority> getAuthorities() {
       System.out.println("🔍 [DEBUG] User.getAuthorities() 호출됨");
 
-      if (authorities.isEmpty()) {
-         System.out.println("❌ [ERROR] 사용자에게 할당된 권한이 없습니다!");
-      } else {
-         authorities.forEach(auth ->
-                 System.out.println("✅ [DEBUG] 사용자 권한 로드: " + auth.getAuthority())
-         );
+      if (authorities == null || authorities.isEmpty()) {
+         System.out.println("⚠️ [ERROR] 사용자 권한 없음, 기본 권한 추가 (ROLE_USER)");
+         authorities = Set.of(new Authority("ROLE_USER"));
       }
+
+      authorities.forEach(auth ->
+              System.out.println("✅ [DEBUG] 사용자 권한 로드: " + auth.getAuthority())
+      );
 
       return authorities.stream()
               .map(auth -> new SimpleGrantedAuthority(auth.getAuthority()))
