@@ -18,10 +18,10 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 
-import java.util.List;
+import java.util.Arrays;
 
 @Configuration
 public class SecurityConfig {
@@ -33,19 +33,31 @@ public class SecurityConfig {
         this.tokenProvider = tokenProvider;
     }
 
-    // ✅ PasswordEncoder Bean 등록 (필수)
+    // CORS 설정을 위한 Bean 추가
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173")); // 프론트엔드 도메인 추가
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
+    // 기존 Bean들은 그대로 유지
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // ✅ UserDetailsService Bean 등록
     @Bean
     public UserDetailsService userDetailsService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         return new CustomUserDetailsService(userRepository, passwordEncoder);
     }
 
-    // ✅ AuthenticationManager 추가
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http,
                                                        UserDetailsService userDetailsService,
@@ -60,22 +72,6 @@ public class SecurityConfig {
         return authenticationManagerBuilder.build();
     }
 
-    // ✅ CORS 설정 추가 (중복 제거 및 보완)
-    @Bean
-    public CorsFilter corsFilter() {
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        CorsConfiguration config = new CorsConfiguration();
-
-        config.setAllowCredentials(true);
-        config.setAllowedOriginPatterns(List.of("http://localhost:5173")); // 서브도메인까지 허용
-        config.setAllowedHeaders(List.of("*"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-
-        source.registerCorsConfiguration("/**", config);
-        return new CorsFilter(source);
-    }
-
-    // ✅ SecurityFilterChain 정의
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         AntPathRequestMatcher[] publicMatchers = {
@@ -92,16 +88,16 @@ public class SecurityConfig {
         };
 
         return http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // CORS 설정 추가
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.disable())  // ✅ CORS 필터를 따로 등록했으므로 중복 방지
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(publicMatchers).permitAll()
-                        .anyRequest().authenticated()
-                )
-                .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()))
+                        .anyRequest().authenticated())
+                .headers(headers -> headers
+                        .frameOptions(frameOptions -> frameOptions.sameOrigin()))
                 .addFilterBefore(new JwtFilter(tokenProvider), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(corsFilter(), JwtFilter.class) // ✅ CORS 필터를 JWT 필터보다 먼저 실행
                 .build();
     }
 }
