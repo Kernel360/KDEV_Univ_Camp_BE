@@ -8,13 +8,12 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +33,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                     return new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + username);
                 });
 
-        System.err.println("✅ [DEBUG] UserDetails 로드 성공! userId: " + user.getUserId());
+        System.err.println("✅ [DEBUG] UserDetails 로드 성공! userId(UUID): " + user.getUserId());
 
         return createUser(user);
     }
@@ -65,14 +64,17 @@ public class CustomUserDetailsService implements UserDetailsService {
         // ✅ 비밀번호 디버깅 추가
         System.err.println("🔍 [DEBUG] loadUserByUsername() 반환하는 UserDetails:");
         System.err.println("🔍 ID: " + user.getId());
-        System.err.println("🔍 Password: " + user.getPassword());
-        System.err.println("🔍 Password Matches: " + passwordEncoder.matches("123", user.getPassword())); // ✅ 디버깅 추가
+        System.err.println("🔍 Password (Hashed): " + user.getPassword());
+        System.err.println("🔍 Password Matches (입력값: '123'): " + passwordEncoder.matches("123", user.getPassword()));
 
         return new org.springframework.security.core.userdetails.User(
                 user.getId(),
-                user.getPassword(), // ✅ 여기서 암호화된 비밀번호가 들어가는지 확인!
+                user.getPassword(),
+                user.isActivated(),   // ✅ 계정 활성화 여부
+                true,                // ✅ 계정 만료 여부 (true: 만료되지 않음)
+                true,                // ✅ 비밀번호 만료 여부 (true: 만료되지 않음)
+                true,                // ✅ 계정 잠김 여부 (true: 잠김 없음)
                 grantedAuthorities
         );
     }
 }
-
