@@ -50,9 +50,12 @@ public class JwtFilter extends GenericFilterBean {
         String jwt = resolveToken(httpServletRequest); // 요청에서 JWT 추출
         String requestURI = httpServletRequest.getRequestURI(); // 요청 URI 추가
 
+        System.out.println("🔍 [JWT 필터] 요청 URI: " + requestURI);
+        System.out.println("🔍 [JWT 필터] 추출된 토큰: " + jwt);
+
         // ✅ 인증 제외 URL인지 확인
         if (EXCLUDED_URLS.stream().anyMatch(requestURI::startsWith)) {
-            log.debug("✅ 인증 제외 URL 접근: {}", requestURI);
+            System.out.println("✅ 인증 제외 URL 접근: " + requestURI);
             chain.doFilter(request, response);
             return;
         }
@@ -60,9 +63,10 @@ public class JwtFilter extends GenericFilterBean {
         if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) { // 토큰 검증
             Authentication authentication = tokenProvider.getAuthentication(jwt); // 인증 정보 생성
             SecurityContextHolder.getContext().setAuthentication(authentication); // SecurityContext에 저장
-            log.debug("✅ SecurityContext에 '{}' 인증 정보를 저장했습니다. 요청 URI: {}", jwt, requestURI);
+            System.out.println("✅ [JWT 필터] SecurityContext에 인증 정보 저장 완료. 요청 URI: " + requestURI);
         } else {
-            log.error("❌ Invalid JWT token: {}, 요청 URI: {}", jwt, requestURI); //  추가: JWT 검증 실패 로그
+            System.out.println("❌ [JWT 필터] JWT 검증 실패. 요청 URI: " + requestURI);
+            System.out.println("❌ [JWT 필터] Invalid JWT token: " + jwt);
         }
 
         chain.doFilter(request, response); // 다음 필터로 요청 전달
@@ -74,8 +78,10 @@ public class JwtFilter extends GenericFilterBean {
     private String resolveToken(HttpServletRequest request) {
         String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            System.out.println("✅ [JWT 필터] Bearer 토큰 감지됨");
             return bearerToken.substring(7);
         }
+        System.out.println("❌ [JWT 필터] Authorization 헤더에 Bearer 토큰 없음");
         return null;
     }
 }
