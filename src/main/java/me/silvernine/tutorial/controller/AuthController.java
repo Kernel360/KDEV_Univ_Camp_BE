@@ -91,7 +91,7 @@ public class AuthController {
 
         System.err.println("🚀 [DEBUG] AuthenticationToken 생성 완료! userId: " + user.getId());
         UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(user.getId(), null, grantedAuthorities);
+                new UsernamePasswordAuthenticationToken(user.getId(), user.getPassword(), grantedAuthorities);
 
         System.err.println("🚀 [DEBUG] authenticationManagerBuilder.getObject().authenticate() 호출 직전!");
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
