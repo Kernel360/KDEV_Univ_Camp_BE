@@ -10,8 +10,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
-@Tag(name = "Token Management", description = "APIs for managing and validating tokens")
+@Tag(name = "Token Management", description = "APIs for managing and validating tokens")  // ✅ Swagger 태그 추가
 @RestController
 @RequestMapping("/api/token")
 @RequiredArgsConstructor
@@ -26,6 +28,11 @@ public class TokenController {
      * @return 생성된 JWT 토큰
      */
     @Operation(summary = "Generate a new token", description = "Receives client credentials and returns a generated token")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Token generated successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid request parameters"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
     @PostMapping("/getToken")
     public ResponseEntity<TokenResponseDto> getToken(@RequestBody TokenRequestDto request) {
         TokenResponseDto response = tokenService.generateToken(request);
@@ -38,6 +45,10 @@ public class TokenController {
      * @return 유효하면 "000" (성공), 유효하지 않으면 "100" (토큰 오류)
      */
     @Operation(summary = "Validate token", description = "Checks if the provided token is valid")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Token is valid"),
+            @ApiResponse(responseCode = "401", description = "Invalid or expired token")
+    })
     @GetMapping("/validate")
     public ResponseEntity<TokenResponseDto> validateToken(@RequestParam String token) {
         boolean isValid = tokenValidator.validate(token); // ✅ 인스턴스 메서드로 호출
