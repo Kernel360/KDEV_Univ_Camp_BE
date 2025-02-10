@@ -31,7 +31,7 @@ spring:
 
 jwt:
   header: Authorization
-  secret: c2lsdmVybmluZS10ZWNoLXNwcmluZy1ib290LWp3dC10dXRvcmlhbC1zZWNyZXQK
+  secret: rnaajcJWO4IRHHdCHcGN+W07bpFfu+n1t+RibOWXGSE=
   token-validity-in-seconds: 86400  # ✅ 토큰 유효시간 직접 추가 (24시간)
 
 logging:
