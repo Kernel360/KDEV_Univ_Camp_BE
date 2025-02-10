@@ -51,6 +51,11 @@ public class TokenController {
     })
     @GetMapping("/validate")
     public ResponseEntity<TokenResponseDto> validateToken(@RequestParam String token) {
+        // ✅ "Bearer "가 포함되어 있으면 제거
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7); // "Bearer " 이후의 순수한 토큰 값만 추출
+        }
+
         boolean isValid = tokenValidator.validate(token); // ✅ 인스턴스 메서드로 호출
 
         if (isValid) {
