@@ -2,8 +2,8 @@ package me.silvernine.tutorial.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import me.silvernine.tutorial.dto.AuthResponseDto;
 import me.silvernine.tutorial.dto.LoginDto;
-import me.silvernine.tutorial.dto.TokenDto;
 import me.silvernine.tutorial.dto.UserDto;
 import me.silvernine.tutorial.entity.User;
 import me.silvernine.tutorial.jwt.JwtFilter;
@@ -15,7 +15,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -40,7 +39,6 @@ public class AuthController {
     private final UserAuthorityRepository userAuthorityRepository;
     private final PasswordEncoder passwordEncoder;
 
-    // constructor 수정 - authenticationManager 주입
     public AuthController(TokenProvider tokenProvider,
                           AuthenticationManager authenticationManager,
                           UserService userService,
@@ -48,7 +46,7 @@ public class AuthController {
                           UserAuthorityRepository userAuthorityRepository,
                           PasswordEncoder passwordEncoder) {
         this.tokenProvider = tokenProvider;
-        this.authenticationManager = authenticationManager; // authenticationManager 주입
+        this.authenticationManager = authenticationManager;
         this.userService = userService;
         this.userRepository = userRepository;
         this.userAuthorityRepository = userAuthorityRepository;
@@ -61,13 +59,11 @@ public class AuthController {
         return ResponseEntity.ok(userService.signup(userDto));
     }
 
-    @Operation(summary = "로그인", description = "로그인을 한 후 JWT 토큰을 반환합니다.")
+    @Operation(summary = "로그인", description = "로그인을 한 후 JWT 토큰과 닉네임을 반환합니다.")
     @PostMapping("/authenticate")
-    public ResponseEntity<TokenDto> authorize(@Valid @RequestBody LoginDto loginDto) {
+    public ResponseEntity<AuthResponseDto> authorize(@Valid @RequestBody LoginDto loginDto) {
         System.out.println("🚀 [로그인 요청] ID: " + loginDto.getId());
-        System.out.println("🚀 [DEBUG] 입력된 비밀번호: " + loginDto.getPassword());
 
-        // 🔍 사용자 조회
         User user = userRepository.findByIdEquals(loginDto.getId())
                 .orElseThrow(() -> {
                     System.out.println("❌ [ERROR] 사용자가 존재하지 않음: " + loginDto.getId());
@@ -77,64 +73,44 @@ public class AuthController {
         System.out.println("✅ 조회된 user_id(UUID): " + user.getUserId());
         System.out.println("✅ 조회된 사용자 닉네임: " + user.getNickname());
 
-        // 🔍 비밀번호 검증
-        String rawPassword = loginDto.getPassword();
-        String storedPassword = user.getPassword();
-        boolean passwordMatches = passwordEncoder.matches(rawPassword, storedPassword);
-
-        System.out.println("🔍 입력된 비밀번호: " + rawPassword);
-        System.out.println("🔍 저장된 해시 비밀번호: " + storedPassword);
-        System.out.println("🔍 passwordEncoder.matches() 결과: " + passwordMatches);
-
-        if (!passwordMatches) {
+        if (!passwordEncoder.matches(loginDto.getPassword(), user.getPassword())) {
             System.err.println("❌ 비밀번호가 일치하지 않습니다.");
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
         System.out.println("✅ 비밀번호 검증 통과");
 
-        // 🔍 사용자 권한 가져오기
         Collection<? extends GrantedAuthority> authorities = user.getAuthorities();
-        System.out.println("🔍 [DEBUG] User.getAuthorities() 호출됨");
         List<SimpleGrantedAuthority> grantedAuthorities = authorities.stream()
                 .map(authority -> new SimpleGrantedAuthority(authority.getAuthority()))
                 .collect(Collectors.toList());
 
         if (grantedAuthorities.isEmpty()) {
-            System.out.println("⚠️ 사용자 권한이 없어서 기본 권한 추가 (ROLE_USER)");
             grantedAuthorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
         }
 
-        System.out.println("✅ [DEBUG] 최종 권한 리스트: " + grantedAuthorities);
-
-        // 🔍 Spring Security 인증 토큰 생성
-        System.err.println("🚀 [DEBUG] AuthenticationToken 생성 완료! userId: " + user.getId());
         UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(user.getId(), rawPassword, grantedAuthorities);
+                new UsernamePasswordAuthenticationToken(user.getId(), loginDto.getPassword(), grantedAuthorities);
 
-        // authenticationManager를 사용하여 인증을 수행
         Authentication authentication = authenticationManager.authenticate(authenticationToken);
-        System.err.println("✅ [DEBUG] 인증 성공! authentication: " + authentication);
-
         SecurityContextHolder.getContext().setAuthentication(authentication);
+
         System.out.println("✅ Spring Security 인증 성공");
 
-        // 🔍 JWT 생성
-        System.out.println("🚀 [JWT 생성 시작] 사용자 UUID: " + user.getUserId());
-        System.err.println("🚀 [DEBUG] tokenProvider.createToken() 호출 직전! userId: " + user.getUserId());
-
-        String jwt = tokenProvider.createToken(authentication, user.getNickname());
+        String jwt = tokenProvider.createToken(authentication);
 
         if (jwt == null || jwt.isEmpty()) {
-            System.out.println("❌ [ERROR] JWT 생성 실패: tokenProvider.createToken()에서 null 반환됨");
             throw new IllegalArgumentException("JWT 생성 실패");
         }
-
         System.out.println("✅ [JWT 발급 성공] " + jwt);
 
-        // 🔍 HTTP 헤더에 JWT 추가
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add(JwtFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
 
-        return ResponseEntity.ok().headers(httpHeaders).body(new TokenDto(jwt));
+        AuthResponseDto responseDto = AuthResponseDto.builder()
+                .token(jwt)
+                .nickname(user.getNickname())
+                .build();
+
+        return ResponseEntity.ok().headers(httpHeaders).body(responseDto);
     }
 }

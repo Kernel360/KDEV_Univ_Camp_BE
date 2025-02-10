@@ -18,26 +18,19 @@ import java.util.stream.Collectors;
 @Component
 public class TokenProvider {
     private static final String AUTHORITIES_KEY = "auth";
-    private static final String NICKNAME_KEY = "nickname"; // ✅ 닉네임 저장을 위한 키
     private final Logger logger = LoggerFactory.getLogger(TokenProvider.class);
     private final Key key;
     private final long tokenValidityInMilliseconds;
 
-    // secretKey를 디코딩하는 대신, HS512에 맞는 안전한 키를 자동으로 생성합니다.
     public TokenProvider(@Value("${jwt.secret}") String secretKey,
                          @Value("${jwt.token-validity-in-seconds}") long tokenValidityInSeconds) {
-        this.key = Keys.secretKeyFor(SignatureAlgorithm.HS512);  // 512비트 키 생성
+        this.key = Keys.secretKeyFor(SignatureAlgorithm.HS512);
         this.tokenValidityInMilliseconds = tokenValidityInSeconds * 1000;
         System.out.println("✅ [JWT 초기화] Secret Key 설정 완료, 유효시간(ms): " + tokenValidityInMilliseconds);
     }
 
-    public String createToken(Authentication authentication, String nickname) {
+    public String createToken(Authentication authentication) {
         System.out.println("🚀 [JWT 생성 시작] Authentication Name: " + authentication.getName());
-
-        if (nickname == null || nickname.isEmpty()) {
-            System.out.println("❌ 닉네임이 존재하지 않음. 기본값 'DefaultUser' 설정");
-            nickname = "DefaultUser";
-        }
 
         String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
@@ -52,36 +45,6 @@ public class TokenProvider {
             String jwt = Jwts.builder()
                     .setSubject(authentication.getName())
                     .claim(AUTHORITIES_KEY, authorities)
-                    .claim(NICKNAME_KEY, nickname)
-                    .signWith(key, SignatureAlgorithm.HS512)
-                    .setExpiration(validity)
-                    .compact();
-
-            System.out.println("🔑 생성된 JWT: " + jwt);
-            return jwt;
-        } catch (Exception e) {
-            System.out.println("❌ JWT 생성 실패: " + e.getMessage());
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    public String createToken(String userId, Collection<? extends GrantedAuthority> authorities) {
-        System.out.println("🚀 [JWT 생성 시작] userId: " + userId);
-
-        String authString = authorities.stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(","));
-
-        System.out.println("✅ [JWT 생성] 권한 목록: " + authString);
-
-        long now = (new Date()).getTime();
-        Date validity = new Date(now + tokenValidityInMilliseconds);
-
-        try {
-            String jwt = Jwts.builder()
-                    .setSubject(userId)
-                    .claim(AUTHORITIES_KEY, authString)
                     .signWith(key, SignatureAlgorithm.HS512)
                     .setExpiration(validity)
                     .compact();
