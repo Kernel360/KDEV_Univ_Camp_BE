@@ -1,11 +1,11 @@
 package me.silvernine.tutorial.controller;
 
+import lombok.RequiredArgsConstructor;  // ✅ 올바른 위치에 유지
 import me.silvernine.tutorial.dto.CarRequest;
 import me.silvernine.tutorial.dto.CarResponse;
 import me.silvernine.tutorial.dto.ControlInfoRequestDto;
 import me.silvernine.tutorial.service.CarService;
 import me.silvernine.tutorial.service.ControlInfoService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.security.Principal;
 import java.util.List;
+
 
 @Tag(name = "Car Management", description = "APIs for managing car data and operations")
 @RestController
@@ -29,16 +30,10 @@ public class CarController {
         return ResponseEntity.ok(carService.registerCar(request, principal));
     }
 
-    @Operation(summary = "차량 전체 조회", description = "차량 데이터를 관리하는 API로, 차량을 조회하는 기능을 제공합니다")
-    @GetMapping("/user")
-    public ResponseEntity<List<CarResponse>> getUserCars(Principal principal) {
-        return ResponseEntity.ok(carService.getUserCars(principal));
-    }
-
-    @Operation(summary = "차량 단건 조회", description = "차량 데이터를 관리하는 API로, 차량 ID를 사용하여 차량을 조회하는 기능을 제공합니다")
-    @GetMapping("/{id}")
-    public ResponseEntity<CarResponse> getCarById(@PathVariable Long id) {
-        return ResponseEntity.ok(carService.getCarById(id));
+    // 🔥 차량 번호 기반 조회 추가
+    @GetMapping("/number/{vehicleNumber}")
+    public ResponseEntity<CarResponse> getVehicleByNumber(@PathVariable String vehicleNumber) {
+        return ResponseEntity.ok(carService.getCarByCarNumber(vehicleNumber));
     }
 
     @Operation(summary = "Get all cars", description = "Fetches a list of all cars in the system")

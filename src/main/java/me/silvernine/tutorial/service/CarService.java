@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,27 +35,20 @@ public class CarService {
                 .build();
     }
 
-    // 사용자 차량 목록 조회
-    public List<CarResponse> getUserCars(Principal principal) {
-        return carRepository.findByOwnerUsername(principal.getName()).stream()
-                .map(car -> CarResponse.builder()
-                        .id(car.getId())
-                        .carName(car.getCarName())
-                        .carNumber(car.getCarNumber())
-                        .ownerUsername(car.getOwnerUsername())
-                        .build())
-                .collect(Collectors.toList());
-    }
-
-    // 차량 단건 조회
-    public CarResponse getCarById(Long id) {
-        Car car = carRepository.findById(id).orElseThrow(() -> new RuntimeException("Car not found"));
-        return CarResponse.builder()
-                .id(car.getId())
-                .carName(car.getCarName())
-                .carNumber(car.getCarNumber())
-                .ownerUsername(car.getOwnerUsername())
-                .build();
+    // 차량 번호로 조회
+    public CarResponse getCarByCarNumber(String carNumber) {
+        Optional<Car> carOptional = carRepository.findByCarNumber(carNumber);
+        if (carOptional.isPresent()) {
+            Car car = carOptional.get();
+            return CarResponse.builder()
+                    .id(car.getId())
+                    .carName(car.getCarName())
+                    .carNumber(car.getCarNumber())
+                    .ownerUsername(car.getOwnerUsername())
+                    .build();
+        } else {
+            throw new RuntimeException("Car not found with number: " + carNumber);
+        }
     }
 
     // 차량 전체 조회
