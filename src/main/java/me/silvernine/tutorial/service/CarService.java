@@ -5,7 +5,9 @@ import me.silvernine.tutorial.dto.CarResponse;
 import me.silvernine.tutorial.entity.Car;
 import me.silvernine.tutorial.repository.CarRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.security.Principal;
 import java.util.List;
@@ -47,7 +49,7 @@ public class CarService {
                     .ownerUsername(car.getOwnerUsername())
                     .build();
         } else {
-            throw new RuntimeException("Car not found with number: " + carNumber);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Car not found with number: " + carNumber);
         }
     }
 
