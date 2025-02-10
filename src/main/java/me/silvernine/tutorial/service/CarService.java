@@ -5,10 +5,8 @@ import me.silvernine.tutorial.dto.CarResponse;
 import me.silvernine.tutorial.entity.Car;
 import me.silvernine.tutorial.repository.CarRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
+import java.util.Collections;
 import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
@@ -38,7 +36,7 @@ public class CarService {
     }
 
     // 차량 번호로 조회
-    public CarResponse getCarByCarNumber(String carNumber) {
+    public Object getCarByCarNumber(String carNumber) {
         Optional<Car> carOptional = carRepository.findByCarNumber(carNumber);
         if (carOptional.isPresent()) {
             Car car = carOptional.get();
@@ -49,7 +47,7 @@ public class CarService {
                     .ownerUsername(car.getOwnerUsername())
                     .build();
         } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Car not found with number: " + carNumber);
+            return Collections.singletonMap("message", "🚗 차량 번호 '" + carNumber + "'에 해당하는 차량을 찾을 수 없습니다.");
         }
     }
 
