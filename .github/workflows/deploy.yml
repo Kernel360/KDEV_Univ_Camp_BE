@@ -1,9 +1,9 @@
 name: Deploy to EC2
 
-on:
-  push:
-    branches:
-      - dev  # dev 브랜치에 푸시될 때 실행
+#on:
+#  push:
+#    branches:
+#      - dev  # dev 브랜치에 푸시될 때 실행
 
 jobs:
   deploy:
@@ -21,6 +21,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           script: |
             cd ~/KDEV_Univ_Camp_BE
+            git checkout dev
             git pull origin dev
             sudo ./gradlew clean
             sudo ./gradlew build
