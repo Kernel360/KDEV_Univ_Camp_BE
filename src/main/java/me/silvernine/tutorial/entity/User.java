@@ -72,4 +72,11 @@ public class User {
          System.out.println("✅ [DEBUG] 새 UUID 생성됨: " + this.userId);
       }
    }
+
+   // ✅ 생성자 추가 (테스트 코드에서 사용 가능)
+   public User(String id, String password, boolean activated) {
+      this.id = id;
+      this.password = password;
+      this.activated = activated;
+   }
 }

@@ -8,24 +8,28 @@ import me.silvernine.tutorial.repository.AuthorityRepository;
 import me.silvernine.tutorial.repository.UserAuthorityRepository;
 import me.silvernine.tutorial.repository.UserRepository;
 import me.silvernine.tutorial.exception.NotFoundMemberException;
+import me.silvernine.tutorial.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import me.silvernine.tutorial.util.SecurityUtil;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
 @Service
 public class UserService {
+
     private final UserRepository userRepository;
     private final UserAuthorityRepository userAuthorityRepository;
     private final AuthorityRepository authorityRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserService(UserRepository userRepository, UserAuthorityRepository userAuthorityRepository,
-                       AuthorityRepository authorityRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository,
+                       UserAuthorityRepository userAuthorityRepository,
+                       AuthorityRepository authorityRepository,
+                       PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.userAuthorityRepository = userAuthorityRepository;
         this.authorityRepository = authorityRepository;
@@ -33,7 +37,7 @@ public class UserService {
     }
 
     /**
-     * ✅ 회원가입 기능 (UUID 기반, 기존 기능 유지)
+     * ✅ 회원가입 기능 (UUID 기반)
      */
     @Transactional
     public UserDto signup(UserDto userDto) {
@@ -45,7 +49,7 @@ public class UserService {
             throw new IllegalArgumentException("이미 사용 중인 ID입니다.");
         }
 
-        // ✅ 비밀번호 암호화 적용
+        // ✅ 비밀번호 암호화
         String encryptedPassword = passwordEncoder.encode(userDto.getPassword());
 
         // ✅ UUID 기반의 user_id 생성
@@ -83,14 +87,13 @@ public class UserService {
      * ✅ 로그인 시 비밀번호 검증 기능 (UUID 기반)
      */
     public boolean validatePassword(String id, String rawPassword) {
-        User user = userRepository.findById(id)  // ✅ user_id(UUID) 말고 id(문자열)로 검색
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundMemberException("해당 ID의 사용자를 찾을 수 없습니다."));
 
         boolean isValid = passwordEncoder.matches(rawPassword, user.getPassword());
         System.out.println("✅ 비밀번호 검증: 입력값=" + rawPassword + ", DB 저장값=" + user.getPassword() + ", 검증결과=" + isValid);
         return isValid;
     }
-
 
     /**
      * ✅ 특정 ID의 사용자 닉네임 가져오기
@@ -118,5 +121,13 @@ public class UserService {
         return userRepository.findById(id)
                 .map(UserDto::from)
                 .orElseThrow(() -> new NotFoundMemberException("해당 ID의 사용자를 찾을 수 없습니다."));
+    }
+
+    /**
+     * ✅ 특정 사용자 정보 가져오기 (일반 사용자 및 관리자가 사용 가능)
+     */
+    public User getUserById(String userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 }
