@@ -21,7 +21,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
           script: |
             cd ~/KDEV_Univ_Camp_BE
-            git pull origin main
+            git pull origin dev
             sudo ./gradlew clean
             sudo ./gradlew build
             java -jar ./build/libs/jwt-tutorial-0.0.1-SNAPSHOT.war
