@@ -15,13 +15,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 @Service
-@RequiredArgsConstructor
 public class TokenService {
 
     private final SecretKey secretKey;
     private final long tokenValidityInSeconds;
 
-    // ✅ 생성자에서 SECRET_KEY를 SecretKey 객체로 변환
     public TokenService(@Value("${jwt.secret}") String secret,
                         @Value("${jwt.token-validity-in-seconds}") long tokenValidityInSeconds) {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
@@ -43,7 +41,7 @@ public class TokenService {
                 .claim("tid", request.getTid())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(expirationTimeMillis))
-                .signWith(secretKey, SignatureAlgorithm.HS512)  // ✅ SecretKey 객체로 서명
+                .signWith(secretKey, SignatureAlgorithm.HS512)
                 .compact();
 
         return TokenResponseDto.builder()

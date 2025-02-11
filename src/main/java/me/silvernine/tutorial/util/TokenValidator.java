@@ -23,7 +23,7 @@ public class TokenValidator {
     public boolean validate(String token) {
         try {
             Jwts.parserBuilder()
-                    .setSigningKey(secretKey) // ✅ SecretKey 객체 사용
+                    .setSigningKey(secretKey)
                     .build()
                     .parseClaimsJws(token);
             return true;
