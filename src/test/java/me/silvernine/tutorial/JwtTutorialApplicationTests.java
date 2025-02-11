@@ -15,16 +15,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class JwtTutorialApplicationTests {
 
 	@Autowired
-	private UserService userService;  // ✅ 기존 @MockBean -> @Autowired로 변경
-
-	@Autowired
-	private UserRepository userRepository;  // ✅ 기존 @MockBean -> @Autowired로 변경
+	private UserService userService;
 
 	@MockBean
-	private TokenProvider tokenProvider;  // ✅ 기존 @MockBean -> @Autowired로 변경
+	private UserRepository userRepository;  // ✅ Repository는 MockBean 사용
 
-	@Autowired
-	private SecurityConfig securityConfig;  // ✅ 기존 @MockBean -> @Autowired로 변경
+	@MockBean
+	private TokenProvider tokenProvider;  // ✅ JWT 관련 클래스는 MockBean 처리
+
+	@MockBean
+	private SecurityConfig securityConfig;
 
 	@Test
 	void contextLoads() {
