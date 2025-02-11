@@ -14,19 +14,21 @@ import org.springframework.stereotype.Component;
 import java.security.Key;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.Base64;
 
 @Component
 public class TokenProvider {
     private static final String AUTHORITIES_KEY = "auth";
     private final Logger logger = LoggerFactory.getLogger(TokenProvider.class);
     private final Key key;
-    private final long tokenValidityInMilliseconds;
 
-    public TokenProvider(@Value("${jwt.secret}") String secretKey,
-                         @Value("${jwt.token-validity-in-seconds}") long tokenValidityInSeconds) {
-        this.key = Keys.secretKeyFor(SignatureAlgorithm.HS512);
-        this.tokenValidityInMilliseconds = tokenValidityInSeconds * 1000;
-        System.out.println("✅ [JWT 초기화] Secret Key 설정 완료, 유효시간(ms): " + tokenValidityInMilliseconds);
+    @Value("${jwt.token-validity-in-seconds:86400}") // ✅ 기본값 24시간 (86400초)
+    private long tokenValidityInSeconds;
+
+    public TokenProvider(@Value("${jwt.secret}") String secretKey) {
+        this.key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(secretKey)); // ✅ Secret Key 디코딩 적용
+        this.tokenValidityInSeconds *= 1000; // 초 → 밀리초 변환
+        System.out.println("✅ [JWT 초기화] Secret Key 설정 완료, 유효시간(ms): " + tokenValidityInSeconds);
     }
 
     public String createToken(Authentication authentication) {
@@ -39,7 +41,7 @@ public class TokenProvider {
         System.out.println("✅ [JWT 생성] 권한 목록: " + authorities);
 
         long now = (new Date()).getTime();
-        Date validity = new Date(now + tokenValidityInMilliseconds);
+        Date validity = new Date(now + tokenValidityInSeconds);
 
         try {
             String jwt = Jwts.builder()
