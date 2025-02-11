@@ -11,7 +11,7 @@ import java.nio.charset.StandardCharsets;
 public class JwtConfiguration {
 
     @Bean
-    public SecretKey secretKey(@Value("${jwt.secret}") String secret) {
+    public SecretKey secretKey(@Value("1eooEb0QH4IPR2wP0ATY1a/UXh8+ERKkogA1ZKm79zt7UkJJH55GKLsyP5DkdOF8n+gXYJ3NpycJQ/D5UvwjSg==") String secret) {
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 }

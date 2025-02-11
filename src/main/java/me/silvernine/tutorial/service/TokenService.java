@@ -20,7 +20,7 @@ public class TokenService {
     private final SecretKey secretKey;
     private final long tokenValidityInSeconds;
 
-    public TokenService(@Value("${jwt.secret}") String secret,
+    public TokenService(@Value("1eooEb0QH4IPR2wP0ATY1a/UXh8+ERKkogA1ZKm79zt7UkJJH55GKLsyP5DkdOF8n+gXYJ3NpycJQ/D5UvwjSg==") String secret,
                         @Value("${jwt.token-validity-in-seconds}") long tokenValidityInSeconds) {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.tokenValidityInSeconds = tokenValidityInSeconds;
