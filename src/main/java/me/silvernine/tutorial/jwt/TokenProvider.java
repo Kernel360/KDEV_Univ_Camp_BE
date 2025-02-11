@@ -26,6 +26,7 @@ public class TokenProvider {
     private long tokenValidityInSeconds;
 
     public TokenProvider(@Value("${jwt.secret}") String secretKey) {
+        System.out.println("🔑 현재 사용 중인 JWT Secret Key: " + secretKey); // ✅ 확인용 로그 추가
         this.key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(secretKey)); // ✅ Secret Key 디코딩 적용
         this.tokenValidityInSeconds *= 1000; // 초 → 밀리초 변환
         System.out.println("✅ [JWT 초기화] Secret Key 설정 완료, 유효시간(ms): " + tokenValidityInSeconds);
