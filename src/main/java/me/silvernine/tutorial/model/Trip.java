@@ -1,22 +1,30 @@
 package me.silvernine.tutorial.model;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 
-@Entity
-@Table(name = "trip_data")  // DB 테이블명
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
+@Entity
+@Table(name = "trip_data")
 public class Trip {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String vehicleId;
-    private String timestamp;  // 기존 date + time 제거 후 timestamp 추가
+
+    @Column(nullable = false)
+    private String timestamp;
+
+    @Column(nullable = false)
     private Double latitude;
+
+    @Column(nullable = false)
     private Double longitude;
+
+    @Column(nullable = false)  // ✅ 배터리 수치 추가
+    private Integer batteryLevel;
 }

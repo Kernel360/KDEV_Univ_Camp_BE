@@ -42,6 +42,7 @@ public class TripController {
             trip.setTimestamp(dto.getTimestamp());
             trip.setLatitude(dto.getLatitude());
             trip.setLongitude(dto.getLongitude());
+            trip.setBatteryLevel(dto.getBatteryLevel());
             return trip;
         }).collect(Collectors.toList());
 
@@ -52,6 +53,7 @@ public class TripController {
     // ✅ 모든 데이터 조회
     @GetMapping
     public ResponseEntity<List<Trip>> getAllTrips() {
+
         return ResponseEntity.ok(tripService.getAllTrips());
     }
 }
