@@ -33,7 +33,7 @@ public class TripController {
             tripInterval = interval;
             return ResponseEntity.ok("주기 설정 완료: " + interval + "초");
         } else {
-            return ResponseEntity.badRequest().body("잘못된 주기 값입니다.");
+            return ResponseEntity.badRequest().body("잘못된 주기 값입니다. 60, 120, 180 중 선택하세요.");
         }
     }
 
@@ -49,9 +49,13 @@ public class TripController {
         Trip trip = new Trip();
         trip.setVehicleId(tripRequestDto.getVehicleId());
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        LocalDateTime timestamp = LocalDateTime.parse(tripRequestDto.getTimestamp(), formatter);
-        trip.setTimestamp(timestamp);
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            LocalDateTime timestamp = LocalDateTime.parse(tripRequestDto.getTimestamp(), formatter);
+            trip.setTimestamp(timestamp);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(null);
+        }
 
         trip.setLatitude(tripRequestDto.getLatitude());
         trip.setLongitude(tripRequestDto.getLongitude());
@@ -67,15 +71,19 @@ public class TripController {
             Trip trip = new Trip();
             trip.setVehicleId(dto.getVehicleId());
 
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            LocalDateTime timestamp = LocalDateTime.parse(dto.getTimestamp(), formatter);
-            trip.setTimestamp(timestamp);
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                LocalDateTime timestamp = LocalDateTime.parse(dto.getTimestamp(), formatter);
+                trip.setTimestamp(timestamp);
+            } catch (Exception e) {
+                return null;
+            }
 
             trip.setLatitude(dto.getLatitude());
             trip.setLongitude(dto.getLongitude());
             trip.setBatteryLevel(dto.getBatteryLevel());
             return trip;
-        }).collect(Collectors.toList());
+        }).filter(trip -> trip != null).collect(Collectors.toList());
 
         tripService.saveTrips(trips);
         return ResponseEntity.ok().body("Data saved successfully");
@@ -92,15 +100,20 @@ public class TripController {
     public ResponseEntity<List<Trip>> getGpsData(@RequestParam int interval) {
         if (interval == 60 || interval == 120 || interval == 180) {
             List<Trip> trips = tripService.getTripsByInterval(interval);
-            return ResponseEntity.ok(trips);
+            return ResponseEntity.ok(trips.isEmpty() ? List.of() : trips);
         } else {
-            return ResponseEntity.badRequest().body(null);
+            return ResponseEntity.badRequest().body(List.of());
         }
     }
 
     @Operation(summary = "📌 특정 차량 최신 GPS 데이터 조회", description = "🚗 특정 차량의 가장 최근 GPS 데이터를 조회합니다.")
     @GetMapping("/latestGpsData")
     public ResponseEntity<List<Trip>> getLatestGpsData(@RequestParam String vehicleId) {
-        return ResponseEntity.ok(tripService.getLatestGpsDataByVehicle(vehicleId));
+        List<Trip> latestGpsData = tripService.getLatestGpsDataByVehicle(vehicleId);
+
+        if (latestGpsData.isEmpty()) {
+            return ResponseEntity.ok(List.of());
+        }
+        return ResponseEntity.ok(latestGpsData);
     }
 }
