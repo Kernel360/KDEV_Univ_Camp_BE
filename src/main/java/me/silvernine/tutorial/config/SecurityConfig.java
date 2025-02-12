@@ -84,7 +84,8 @@ public class SecurityConfig {
                 new AntPathRequestMatcher("/api/signup"),
                 new AntPathRequestMatcher("/api/authenticate"),
                 new AntPathRequestMatcher("/api/auth-header-check"),
-                new AntPathRequestMatcher("/api/user")
+                new AntPathRequestMatcher("/api/user"),
+                new AntPathRequestMatcher("/api/trip/**") // ✅ 인증 없이 허용
         };
 
         return http
