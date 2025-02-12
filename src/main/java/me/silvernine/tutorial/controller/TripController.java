@@ -1,5 +1,7 @@
 package me.silvernine.tutorial.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import me.silvernine.tutorial.dto.TripRequestDto;
 import me.silvernine.tutorial.model.Trip;
 import me.silvernine.tutorial.service.TripService;
@@ -13,7 +15,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@CrossOrigin(origins = "*") // ✅ 모든 도메인에서 API 요청 가능
+@Tag(name = "Trip Controller", description = "🚗 차량 GPS 데이터를 관리하는 API입니다.")
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/trip")
 public class TripController {
@@ -21,37 +24,34 @@ public class TripController {
     @Autowired
     private TripService tripService;
 
-    // ✅ 주기 설정을 저장할 변수 (기본값: 60초)
     private static int tripInterval = 60;
 
-    // ✅ 사용자가 주기 선택 (60, 120, 180초)
+    @Operation(summary = "📌 GPS 저장 주기 설정", description = "자동 저장되는 GPS 데이터의 주기를 설정합니다. (60, 120, 180초)")
     @PostMapping("/setFrequency")
     public ResponseEntity<String> setFrequency(@RequestParam int interval) {
         if (interval == 60 || interval == 120 || interval == 180) {
             tripInterval = interval;
             return ResponseEntity.ok("주기 설정 완료: " + interval + "초");
         } else {
-            return ResponseEntity.badRequest().body("잘못된 주기 값입니다. 60, 120, 180 중 선택하세요.");
+            return ResponseEntity.badRequest().body("잘못된 주기 값입니다.");
         }
     }
 
-    // ✅ 주기적으로 GPS 데이터 저장 (백그라운드 실행)
-    @Scheduled(fixedRateString = "#{T(java.lang.Integer).parseInt(@tripController.tripInterval) * 1000}") // 초 단위로 동작
+    @Scheduled(fixedRateString = "#{T(java.lang.Integer).parseInt(@tripController.tripInterval) * 1000}")
     public void saveGpsDataScheduled() {
         tripService.saveGpsData();
         System.out.println("자동 저장 실행됨 (주기: " + tripInterval + "초)");
     }
 
-    // ✅ 단일 데이터 저장
+    @Operation(summary = "📌 단일 GPS 데이터 저장", description = "🚗 하나의 GPS 데이터를 저장합니다.")
     @PostMapping
     public ResponseEntity<Trip> saveTrip(@RequestBody TripRequestDto tripRequestDto) {
         Trip trip = new Trip();
         trip.setVehicleId(tripRequestDto.getVehicleId());
 
-        // ✅ String → LocalDateTime 변환
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime timestamp = LocalDateTime.parse(tripRequestDto.getTimestamp(), formatter);
-        trip.setTimestamp(timestamp); // ✅ 변환 후 저장
+        trip.setTimestamp(timestamp);
 
         trip.setLatitude(tripRequestDto.getLatitude());
         trip.setLongitude(tripRequestDto.getLongitude());
@@ -60,17 +60,16 @@ public class TripController {
         return ResponseEntity.ok(savedTrip);
     }
 
-    // ✅ 여러 개의 데이터 저장 (Batch Insert)
+    @Operation(summary = "📌 배치 GPS 데이터 저장", description = "🚗 여러 개의 GPS 데이터를 한 번에 저장합니다.")
     @PostMapping("/batch")
     public ResponseEntity<?> saveTrips(@RequestBody List<TripRequestDto> tripRequestDtos) {
         List<Trip> trips = tripRequestDtos.stream().map(dto -> {
             Trip trip = new Trip();
             trip.setVehicleId(dto.getVehicleId());
 
-            // ✅ String → LocalDateTime 변환
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             LocalDateTime timestamp = LocalDateTime.parse(dto.getTimestamp(), formatter);
-            trip.setTimestamp(timestamp); // ✅ 변환 후 저장
+            trip.setTimestamp(timestamp);
 
             trip.setLatitude(dto.getLatitude());
             trip.setLongitude(dto.getLongitude());
@@ -82,13 +81,13 @@ public class TripController {
         return ResponseEntity.ok().body("Data saved successfully");
     }
 
-    // ✅ 모든 데이터 조회
+    @Operation(summary = "📌 모든 GPS 데이터 조회", description = "저장된 모든 GPS 데이터를 조회합니다.")
     @GetMapping
     public ResponseEntity<List<Trip>> getAllTrips() {
         return ResponseEntity.ok(tripService.getAllTrips());
     }
 
-    // ✅ 주기별 GPS 데이터 조회 API
+    @Operation(summary = "📌 주기별 GPS 데이터 조회", description = "설정된 주기(60, 120, 180초)마다 저장된 GPS 데이터를 조회합니다.")
     @GetMapping("/gpsData")
     public ResponseEntity<List<Trip>> getGpsData(@RequestParam int interval) {
         if (interval == 60 || interval == 120 || interval == 180) {
@@ -99,7 +98,7 @@ public class TripController {
         }
     }
 
-    // ✅ 특정 차량의 최근 GPS 데이터 조회 API
+    @Operation(summary = "📌 특정 차량 최신 GPS 데이터 조회", description = "🚗 특정 차량의 가장 최근 GPS 데이터를 조회합니다.")
     @GetMapping("/latestGpsData")
     public ResponseEntity<List<Trip>> getLatestGpsData(@RequestParam String vehicleId) {
         return ResponseEntity.ok(tripService.getLatestGpsDataByVehicle(vehicleId));
