@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @Entity
@@ -17,7 +19,7 @@ public class Trip {
     private String vehicleId;
 
     @Column(nullable = false)
-    private String timestamp;
+    private LocalDateTime timestamp;
 
     @Column(nullable = false)
     private Double latitude;
