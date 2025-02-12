@@ -25,20 +25,23 @@ public class TripService {
     }
 
     // ✅ GPS 데이터 저장 (스케줄링 실행)
+    @Transactional
     public void saveGpsData() {
         try {
             Trip trip = new Trip();
-            trip.setVehicleId("12가 1234"); // 특정 차량 ID
-            trip.setLatitude(37.5665); // 샘플 데이터
+            trip.setVehicleId("12가 1234");
+            trip.setLatitude(37.5665);
             trip.setLongitude(126.9780);
             trip.setTimestamp(LocalDateTime.now());
             tripRepository.save(trip);
+            entityManager.flush(); // 즉시 반영
 
             System.out.println("✅ [Scheduled] GPS 데이터 저장 완료: " + trip.getTimestamp());
         } catch (Exception e) {
-            System.err.println("🚨 [Scheduled] GPS 데이터 저장 중 오류 발생: " + e.getMessage());
+            System.err.println("🚨 [Scheduled] GPS 데이터 저장 실패: " + e.getMessage());
         }
     }
+
 
     // ✅ 특정 주기(60초, 120초, 180초)마다 저장된 데이터 조회
     public List<Trip> getTripsByInterval(int interval) {
