@@ -46,10 +46,9 @@ public class TokenService {
 
         return TokenResponseDto.builder()
                 .rstCd(ResponseCode.SUCCESS)
-                .rstMsg("Success")
-                .mdn(request.getMdn())
+                .rstMsg("Token is valid")
                 .token(token)
-                .exPeriod(String.valueOf(tokenValidityInSeconds / 3600))
+                .exPeriod(expirationTimeMillis) // ✅ 변수명 변경 (expPeriod → expirationTimeMillis)
                 .build();
     }
 }
