@@ -81,12 +81,15 @@ public class TripController {
             trip.setVehicleId(dto.getVehicleId());
 
             try {
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSSSSS]");
-                LocalDateTime timestamp = LocalDateTime.parse(dto.getTimestamp(), formatter);
+                // ✅ 밀리초까지 포함한 포맷 적용
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SS");
+
+                // 🔥 밀리초가 없는 경우도 고려하여 변환
+                String formattedTimestamp = dto.getTimestamp().replace(".00", ""); // .00 제거
+                LocalDateTime timestamp = LocalDateTime.parse(formattedTimestamp, formatter);
                 trip.setTimestamp(timestamp);
             } catch (Exception e) {
                 System.err.println("🚨 Timestamp 변환 실패: " + dto.getTimestamp());
-                e.printStackTrace();
                 return null;
             }
 
@@ -106,11 +109,13 @@ public class TripController {
         return ResponseEntity.ok().body("✅ Data saved successfully");
     }
 
+
     @Operation(summary = "📌 모든 GPS 데이터 조회", description = "저장된 모든 GPS 데이터를 조회합니다.")
     @GetMapping
     public ResponseEntity<List<Trip>> getAllTrips() {
         return ResponseEntity.ok(tripService.getAllTrips());
     }
+
 
     @Operation(summary = "📌 주기별 GPS 데이터 조회", description = "설정된 주기(60, 120, 180초)마다 저장된 GPS 데이터를 조회합니다.")
     @GetMapping("/gpsData")
