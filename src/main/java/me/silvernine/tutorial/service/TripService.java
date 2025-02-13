@@ -64,15 +64,23 @@ public class TripService {
     @Transactional(rollbackFor = Exception.class)  // ✅ 예외 발생 시 롤백되도록 설정
     public void saveTrips(List<Trip> trips) {
         try {
+            if (trips.isEmpty()) {
+                System.err.println("🚨 [Batch Insert] 저장할 데이터가 없음!");
+                return;
+            }
+
             tripRepository.saveAll(trips);
             entityManager.flush();  // ✅ 즉시 DB 반영
 
             System.out.println("✅ [Batch Insert] 총 " + trips.size() + "개의 데이터 저장 완료!");
         } catch (Exception e) {
             System.err.println("🚨 [Batch Insert] 데이터 저장 실패: " + e.getMessage());
+            e.printStackTrace();
             throw e;
         }
     }
+
+
 
     // ✅ 모든 데이터 조회
     public List<Trip> getAllTrips() {

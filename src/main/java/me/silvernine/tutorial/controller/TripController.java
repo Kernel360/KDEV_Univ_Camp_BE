@@ -7,6 +7,7 @@ import me.silvernine.tutorial.model.Trip;
 import me.silvernine.tutorial.service.TripService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -66,27 +67,43 @@ public class TripController {
 
     @Operation(summary = "📌 배치 GPS 데이터 저장", description = "🚗 여러 개의 GPS 데이터를 한 번에 저장합니다.")
     @PostMapping("/batch")
+    @PreAuthorize("permitAll()")  // ✅ JWT 없이 호출 가능하도록 허용
     public ResponseEntity<?> saveTrips(@RequestBody List<TripRequestDto> tripRequestDtos) {
+        System.out.println("📌 Received Trip Data: " + tripRequestDtos);
+
+        if (tripRequestDtos.isEmpty()) {
+            System.err.println("❌ 클라이언트에서 보낸 데이터가 비어 있음!");
+            return ResponseEntity.badRequest().body("Received empty data");
+        }
+
         List<Trip> trips = tripRequestDtos.stream().map(dto -> {
             Trip trip = new Trip();
             trip.setVehicleId(dto.getVehicleId());
 
             try {
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSSSSS]");
                 LocalDateTime timestamp = LocalDateTime.parse(dto.getTimestamp(), formatter);
                 trip.setTimestamp(timestamp);
             } catch (Exception e) {
+                System.err.println("🚨 Timestamp 변환 실패: " + dto.getTimestamp());
+                e.printStackTrace();
                 return null;
             }
 
             trip.setLatitude(dto.getLatitude());
             trip.setLongitude(dto.getLongitude());
             trip.setBatteryLevel(dto.getBatteryLevel());
+
+            System.out.println("✅ 변환된 Trip 데이터: " + trip);
             return trip;
         }).filter(trip -> trip != null).collect(Collectors.toList());
 
+        if (trips.isEmpty()) {
+            return ResponseEntity.badRequest().body("❌ 변환된 데이터가 없음!");
+        }
+
         tripService.saveTrips(trips);
-        return ResponseEntity.ok().body("Data saved successfully");
+        return ResponseEntity.ok().body("✅ Data saved successfully");
     }
 
     @Operation(summary = "📌 모든 GPS 데이터 조회", description = "저장된 모든 GPS 데이터를 조회합니다.")
