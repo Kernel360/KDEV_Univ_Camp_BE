@@ -7,9 +7,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
-@Tag(name = "차량 운행 상태", description = "실시간 차량 운행 및 배터리 상태 정보를 제공합니다.")
+@Tag(name = "차량 운행 상태", description = "실시간 차량 운행 및 대여 정보를 제공합니다.")
 @RestController
 @RequestMapping("/api/vehicle-status")
 public class VehicleStatusController {
@@ -51,19 +53,23 @@ public class VehicleStatusController {
     }
 
     @Operation(
-            summary = "차량 개별 상태 조회",
-            description = "차량 번호를 입력하면 해당 차량의 최신 배터리 상태와 운행 상태를 반환합니다.",
+            summary = "차량 개별 상태 및 대여 정보 조회",
+            description = "차량 번호를 입력하면 해당 차량의 최신 배터리 상태, 운행 상태, 대여 및 반납 정보를 반환합니다.",
             responses = {
                     @ApiResponse(
                             responseCode = "200",
-                            description = "차량 상태 정보 응답",
+                            description = "차량 상태 및 대여 정보 응답",
                             content = @Content(
                                     mediaType = "application/json",
                                     examples = @ExampleObject(value = """
                         {
                             "vehicleNumber": "12가1234",
                             "batteryLevel": 85,
-                            "status": "운행 중"
+                            "status": "운행 중",
+                            "rentalLocation": "서울",
+                            "rentalDateTime": "09:00",
+                            "returnLocation": "부산",
+                            "returnDateTime": "23:00"
                         }
                     """)
                             )
@@ -76,7 +82,7 @@ public class VehicleStatusController {
     )
     @GetMapping("/{vehicleNumber}")
     public Map<String, Object> getVehicleDetails(@PathVariable String vehicleNumber) {
-        // ✅ 더미 데이터로 차량 운행 상태와 배터리 상태 설정
+        // ✅ 차량 정보를 가져옴 (더미 데이터)
         Map<String, Object> vehicleData = getDummyVehicleData(vehicleNumber);
 
         if (vehicleData == null) {
@@ -87,26 +93,47 @@ public class VehicleStatusController {
     }
 
     /**
-     * ✅ 더미 데이터: 차량의 배터리 상태 및 운행 상태를 반환
+     * ✅ 더미 데이터: 차량의 배터리 상태, 운행 상태, 대여 및 반납 정보를 반환
      */
     private Map<String, Object> getDummyVehicleData(String vehicleNumber) {
         return switch (vehicleNumber) {
             case "12가1234" -> Map.of(
                     "vehicleNumber", "12가1234",
                     "batteryLevel", 85,
-                    "status", "운행 중"
+                    "status", "운행 중",
+                    "rentalLocation", "서울",
+                    "rentalDateTime", formatDateTime("2025-01-01T09:00:00"),
+                    "returnLocation", "부산",
+                    "returnDateTime", formatDateTime("2025-03-24T23:00:00")
             );
             case "34나5678" -> Map.of(
                     "vehicleNumber", "34나5678",
                     "batteryLevel", 20,
-                    "status", "미운행"
+                    "status", "미운행",
+                    "rentalLocation", "대전",
+                    "rentalDateTime", formatDateTime("2025-02-15T10:30:00"),
+                    "returnLocation", "광주",
+                    "returnDateTime", formatDateTime("2025-03-20T18:45:00")
             );
             case "78다9012" -> Map.of(
                     "vehicleNumber", "78다9012",
                     "batteryLevel", 45,
-                    "status", "미관제"
+                    "status", "미관제",
+                    "rentalLocation", "인천",
+                    "rentalDateTime", formatDateTime("2025-03-10T14:15:00"),
+                    "returnLocation", "울산",
+                    "returnDateTime", formatDateTime("2025-03-25T22:10:00")
             );
             default -> null;
         };
+    }
+
+    /**
+     * ✅ DB의 "yyyy-MM-dd HH:mm:ss.SS" 형식 날짜 데이터를 "HH:mm" (시:분) 형식으로 변환
+     */
+    private String formatDateTime(String dateTime) {
+        LocalDateTime parsedDateTime = LocalDateTime.parse(dateTime);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+        return parsedDateTime.format(formatter);
     }
 }
