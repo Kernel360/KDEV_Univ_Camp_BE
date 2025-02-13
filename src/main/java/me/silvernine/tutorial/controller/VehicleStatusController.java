@@ -5,11 +5,8 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 @Tag(name = "차량 운행 상태", description = "실시간 차량 운행 및 배터리 상태 정보를 제공합니다.")
@@ -40,10 +37,10 @@ public class VehicleStatusController {
     )
     @GetMapping
     public Map<String, Integer> getVehicleStatus() {
-        int operating = 25;    // 운행 중 차량 수
-        int nonOperating = 15; // 미운행 차량 수
-        int unmonitored = 10;  // 미관제 차량 수
-        int total = operating + nonOperating + unmonitored; // 전체 차량 수
+        int operating = 25;
+        int nonOperating = 15;
+        int unmonitored = 10;
+        int total = operating + nonOperating + unmonitored;
 
         return Map.of(
                 "totalVehicles", total,
@@ -55,7 +52,7 @@ public class VehicleStatusController {
 
     @Operation(
             summary = "차량 배터리 상태 조회",
-            description = "차량 번호와 함께 배터리 상태(0~100%)를 제공합니다. 30% 이하이면 경고가 필요합니다.",
+            description = "차량 번호를 입력하면 해당 차량의 최신 배터리 상태를 반환합니다.",
             responses = {
                     @ApiResponse(
                             responseCode = "200",
@@ -63,22 +60,29 @@ public class VehicleStatusController {
                             content = @Content(
                                     mediaType = "application/json",
                                     examples = @ExampleObject(value = """
-                        [
-                            {"vehicleNumber": "12가1234", "batteryLevel": 85},
-                            {"vehicleNumber": "34나5678", "batteryLevel": 20}
-                        ]
+                        {
+                            "vehicleNumber": "12가1234",
+                            "batteryLevel": 85
+                        }
                     """)
                             )
+                    ),
+                    @ApiResponse(
+                            responseCode = "404",
+                            description = "차량을 찾을 수 없음"
                     )
             }
     )
-    @GetMapping("/battery")
-    public List<Map<String, Object>> getVehicleBatteryStatus() {
-        return List.of(
-                Map.of("vehicleNumber", "12가1234", "batteryLevel", 85),
-                Map.of("vehicleNumber", "12가1234", "batteryLevel", 31),
-                Map.of("vehicleNumber", "12가1234", "batteryLevel", 30),
-                Map.of("vehicleNumber", "12가1234", "batteryLevel", 29)
+    @GetMapping("/battery/{vehicleNumber}")
+    public Map<String, Object> getVehicleBatteryStatus(@PathVariable String vehicleNumber) {
+        // ✅ 현재는 더미 데이터를 반환하지만, 이후 DB에서 조회하도록 변경 가능
+        if (!"12가1234".equals(vehicleNumber)) {
+            throw new RuntimeException("해당 차량 번호를 찾을 수 없습니다: " + vehicleNumber);
+        }
+
+        return Map.of(
+                "vehicleNumber", vehicleNumber,
+                "batteryLevel", 85 // 더미 데이터, 이후 DB에서 가져오도록 변경 가능
         );
     }
 }
