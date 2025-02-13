@@ -22,7 +22,7 @@ public class TokenProvider {
     private final Logger logger = LoggerFactory.getLogger(TokenProvider.class);
     private final Key key;
 
-    @Value("${jwt.token-validity-in-seconds:86400}") // ✅ 기본값 24시간 (86400초)
+    @Value("${jwt.token-validity-in-seconds:86400000}") // ✅ 기본값 24시간 (86400초)
     private long tokenValidityInSeconds;
 
     public TokenProvider(@Value("${jwt.secret}") String secretKey) {
