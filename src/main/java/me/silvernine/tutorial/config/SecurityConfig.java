@@ -89,7 +89,11 @@ public class SecurityConfig {
                 new AntPathRequestMatcher("/api/auth-header-check"),
                 new AntPathRequestMatcher("/api/user"),
                 new AntPathRequestMatcher("/api/trip/**"),
-                new AntPathRequestMatcher("/api/token/validate") // ✅ 추가: 토큰 검증 엔드포인트 허용
+                new AntPathRequestMatcher("/api/token/validate"),
+                new AntPathRequestMatcher("/favicon.ico"),
+                new AntPathRequestMatcher("/error")
+
+
         };
 
         return http
