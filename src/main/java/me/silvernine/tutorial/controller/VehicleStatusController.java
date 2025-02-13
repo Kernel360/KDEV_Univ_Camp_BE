@@ -9,9 +9,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Map;
 
-@Tag(name = "차량 운행 상태", description = "실시간 차량 운행 상태 정보를 제공합니다.")
+@Tag(name = "차량 운행 상태", description = "실시간 차량 운행 및 배터리 상태 정보를 제공합니다.")
 @RestController
 @RequestMapping("/api/vehicle-status")
 public class VehicleStatusController {
@@ -49,6 +50,35 @@ public class VehicleStatusController {
                 "unmonitoredVehicles", unmonitored,
                 "nonOperatingVehicles", nonOperating,
                 "operatingVehicles", operating
+        );
+    }
+
+    @Operation(
+            summary = "차량 배터리 상태 조회",
+            description = "차량 번호와 함께 배터리 상태(0~100%)를 제공합니다. 30% 이하이면 경고가 필요합니다.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "배터리 상태 정보 응답",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    examples = @ExampleObject(value = """
+                        [
+                            {"vehicleNumber": "12가1234", "batteryLevel": 85},
+                            {"vehicleNumber": "34나5678", "batteryLevel": 20}
+                        ]
+                    """)
+                            )
+                    )
+            }
+    )
+    @GetMapping("/battery")
+    public List<Map<String, Object>> getVehicleBatteryStatus() {
+        return List.of(
+                Map.of("vehicleNumber", "12가1234", "batteryLevel", 85),
+                Map.of("vehicleNumber", "12가1234", "batteryLevel", 31),
+                Map.of("vehicleNumber", "12가1234", "batteryLevel", 30),
+                Map.of("vehicleNumber", "12가1234", "batteryLevel", 29)
         );
     }
 }
