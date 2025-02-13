@@ -37,3 +37,10 @@ logging:
   level:
     root: DEBUG
     me.silvernine: DEBUG
+
+server:
+  tomcat:
+    keep-alive-timeout: 30000  # 🔥 30초 동안 Keep-Alive 유지
+    connection-timeout: 60000  # 🔥 60초 동안 요청을 기다림
+
+
