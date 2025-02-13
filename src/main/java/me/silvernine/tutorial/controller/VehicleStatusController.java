@@ -14,6 +14,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.HashMap;
 
+
+
 @Tag(name = "차량 운행 상태", description = "실시간 차량 운행 및 대여 정보를 제공합니다.") // 🚀 오타 확인 후 수정
 @RestController
 @RequestMapping("/api/vehicle-status")
