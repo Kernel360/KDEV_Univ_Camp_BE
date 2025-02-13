@@ -1,5 +1,6 @@
 package me.silvernine.tutorial.controller;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import me.silvernine.tutorial.dto.TokenRequestDto;
 import me.silvernine.tutorial.dto.TokenResponseDto;
@@ -7,12 +8,15 @@ import me.silvernine.tutorial.service.TokenService;
 import me.silvernine.tutorial.util.TokenValidator;
 import me.silvernine.tutorial.util.ResponseCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletRequest;
+import io.jsonwebtoken.Claims;
+import java.util.Date;
 
 @Tag(name = "Token Management", description = "APIs for managing and validating tokens")
 @RestController
@@ -20,7 +24,7 @@ import jakarta.servlet.http.HttpServletRequest;
 @RequiredArgsConstructor
 public class TokenController {
 
-    private final TokenService tokenService; // ✅ 토큰 생성 서비스
+    private final TokenService tokenService; // ✅ 토큰 생성 서비스 (필요 없으면 삭제 가능)
     private final TokenValidator tokenValidator; // ✅ 토큰 검증 유틸
 
     /**
@@ -58,7 +62,7 @@ public class TokenController {
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
             return ResponseEntity.status(401).body(
                     TokenResponseDto.builder()
-                            .rstCd(ResponseCode.INVALID_TOKEN)  // "100"
+                            .rstCd(ResponseCode.INVALID_TOKEN)
                             .rstMsg("Unauthorized: No valid token provided")
                             .build()
             );
@@ -69,21 +73,32 @@ public class TokenController {
 
         boolean isValid = tokenValidator.validate(token);
 
-        if (isValid) {
+        if (!isValid) {
             return ResponseEntity.ok().body(
                     TokenResponseDto.builder()
-                            .rstCd(ResponseCode.SUCCESS)  // "000"
-                            .rstMsg("Token is valid")
-                            .token(token)
-                            .build()
-            );
-        } else {
-            return ResponseEntity.ok().body(
-                    TokenResponseDto.builder()
-                            .rstCd(ResponseCode.INVALID_TOKEN)  // "100"
+                            .rstCd(ResponseCode.INVALID_TOKEN)
                             .rstMsg("Invalid or expired token")
                             .build()
             );
         }
+
+        // ✅ SecurityContext에서 인증된 사용자 정보 가져오기
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName(); // 사용자 ID
+
+        // ✅ JWT 만료 시간 가져오기
+        Claims claims = tokenValidator.getClaims(token);
+        Date expiration = claims.getExpiration();
+        long expPeriod = expiration.getTime(); // 만료 시간 (Unix Timestamp)
+
+        return ResponseEntity.ok().body(
+                TokenResponseDto.builder()
+                        .rstCd(ResponseCode.SUCCESS)
+                        .rstMsg("Token is valid")
+                        .token(token)
+                        .username(username)  // 사용자 ID 추가
+                        .exPeriod(expPeriod) // 만료 시간 추가
+                        .build()
+        );
     }
 }

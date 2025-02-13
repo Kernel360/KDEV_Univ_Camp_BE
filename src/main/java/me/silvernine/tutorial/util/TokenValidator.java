@@ -44,4 +44,23 @@ public class TokenValidator {
         }
         return false;
     }
+
+    /**
+     * JWT 토큰에서 Claims(클레임) 추출
+     */
+    public Claims getClaims(String token) {
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(secretKey)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (ExpiredJwtException e) {
+            logger.error("❌ JWT 만료됨: {}", e.getMessage());
+            return e.getClaims(); // 만료된 경우에도 클레임 반환 가능
+        } catch (JwtException e) {
+            logger.error("❌ JWT 클레임 추출 오류: {}", e.getMessage());
+            return null;
+        }
+    }
 }
