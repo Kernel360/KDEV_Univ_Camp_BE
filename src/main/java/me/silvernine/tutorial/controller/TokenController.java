@@ -12,8 +12,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.servlet.http.HttpServletRequest;
 
-@Tag(name = "Token Management", description = "APIs for managing and validating tokens")  // ✅ Swagger 태그 추가
+@Tag(name = "Token Management", description = "APIs for managing and validating tokens")
 @RestController
 @RequestMapping("/api/token")
 @RequiredArgsConstructor
@@ -41,7 +42,7 @@ public class TokenController {
 
     /**
      * JWT 토큰 유효성 검사 API
-     * @param token 클라이언트가 보낸 JWT 토큰
+     * @param request HTTP 요청 (Authorization 헤더에서 JWT 토큰 추출)
      * @return 유효하면 "000" (성공), 유효하지 않으면 "100" (토큰 오류)
      */
     @Operation(summary = "Validate token", description = "Checks if the provided token is valid")
@@ -50,18 +51,28 @@ public class TokenController {
             @ApiResponse(responseCode = "401", description = "Invalid or expired token")
     })
     @GetMapping("/validate")
-    public ResponseEntity<TokenResponseDto> validateToken(@RequestParam String token) {
-        // ✅ "Bearer "가 포함되어 있으면 제거
-        if (token.startsWith("Bearer ")) {
-            token = token.substring(7); // "Bearer " 이후의 순수한 토큰 값만 추출
+    public ResponseEntity<TokenResponseDto> validateToken(HttpServletRequest request) {
+        String authorizationHeader = request.getHeader("Authorization");
+
+        // ✅ Authorization 헤더가 없거나 "Bearer " 접두사가 없으면 401 반환
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(401).body(
+                    TokenResponseDto.builder()
+                            .rstCd(ResponseCode.INVALID_TOKEN)  // "100"
+                            .rstMsg("Unauthorized: No valid token provided")
+                            .build()
+            );
         }
 
-        boolean isValid = tokenValidator.validate(token); // ✅ 인스턴스 메서드로 호출
+        // ✅ "Bearer " 접두어 제거 후 실제 토큰 값 추출
+        String token = authorizationHeader.substring(7);
+
+        boolean isValid = tokenValidator.validate(token);
 
         if (isValid) {
             return ResponseEntity.ok().body(
                     TokenResponseDto.builder()
-                            .rstCd(ResponseCode.SUCCESS)  // ✅ "000" 반환
+                            .rstCd(ResponseCode.SUCCESS)  // "000"
                             .rstMsg("Token is valid")
                             .token(token)
                             .build()
@@ -69,7 +80,7 @@ public class TokenController {
         } else {
             return ResponseEntity.ok().body(
                     TokenResponseDto.builder()
-                            .rstCd(ResponseCode.INVALID_TOKEN)  // ✅ "100" 반환
+                            .rstCd(ResponseCode.INVALID_TOKEN)  // "100"
                             .rstMsg("Invalid or expired token")
                             .build()
             );
