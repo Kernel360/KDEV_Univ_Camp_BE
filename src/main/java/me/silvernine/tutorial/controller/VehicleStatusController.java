@@ -54,7 +54,7 @@ public class VehicleStatusController {
 
     @Operation(
             summary = "차량 개별 상태 및 대여 정보 조회",
-            description = "차량 번호를 입력하면 해당 차량의 최신 배터리 상태, 운행 상태, 대여 및 반납 정보를 반환합니다.",
+            description = "차량 번호를 입력하면 해당 차량의 최신 배터리 상태, 운행 상태, 출발/도착 날짜 및 대여/반납 시간을 반환합니다.",
             responses = {
                     @ApiResponse(
                             responseCode = "200",
@@ -69,7 +69,9 @@ public class VehicleStatusController {
                             "rentalLocation": "서울",
                             "rentalDateTime": "09:00",
                             "returnLocation": "부산",
-                            "returnDateTime": "23:00"
+                            "returnDateTime": "23:00",
+                            "startDate": "2025-01-01",
+                            "endDate": "2025-03-24"
                         }
                     """)
                             )
@@ -93,7 +95,7 @@ public class VehicleStatusController {
     }
 
     /**
-     * ✅ 더미 데이터: 차량의 배터리 상태, 운행 상태, 대여 및 반납 정보를 반환
+     * ✅ 더미 데이터: 차량의 배터리 상태, 운행 상태, 출발/도착 날짜 및 대여/반납 시간을 반환
      */
     private Map<String, Object> getDummyVehicleData(String vehicleNumber) {
         return switch (vehicleNumber) {
@@ -102,38 +104,53 @@ public class VehicleStatusController {
                     "batteryLevel", 85,
                     "status", "운행 중",
                     "rentalLocation", "서울",
-                    "rentalDateTime", formatDateTime("2025-01-01T09:00:00"),
+                    "rentalDateTime", formatTime("2025-01-01T09:00:00"),
                     "returnLocation", "부산",
-                    "returnDateTime", formatDateTime("2025-03-24T23:00:00")
+                    "returnDateTime", formatTime("2025-03-24T23:00:00"),
+                    "startDate", formatDate("2025-01-01T09:00:00"),
+                    "endDate", formatDate("2025-03-24T23:00:00")
             );
             case "34나5678" -> Map.of(
                     "vehicleNumber", "34나5678",
                     "batteryLevel", 20,
                     "status", "미운행",
                     "rentalLocation", "대전",
-                    "rentalDateTime", formatDateTime("2025-02-15T10:30:00"),
+                    "rentalDateTime", formatTime("2025-02-15T10:30:00"),
                     "returnLocation", "광주",
-                    "returnDateTime", formatDateTime("2025-03-20T18:45:00")
+                    "returnDateTime", formatTime("2025-03-20T18:45:00"),
+                    "startDate", formatDate("2025-02-15T10:30:00"),
+                    "endDate", formatDate("2025-03-20T18:45:00")
             );
             case "78다9012" -> Map.of(
                     "vehicleNumber", "78다9012",
                     "batteryLevel", 45,
                     "status", "미관제",
                     "rentalLocation", "인천",
-                    "rentalDateTime", formatDateTime("2025-03-10T14:15:00"),
+                    "rentalDateTime", formatTime("2025-03-10T14:15:00"),
                     "returnLocation", "울산",
-                    "returnDateTime", formatDateTime("2025-03-25T22:10:00")
+                    "returnDateTime", formatTime("2025-03-25T22:10:00"),
+                    "startDate", formatDate("2025-03-10T14:15:00"),
+                    "endDate", formatDate("2025-03-25T22:10:00")
             );
             default -> null;
         };
     }
 
     /**
-     * ✅ DB의 "yyyy-MM-dd HH:mm:ss.SS" 형식 날짜 데이터를 "HH:mm" (시:분) 형식으로 변환
+     * ✅ "yyyy-MM-dd HH:mm:ss" 형식의 날짜 데이터를 "HH:mm" (시:분) 형식으로 변환
      */
-    private String formatDateTime(String dateTime) {
+    private String formatTime(String dateTime) {
         LocalDateTime parsedDateTime = LocalDateTime.parse(dateTime);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+        return parsedDateTime.format(formatter);
+    }
+
+    /**
+     * ✅ "yyyy-MM-dd HH:mm:ss" 형식의 날짜 데이터를 "yyyy-MM-dd" (년-월-일) 형식으로 변환
+     */
+    private String formatDate(String dateTime) {
+        LocalDateTime parsedDateTime = LocalDateTime.parse(dateTime);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         return parsedDateTime.format(formatter);
     }
 }
