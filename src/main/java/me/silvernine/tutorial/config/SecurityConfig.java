@@ -33,11 +33,14 @@ public class SecurityConfig {
         this.jwtFilter = jwtFilter;
     }
 
-    // CORS 설정
+    // ✅ CORS 설정 (CorsConfig.java 삭제하고 여기에서 관리)
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173")); // 프론트엔드 도메인 추가
+        configuration.setAllowedOrigins(Arrays.asList(
+                "http://localhost:5173",
+                "http://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com"
+        ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setExposedHeaders(Arrays.asList("Authorization")); // ✅ Authorization 헤더 노출 추가
@@ -85,11 +88,12 @@ public class SecurityConfig {
                 new AntPathRequestMatcher("/api/authenticate"),
                 new AntPathRequestMatcher("/api/auth-header-check"),
                 new AntPathRequestMatcher("/api/user"),
-                new AntPathRequestMatcher("/api/trip/**") // ✅ 인증 없이 허용
+                new AntPathRequestMatcher("/api/trip/**"),
+                new AntPathRequestMatcher("/api/token/validate") // ✅ 추가: 토큰 검증 엔드포인트 허용
         };
 
         return http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // CORS 설정 추가
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // ✅ CORS 적용
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
