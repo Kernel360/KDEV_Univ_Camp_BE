@@ -51,18 +51,19 @@ public class VehicleStatusController {
     }
 
     @Operation(
-            summary = "차량 배터리 상태 조회",
-            description = "차량 번호를 입력하면 해당 차량의 최신 배터리 상태를 반환합니다.",
+            summary = "차량 개별 상태 조회",
+            description = "차량 번호를 입력하면 해당 차량의 최신 배터리 상태와 운행 상태를 반환합니다.",
             responses = {
                     @ApiResponse(
                             responseCode = "200",
-                            description = "배터리 상태 정보 응답",
+                            description = "차량 상태 정보 응답",
                             content = @Content(
                                     mediaType = "application/json",
                                     examples = @ExampleObject(value = """
                         {
                             "vehicleNumber": "12가1234",
-                            "batteryLevel": 85
+                            "batteryLevel": 85,
+                            "status": "운행 중"
                         }
                     """)
                             )
@@ -73,16 +74,39 @@ public class VehicleStatusController {
                     )
             }
     )
-    @GetMapping("/battery/{vehicleNumber}")
-    public Map<String, Object> getVehicleBatteryStatus(@PathVariable String vehicleNumber) {
-        // ✅ 현재는 더미 데이터를 반환하지만, 이후 DB에서 조회하도록 변경 가능
-        if (!"12가1234".equals(vehicleNumber)) {
+    @GetMapping("/{vehicleNumber}")
+    public Map<String, Object> getVehicleDetails(@PathVariable String vehicleNumber) {
+        // ✅ 더미 데이터로 차량 운행 상태와 배터리 상태 설정
+        Map<String, Object> vehicleData = getDummyVehicleData(vehicleNumber);
+
+        if (vehicleData == null) {
             throw new RuntimeException("해당 차량 번호를 찾을 수 없습니다: " + vehicleNumber);
         }
 
-        return Map.of(
-                "vehicleNumber", vehicleNumber,
-                "batteryLevel", 85 // 더미 데이터, 이후 DB에서 가져오도록 변경 가능
-        );
+        return vehicleData;
+    }
+
+    /**
+     * ✅ 더미 데이터: 차량의 배터리 상태 및 운행 상태를 반환
+     */
+    private Map<String, Object> getDummyVehicleData(String vehicleNumber) {
+        return switch (vehicleNumber) {
+            case "12가1234" -> Map.of(
+                    "vehicleNumber", "12가1234",
+                    "batteryLevel", 85,
+                    "status", "운행 중"
+            );
+            case "34나5678" -> Map.of(
+                    "vehicleNumber", "34나5678",
+                    "batteryLevel", 20,
+                    "status", "미운행"
+            );
+            case "78다9012" -> Map.of(
+                    "vehicleNumber", "78다9012",
+                    "batteryLevel", 45,
+                    "status", "미관제"
+            );
+            default -> null;
+        };
     }
 }
