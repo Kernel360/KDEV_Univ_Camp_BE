@@ -26,20 +26,21 @@ public class TokenProvider {
     private long tokenValidityInSeconds;
 
     public TokenProvider(@Value("${jwt.secret}") String secretKey) {
-        System.out.println("🔑 현재 사용 중인 JWT Secret Key: " + secretKey); // ✅ 확인용 로그 추가
-        this.key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(secretKey)); // ✅ Secret Key 디코딩 적용
+        byte[] keyBytes = Base64.getDecoder().decode(secretKey); // ✅ Base64 디코딩 적용
+        this.key = Keys.hmacShaKeyFor(keyBytes); // ✅ Secret Key 설정
         this.tokenValidityInSeconds *= 1000; // 초 → 밀리초 변환
-        System.out.println("✅ [JWT 초기화] Secret Key 설정 완료, 유효시간(ms): " + tokenValidityInSeconds);
+        logger.info("✅ [JWT 초기화] Secret Key 설정 완료, 유효시간(ms): {}", tokenValidityInSeconds);
     }
 
+    /**
+     * JWT 토큰 생성
+     */
     public String createToken(Authentication authentication) {
-        System.out.println("🚀 [JWT 생성 시작] Authentication Name: " + authentication.getName());
+        logger.info("🚀 [JWT 생성 시작] Authentication Name: {}", authentication.getName());
 
         String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
-
-        System.out.println("✅ [JWT 생성] 권한 목록: " + authorities);
 
         long now = (new Date()).getTime();
         Date validity = new Date(now + tokenValidityInSeconds);
@@ -48,21 +49,23 @@ public class TokenProvider {
             String jwt = Jwts.builder()
                     .setSubject(authentication.getName())
                     .claim(AUTHORITIES_KEY, authorities)
-                    .signWith(key, SignatureAlgorithm.HS512)
+                    .signWith(key, SignatureAlgorithm.HS512) // ✅ HS512 알고리즘 사용
                     .setExpiration(validity)
                     .compact();
 
-            System.out.println("🔑 생성된 JWT: " + jwt);
+            logger.info("🔑 생성된 JWT: {}", jwt);
             return jwt;
         } catch (Exception e) {
-            System.out.println("❌ JWT 생성 실패: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("❌ JWT 생성 실패: {}", e.getMessage());
             return null;
         }
     }
 
+    /**
+     * JWT 토큰으로부터 Authentication 객체 반환
+     */
     public Authentication getAuthentication(String token) {
-        System.out.println("🚀 [JWT 검증] 토큰 값: " + token);
+        logger.info("🚀 [JWT 검증] 토큰 값: {}", token);
 
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(key)
@@ -71,7 +74,7 @@ public class TokenProvider {
                 .getBody();
 
         String authoritiesString = claims.get(AUTHORITIES_KEY).toString();
-        System.out.println("✅ [JWT 검증] 권한 값: " + authoritiesString);
+        logger.info("✅ [JWT 검증] 권한 값: {}", authoritiesString);
 
         Collection<? extends GrantedAuthority> authorities =
                 Arrays.stream(authoritiesString.split(","))
@@ -79,29 +82,32 @@ public class TokenProvider {
                         .collect(Collectors.toList());
 
         User principal = new User(claims.getSubject(), "", authorities);
-        System.out.println("✅ [JWT 검증 완료] 사용자 ID: " + claims.getSubject());
+        logger.info("✅ [JWT 검증 완료] 사용자 ID: {}", claims.getSubject());
 
         return new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(principal, token, authorities);
     }
 
+    /**
+     * JWT 토큰 유효성 검증
+     */
     public boolean validateToken(String token) {
-        System.out.println("🚀 [JWT 유효성 검사 시작] 토큰: " + token);
+        logger.info("🚀 [JWT 유효성 검사 시작] 토큰: {}", token);
 
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
-            System.out.println("✅ [JWT 유효성 검사 통과]");
+            logger.info("✅ [JWT 유효성 검사 통과]");
             return true;
         } catch (SecurityException | MalformedJwtException e) {
-            logger.error("잘못된 JWT 서명입니다.");
+            logger.error("❌ 잘못된 JWT 서명입니다.");
         } catch (ExpiredJwtException e) {
-            logger.error("만료된 JWT 토큰입니다.");
+            logger.error("❌ 만료된 JWT 토큰입니다.");
         } catch (UnsupportedJwtException e) {
-            logger.error("지원되지 않는 JWT 토큰입니다.");
+            logger.error("❌ 지원되지 않는 JWT 토큰입니다.");
         } catch (IllegalArgumentException e) {
-            logger.error("JWT 토큰이 잘못되었습니다.");
+            logger.error("❌ JWT 토큰이 비어 있거나 잘못되었습니다.");
         }
 
-        System.out.println("❌ [JWT 유효성 검사 실패]");
+        logger.error("❌ [JWT 유효성 검사 실패]");
         return false;
     }
 }

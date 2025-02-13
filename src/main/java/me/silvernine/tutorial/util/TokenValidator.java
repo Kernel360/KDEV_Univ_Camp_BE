@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 @Component
 public class TokenValidator {
@@ -16,16 +16,22 @@ public class TokenValidator {
     private static final Logger logger = LoggerFactory.getLogger(TokenValidator.class);
     private final SecretKey secretKey;
 
+    // ✅ Base64 디코딩을 추가하여 `TokenProvider`와 동일한 방식으로 처리
     public TokenValidator(@Value("${jwt.secret}") String secret) {
-        this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        byte[] keyBytes = Base64.getDecoder().decode(secret);
+        this.secretKey = Keys.hmacShaKeyFor(keyBytes);
     }
 
+    /**
+     * JWT 토큰의 유효성을 검사하는 메서드
+     */
     public boolean validate(String token) {
         try {
             Jwts.parserBuilder()
                     .setSigningKey(secretKey)
                     .build()
                     .parseClaimsJws(token);
+            logger.info("✅ JWT 검증 성공: {}", token);
             return true;
         } catch (ExpiredJwtException e) {
             logger.error("❌ JWT 만료됨: {}", e.getMessage());
