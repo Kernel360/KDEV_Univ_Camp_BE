@@ -21,15 +21,14 @@ public class TokenProvider {
     private static final String AUTHORITIES_KEY = "auth";
     private final Logger logger = LoggerFactory.getLogger(TokenProvider.class);
     private final Key key;
+    private final long tokenValidityInMillis; // ✅ 밀리초 단위로 저장
 
-    @Value("${jwt.token-validity-in-seconds:86400000}") // ✅ 기본값 24시간 (86400초)
-    private long tokenValidityInSeconds;
-
-    public TokenProvider(@Value("${jwt.secret}") String secretKey) {
-        byte[] keyBytes = Base64.getDecoder().decode(secretKey); // ✅ Base64 디코딩 적용
-        this.key = Keys.hmacShaKeyFor(keyBytes); // ✅ Secret Key 설정
-        this.tokenValidityInSeconds *= 1000; // 초 → 밀리초 변환
-        logger.info("✅ [JWT 초기화] Secret Key 설정 완료, 유효시간(ms): {}", tokenValidityInSeconds);
+    public TokenProvider(@Value("${jwt.secret}") String secretKey,
+                         @Value("${jwt.token-validity-in-seconds:86400}") long tokenValidityInSeconds) { // ✅ 초 단위로 받음
+        byte[] keyBytes = Base64.getDecoder().decode(secretKey);
+        this.key = Keys.hmacShaKeyFor(keyBytes);
+        this.tokenValidityInMillis = tokenValidityInSeconds * 1000; // ✅ 초 → 밀리초 변환
+        logger.info("✅ [JWT 초기화] Secret Key 설정 완료, 유효시간(ms): {}", tokenValidityInMillis);
     }
 
     /**
@@ -43,7 +42,7 @@ public class TokenProvider {
                 .collect(Collectors.joining(","));
 
         long now = (new Date()).getTime();
-        Date validity = new Date(now + tokenValidityInSeconds);
+        Date validity = new Date(now + tokenValidityInMillis); // ✅ 밀리초 단위 사용
 
         try {
             String jwt = Jwts.builder()
