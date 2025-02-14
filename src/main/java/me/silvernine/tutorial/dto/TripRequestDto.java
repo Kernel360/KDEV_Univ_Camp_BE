@@ -19,7 +19,7 @@ public class TripRequestDto {
 
     @Schema(description = "GPS 기록 시간 (날짜+시간)", example = "2024-11-30 00:01:20.00")
     @JsonProperty("time")
-    private String time;  // JSON에서 들어오는 "time" 필드 매핑
+    private String time;  // **기존 timestamp 대신 time 사용**
 
     @Schema(description = "차량 ID", example = "12가 1234")
     @JsonProperty("vehicle_id")

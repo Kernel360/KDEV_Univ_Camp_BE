@@ -2,6 +2,7 @@ package me.silvernine.tutorial.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import me.silvernine.tutorial.dto.TripRequestDto;
 import me.silvernine.tutorial.model.Trip;
 import me.silvernine.tutorial.service.TripService;
@@ -18,12 +19,11 @@ import java.util.stream.Collectors;
 
 @Tag(name = "Trip Controller", description = "🚗 차량 GPS 데이터를 관리하는 API입니다.")
 @CrossOrigin(origins = "*")
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/trip")
 public class TripController {
-
-    @Autowired
-    private TripService tripService;
+    private final TripService tripService;
 
     private static int tripInterval = 60;
 
@@ -51,7 +51,7 @@ public class TripController {
         System.out.println("✅ [API 요청 수신] " + tripDto);
         System.out.println("📌 type: " + tripDto.getType());
         System.out.println("📌 vehicleId: " + tripDto.getVehicleId());
-        System.out.println("📌 timestamp: " + tripDto.getTimestamp());  // JSON의 "time"이 여기로 매핑됨
+        System.out.printf("\uD83D\uDCCC timestamp: %s%n", tripDto.getTime());  // JSON의 "time"이 여기로 매핑됨
         System.out.println("📌 latitude: " + tripDto.getLatitude());
         System.out.println("📌 longitude: " + tripDto.getLongitude());
 
@@ -60,7 +60,7 @@ public class TripController {
             trip.setVehicleId(tripDto.getVehicleId());
 
             // ✅ `timestamp` 값 변환 (밀리초 포함 여부 체크)
-            String fixedTimestamp = tripDto.getTimestamp().replace(".00", "").trim(); // .00 제거 및 공백 제거
+            String fixedTimestamp = tripDto.getTime().replace(".00", "").trim(); // .00 제거 및 공백 제거
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             LocalDateTime parsedTimestamp = LocalDateTime.parse(fixedTimestamp, formatter);
             trip.setTimestamp(parsedTimestamp);
@@ -72,7 +72,7 @@ public class TripController {
             tripService.saveTrip(trip);
             return ResponseEntity.ok().body("{\"message\": \"Success\"}");
         } catch (Exception e) {
-            System.err.println("🚨 Timestamp 변환 실패: " + tripDto.getTimestamp());
+            System.err.println("🚨 Timestamp 변환 실패: " + tripDto.getTime());
             return ResponseEntity.badRequest().body("{\"error\": \"Invalid timestamp format\"}");
         }
     }
@@ -94,18 +94,24 @@ public class TripController {
                 trip.setVehicleId(dto.getVehicleId());
 
                 try {
-                    // ✅ `time` 값을 `timestamp` 필드로 변환 (밀리초 포함 여부 처리)
-                    String fixedTimestamp = dto.getTimestamp().replace(".00", "").trim(); // .00 제거 및 공백 제거
+                    // ✅ `time`을 LocalDateTime으로 변환
+                    String fixedTime = dto.getTime().replace(".00", "").trim(); // .00 제거 및 공백 제거
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                    LocalDateTime timestamp = LocalDateTime.parse(fixedTimestamp, formatter);
+                    LocalDateTime timestamp = LocalDateTime.parse(fixedTime, formatter);
                     trip.setTimestamp(timestamp);
                 } catch (Exception e) {
-                    throw new IllegalArgumentException("🚨 Timestamp 변환 실패: " + dto.getTimestamp());
+                    throw new IllegalArgumentException("🚨 Timestamp 변환 실패: " + dto.getTime());
                 }
 
                 trip.setLatitude(dto.getLatitude());
                 trip.setLongitude(dto.getLongitude());
-                trip.setBatteryLevel(dto.getBatteryLevel());
+
+                // ✅ `battery_level`이 없는 경우 기본값 설정 (예: 100)
+                if (dto.getBatteryLevel() == null) {
+                    trip.setBatteryLevel(100);  // 기본값 설정
+                } else {
+                    trip.setBatteryLevel(dto.getBatteryLevel());
+                }
 
                 System.out.println("✅ 변환된 Trip 데이터: " + trip);
                 return trip;
@@ -117,7 +123,6 @@ public class TripController {
             return ResponseEntity.badRequest().body("{\"error\": \"" + e.getMessage() + "\"}");
         }
     }
-
 
     @Operation(summary = "📌 모든 GPS 데이터 조회", description = "저장된 모든 GPS 데이터를 조회합니다.")
     @GetMapping
