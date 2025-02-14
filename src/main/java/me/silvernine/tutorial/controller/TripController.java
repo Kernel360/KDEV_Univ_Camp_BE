@@ -1,44 +1,36 @@
 package me.silvernine.tutorial.controller;
 
-import me.silvernine.tutorial.dto.TripRequestDto;
-import me.silvernine.tutorial.model.Trip;
+import lombok.RequiredArgsConstructor;
+import me.silvernine.tutorial.model.TripData;
 import me.silvernine.tutorial.service.TripService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
-@CrossOrigin(origins = "*")  // 모든 도메인에서 API 요청 가능
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/trip")
+@RequiredArgsConstructor
 public class TripController {
+
     private final TripService tripService;
 
-    public TripController(TripService tripService) {
-        this.tripService = tripService;
+    @PostMapping
+    public ResponseEntity<TripData> saveTrip(@RequestBody TripData tripData) {
+        TripData savedTrip = tripService.saveTrip(tripData);
+        return ResponseEntity.ok(savedTrip);
     }
 
-    // ✅ 배치 데이터 저장
     @PostMapping("/batch")
-    public ResponseEntity<?> saveTrips(@RequestBody List<TripRequestDto> tripRequestDtos) {
-        List<Trip> trips = tripRequestDtos.stream().map(dto -> {
-            Trip trip = new Trip();
-            trip.setVehicleId(dto.getVehicleId());
-            trip.setTimestamp(dto.getTimestamp());
-            trip.setLatitude(dto.getLatitude());
-            trip.setLongitude(dto.getLongitude());
-            trip.setBatteryLevel(dto.getBatteryLevel());  // ✅ 배터리 값 저장
-            return trip;
-        }).collect(Collectors.toList());
-
-        tripService.saveTrips(trips);
+    public ResponseEntity<?> saveTrips(@RequestBody List<TripData> tripDataList) {
+        tripService.saveTrips(tripDataList);
         return ResponseEntity.ok().body("Data saved successfully");
     }
 
-    // ✅ 저장된 데이터 조회
-    @GetMapping
-    public ResponseEntity<List<Trip>> getAllTrips() {
-        return ResponseEntity.ok(tripService.getAllTrips());
+    @GetMapping("/recent")
+    public ResponseEntity<List<TripData>> getRecentTrips(@RequestParam LocalDateTime since) {
+        return ResponseEntity.ok(tripService.getRecentTrips(since));
     }
 }
