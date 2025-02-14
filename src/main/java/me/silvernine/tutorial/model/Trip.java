@@ -18,7 +18,7 @@ public class Trip {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(name = "vehicle_id", nullable = false)
     private String vehicleId;
 
     @Column(nullable = false)

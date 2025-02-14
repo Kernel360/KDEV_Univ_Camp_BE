@@ -20,8 +20,8 @@ public class TripService {
         return tripRepository.save(trip);
     }
 
-    public void saveTrips(List<Trip> tripList) {
-        tripRepository.saveAll(tripList);
+    public void saveTrips(List<Trip> trips) {
+        tripRepository.saveAll(trips);
     }
 
     public List<Trip> getRecentTrips(LocalDateTime since) {
