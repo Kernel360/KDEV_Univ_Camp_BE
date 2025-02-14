@@ -7,14 +7,13 @@ import lombok.Setter;
 @Getter
 @Setter
 public class TripRequestDto {
-
     private String type;
     private String date;
 
-    @JsonProperty("time") // JSON 필드와 일치시키기
-    private String time;
+    @JsonProperty("time")
+    private String time;  // 🔥 'time' 값을 변환해야 함
 
-    @JsonProperty("vehicle_id") // JSON 필드와 일치시키기
+    @JsonProperty("vehicle_id")
     private String vehicleId;
 
     private Double latitude;
