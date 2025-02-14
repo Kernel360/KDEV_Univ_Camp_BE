@@ -46,23 +46,33 @@ public class TripController {
 
     @Operation(summary = "📌 단일 GPS 데이터 저장", description = "🚗 하나의 GPS 데이터를 저장합니다.")
     @PostMapping
-    public ResponseEntity<Trip> saveTrip(@RequestBody TripRequestDto tripRequestDto) {
-        Trip trip = new Trip();
-        trip.setVehicleId(tripRequestDto.getVehicleId());
+    public ResponseEntity<?> saveTrip(@RequestBody TripRequestDto tripDto) {
+        // ✅ 요청 로깅
+        System.out.println("✅ [API 요청 수신] " + tripDto);
+        System.out.println("📌 vehicleId: " + tripDto.getVehicleId());
+        System.out.println("📌 timestamp: " + tripDto.getTimestamp());
+        System.out.println("📌 latitude: " + tripDto.getLatitude());
+        System.out.println("📌 longitude: " + tripDto.getLongitude());
+        System.out.println("📌 batteryLevel: " + tripDto.getBatteryLevel());
 
         try {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            LocalDateTime timestamp = LocalDateTime.parse(tripRequestDto.getTimestamp(), formatter);
+            Trip trip = new Trip();
+            trip.setVehicleId(tripDto.getVehicleId());
+
+            // ✅ Timestamp 변환 (밀리초까지 포함된 경우 자동 처리)
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+            LocalDateTime timestamp = LocalDateTime.parse(tripDto.getTimestamp(), formatter);
             trip.setTimestamp(timestamp);
+
+            trip.setLatitude(tripDto.getLatitude());
+            trip.setLongitude(tripDto.getLongitude());
+            trip.setBatteryLevel(tripDto.getBatteryLevel());
+
+            tripService.saveTrip(trip);
+            return ResponseEntity.ok().body("{\"message\": \"Success\"}");
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(null);
+            return ResponseEntity.badRequest().body("{\"error\": \"Invalid timestamp format\"}");
         }
-
-        trip.setLatitude(tripRequestDto.getLatitude());
-        trip.setLongitude(tripRequestDto.getLongitude());
-
-        Trip savedTrip = tripService.saveTrip(trip);
-        return ResponseEntity.ok(savedTrip);
     }
 
     @Operation(summary = "📌 배치 GPS 데이터 저장", description = "🚗 여러 개의 GPS 데이터를 한 번에 저장합니다.")
@@ -82,7 +92,7 @@ public class TripController {
 
             try {
                 // ✅ 밀리초까지 포함한 포맷 적용
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SS");
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
                 // 🔥 밀리초가 없는 경우도 고려하여 변환
                 String formattedTimestamp = dto.getTimestamp().replace(".00", ""); // .00 제거
@@ -109,13 +119,11 @@ public class TripController {
         return ResponseEntity.ok().body("✅ Data saved successfully");
     }
 
-
     @Operation(summary = "📌 모든 GPS 데이터 조회", description = "저장된 모든 GPS 데이터를 조회합니다.")
     @GetMapping
     public ResponseEntity<List<Trip>> getAllTrips() {
         return ResponseEntity.ok(tripService.getAllTrips());
     }
-
 
     @Operation(summary = "📌 주기별 GPS 데이터 조회", description = "설정된 주기(60, 120, 180초)마다 저장된 GPS 데이터를 조회합니다.")
     @GetMapping("/gpsData")
