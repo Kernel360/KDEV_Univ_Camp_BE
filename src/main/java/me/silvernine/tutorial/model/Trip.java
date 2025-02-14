@@ -16,7 +16,6 @@ public class Trip {
     private String vehicleId;
     private double latitude;
     private double longitude;
-    private int batteryLevel;
 
     @Column(columnDefinition = "TIMESTAMP")
     private LocalDateTime timestamp;

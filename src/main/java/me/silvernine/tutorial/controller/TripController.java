@@ -17,14 +17,12 @@ public class TripController {
         this.tripService = tripService;
     }
 
-    // ✅ 단일 데이터 저장 (이미 정상 동작 중)
     @PostMapping
     public ResponseEntity<Trip> saveTrip(@RequestBody TripRequestDto tripRequestDto) {
         Trip trip = tripService.saveTrip(tripRequestDto);
         return ResponseEntity.ok(trip);
     }
 
-    // ✅ 배치 데이터 저장 수정
     @PostMapping("/batch")
     public ResponseEntity<List<Trip>> saveTrips(@RequestBody List<TripRequestDto> tripRequestDtoList) {
         List<Trip> savedTrips = tripService.saveTrips(tripRequestDtoList);
