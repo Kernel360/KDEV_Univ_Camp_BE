@@ -1,41 +1,42 @@
 package me.silvernine.tutorial.service;
 
-import me.silvernine.tutorial.dto.TripRequestDto;
 import me.silvernine.tutorial.model.Trip;
 import me.silvernine.tutorial.repository.TripRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class TripService {
+
     private final TripRepository tripRepository;
 
     public TripService(TripRepository tripRepository) {
         this.tripRepository = tripRepository;
     }
 
-    public Trip saveTrip(TripRequestDto tripRequestDto) {
-        Trip trip = new Trip();
-        trip.setVehicleId(tripRequestDto.getVehicleId());
-        trip.setLatitude(tripRequestDto.getLatitude());
-        trip.setLongitude(tripRequestDto.getLongitude());
-        trip.setTimestamp(tripRequestDto.getTimestamp());
-
+    /**
+     * 🚀 단일 데이터 저장
+     */
+    @Transactional
+    public Trip saveTrip(Trip trip) {
         return tripRepository.save(trip);
     }
 
-    public List<Trip> saveTrips(List<TripRequestDto> tripRequestDtoList) {
-        List<Trip> trips = tripRequestDtoList.stream().map(dto -> {
-            Trip trip = new Trip();
-            trip.setVehicleId(dto.getVehicleId());
-            trip.setLatitude(dto.getLatitude());
-            trip.setLongitude(dto.getLongitude());
-            trip.setTimestamp(dto.getTimestamp());
-            return trip;
-        }).collect(Collectors.toList());
+    /**
+     * 🚀 배치 데이터 저장
+     */
+    @Transactional
+    public void saveTrips(List<Trip> trips) {
+        tripRepository.saveAll(trips);
+    }
 
-        return tripRepository.saveAll(trips);
+    /**
+     * 🔍 특정 시간 이후의 데이터 조회
+     */
+    public List<Trip> getRecentTrips(LocalDateTime since) {
+        return tripRepository.findByTimestampAfter(since);
     }
 }
-
