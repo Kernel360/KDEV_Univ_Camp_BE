@@ -2,34 +2,22 @@ package me.silvernine.tutorial.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
-
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "trip_data")
 @Getter
 @Setter
-@NoArgsConstructor
 public class Trip {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "vehicle_id", nullable = false)
     private String vehicleId;
+    private double latitude;
+    private double longitude;
+    private int batteryLevel;
 
-    @Column(nullable = false)
-    private Double latitude;
-
-    @Column(nullable = false)
-    private Double longitude;
-
-    @Column(nullable = false)
-    private Integer batteryLevel;
-
-    @Column(nullable = false)
+    @Column(columnDefinition = "TIMESTAMP")
     private LocalDateTime timestamp;
 }
