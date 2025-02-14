@@ -1,6 +1,8 @@
 package me.silvernine.tutorial.controller;
 
+import me.silvernine.tutorial.dto.TripRequestDto;
 import me.silvernine.tutorial.model.Trip;
+import me.silvernine.tutorial.service.TripService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
