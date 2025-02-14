@@ -1,7 +1,6 @@
 package me.silvernine.tutorial.controller;
 
-import lombok.RequiredArgsConstructor;
-import me.silvernine.tutorial.model.TripData;
+import me.silvernine.tutorial.model.Trip;
 import me.silvernine.tutorial.service.TripService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -9,28 +8,30 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/trip")
-@RequiredArgsConstructor
 public class TripController {
 
     private final TripService tripService;
 
+    public TripController(TripService tripService) {
+        this.tripService = tripService;
+    }
+
     @PostMapping
-    public ResponseEntity<TripData> saveTrip(@RequestBody TripData tripData) {
-        TripData savedTrip = tripService.saveTrip(tripData);
+    public ResponseEntity<Trip> saveTrip(@RequestBody Trip trip) {
+        Trip savedTrip = tripService.saveTrip(trip);
         return ResponseEntity.ok(savedTrip);
     }
 
     @PostMapping("/batch")
-    public ResponseEntity<?> saveTrips(@RequestBody List<TripData> tripDataList) {
-        tripService.saveTrips(tripDataList);
+    public ResponseEntity<?> saveTrips(@RequestBody List<Trip> tripList) {
+        tripService.saveTrips(tripList);
         return ResponseEntity.ok().body("Data saved successfully");
     }
 
     @GetMapping("/recent")
-    public ResponseEntity<List<TripData>> getRecentTrips(@RequestParam LocalDateTime since) {
+    public ResponseEntity<List<Trip>> getRecentTrips(@RequestParam LocalDateTime since) {
         return ResponseEntity.ok(tripService.getRecentTrips(since));
     }
 }

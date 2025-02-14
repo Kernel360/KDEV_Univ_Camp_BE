@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import me.silvernine.tutorial.util.LocalDateTimeAttributeConverter;
 
 import java.time.LocalDateTime;
 
@@ -32,6 +31,5 @@ public class Trip {
     private Integer batteryLevel;
 
     @Column(nullable = false)
-    @Convert(converter = LocalDateTimeAttributeConverter.class)  // LocalDateTime 변환 추가
     private LocalDateTime timestamp;
 }
