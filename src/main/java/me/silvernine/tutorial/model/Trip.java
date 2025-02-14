@@ -17,5 +17,5 @@ public class Trip {
     private Double latitude;
     private Double longitude;
     private int batteryLevel;
-    private String timestamp; // ✅ String으로 저장하도록 변경
+    private String timestamp; // ✅ String으로 유지 (단일과 동일)
 }
