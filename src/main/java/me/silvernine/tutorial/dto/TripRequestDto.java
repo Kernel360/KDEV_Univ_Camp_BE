@@ -7,7 +7,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class TripRequestDto {
-
     @JsonProperty("type")
     private String type;
 
