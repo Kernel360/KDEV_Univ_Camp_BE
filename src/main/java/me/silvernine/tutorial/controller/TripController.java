@@ -16,9 +16,7 @@ import java.util.stream.Collectors;
 public class TripController {
 
     private final TripService tripService;
-
-    // 🔥 기존 yyyy-MM-dd HH:mm:ss.SS → yyyy-MM-dd HH:mm:ss.SSSSSS (6자리 소수점)
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS");
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SS");
 
     public TripController(TripService tripService) {
         this.tripService = tripService;
@@ -32,15 +30,15 @@ public class TripController {
         return ResponseEntity.ok(savedTrip);
     }
 
-    // ✅ 배치 데이터 저장
+    // ✅ 배치 데이터 저장 (🚀 단일 저장과 동일한 변환 방식 적용)
     @PostMapping("/batch")
     public ResponseEntity<?> saveTrips(@RequestBody List<TripRequestDto> tripRequestDtos) {
         List<Trip> trips = tripRequestDtos.stream()
-                .map(this::convertToTrip)
+                .map(this::convertToTrip) // 🔥 각 DTO를 Trip 객체로 변환
                 .collect(Collectors.toList());
 
         tripService.saveTrips(trips);
-        return ResponseEntity.ok().body("Data saved successfully");
+        return ResponseEntity.ok().body("Batch data saved successfully");
     }
 
     // ✅ 최근 데이터 조회
@@ -49,25 +47,19 @@ public class TripController {
         return ResponseEntity.ok(tripService.getRecentTrips(since));
     }
 
-    // ✅ TripRequestDto → Trip 변환 메서드
+    // ✅ TripRequestDto → Trip 변환 메서드 (단일 & 배치 공통)
     private Trip convertToTrip(TripRequestDto dto) {
-        if (dto.getTime() == null || dto.getTime().isEmpty()) {
-            throw new IllegalArgumentException("🚨 time 값이 누락되었습니다.");
-        }
-
         Trip trip = new Trip();
-        trip.setVehicleId(dto.getVehicleId());
+        trip.setVehicleId(dto.getVehicleId()); // 🔥 수정된 DTO 필드 사용
         trip.setLatitude(dto.getLatitude());
         trip.setLongitude(dto.getLongitude());
 
-        // 🔥 time 값 변환 시 예외 처리 추가
-        try {
-            trip.setTimestamp(LocalDateTime.parse(dto.getTime(), formatter));
-        } catch (Exception e) {
-            throw new IllegalArgumentException("🚨 timestamp 변환 오류: " + dto.getTime(), e);
-        }
+        // 🔥 'time' 값을 LocalDateTime으로 변환
+        trip.setTimestamp(LocalDateTime.parse(dto.getTime(), formatter));
 
-        trip.setBatteryLevel(100); // 기본 배터리 값 설정
+        // 🔥 기본 배터리 값 설정 (100부터 시작)
+        trip.setBatteryLevel(100);
+
         return trip;
     }
 }
