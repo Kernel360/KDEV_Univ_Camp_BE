@@ -49,20 +49,21 @@ public class TripController {
     public ResponseEntity<?> saveTrip(@RequestBody TripRequestDto tripDto) {
         // ✅ 요청 로깅
         System.out.println("✅ [API 요청 수신] " + tripDto);
+        System.out.println("📌 type: " + tripDto.getType());
         System.out.println("📌 vehicleId: " + tripDto.getVehicleId());
-        System.out.println("📌 timestamp: " + tripDto.getTimestamp());
+        System.out.println("📌 timestamp: " + tripDto.getTimestamp());  // JSON의 "time"이 여기로 매핑됨
         System.out.println("📌 latitude: " + tripDto.getLatitude());
         System.out.println("📌 longitude: " + tripDto.getLongitude());
-        System.out.println("📌 batteryLevel: " + tripDto.getBatteryLevel());
 
         try {
             Trip trip = new Trip();
             trip.setVehicleId(tripDto.getVehicleId());
 
-            // ✅ Timestamp 변환 (밀리초까지 포함된 경우 자동 처리)
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
-            LocalDateTime timestamp = LocalDateTime.parse(tripDto.getTimestamp(), formatter);
-            trip.setTimestamp(timestamp);
+            // ✅ `timestamp` 값 변환 (밀리초 포함 여부 체크)
+            String fixedTimestamp = tripDto.getTimestamp().replace(".00", "").trim(); // .00 제거 및 공백 제거
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            LocalDateTime parsedTimestamp = LocalDateTime.parse(fixedTimestamp, formatter);
+            trip.setTimestamp(parsedTimestamp);
 
             trip.setLatitude(tripDto.getLatitude());
             trip.setLongitude(tripDto.getLongitude());
@@ -71,6 +72,7 @@ public class TripController {
             tripService.saveTrip(trip);
             return ResponseEntity.ok().body("{\"message\": \"Success\"}");
         } catch (Exception e) {
+            System.err.println("🚨 Timestamp 변환 실패: " + tripDto.getTimestamp());
             return ResponseEntity.badRequest().body("{\"error\": \"Invalid timestamp format\"}");
         }
     }
@@ -86,38 +88,36 @@ public class TripController {
             return ResponseEntity.badRequest().body("Received empty data");
         }
 
-        List<Trip> trips = tripRequestDtos.stream().map(dto -> {
-            Trip trip = new Trip();
-            trip.setVehicleId(dto.getVehicleId());
+        try {
+            List<Trip> trips = tripRequestDtos.stream().map(dto -> {
+                Trip trip = new Trip();
+                trip.setVehicleId(dto.getVehicleId());
 
-            try {
-                // ✅ 밀리초까지 포함한 포맷 적용
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+                try {
+                    // ✅ `time` 값을 `timestamp` 필드로 변환 (밀리초 포함 여부 처리)
+                    String fixedTimestamp = dto.getTimestamp().replace(".00", "").trim(); // .00 제거 및 공백 제거
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                    LocalDateTime timestamp = LocalDateTime.parse(fixedTimestamp, formatter);
+                    trip.setTimestamp(timestamp);
+                } catch (Exception e) {
+                    throw new IllegalArgumentException("🚨 Timestamp 변환 실패: " + dto.getTimestamp());
+                }
 
-                // 🔥 밀리초가 없는 경우도 고려하여 변환
-                String formattedTimestamp = dto.getTimestamp().replace(".00", ""); // .00 제거
-                LocalDateTime timestamp = LocalDateTime.parse(formattedTimestamp, formatter);
-                trip.setTimestamp(timestamp);
-            } catch (Exception e) {
-                System.err.println("🚨 Timestamp 변환 실패: " + dto.getTimestamp());
-                return null;
-            }
+                trip.setLatitude(dto.getLatitude());
+                trip.setLongitude(dto.getLongitude());
+                trip.setBatteryLevel(dto.getBatteryLevel());
 
-            trip.setLatitude(dto.getLatitude());
-            trip.setLongitude(dto.getLongitude());
-            trip.setBatteryLevel(dto.getBatteryLevel());
+                System.out.println("✅ 변환된 Trip 데이터: " + trip);
+                return trip;
+            }).collect(Collectors.toList());
 
-            System.out.println("✅ 변환된 Trip 데이터: " + trip);
-            return trip;
-        }).filter(trip -> trip != null).collect(Collectors.toList());
-
-        if (trips.isEmpty()) {
-            return ResponseEntity.badRequest().body("❌ 변환된 데이터가 없음!");
+            tripService.saveTrips(trips);
+            return ResponseEntity.ok().body("✅ Data saved successfully");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("{\"error\": \"" + e.getMessage() + "\"}");
         }
-
-        tripService.saveTrips(trips);
-        return ResponseEntity.ok().body("✅ Data saved successfully");
     }
+
 
     @Operation(summary = "📌 모든 GPS 데이터 조회", description = "저장된 모든 GPS 데이터를 조회합니다.")
     @GetMapping
