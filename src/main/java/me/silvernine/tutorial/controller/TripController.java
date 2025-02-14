@@ -30,7 +30,7 @@ public class TripController {
         return ResponseEntity.ok(savedTrip);
     }
 
-    // ✅ 배치 데이터 저장 (🚀 단일 저장과 동일한 변환 방식 적용)
+    // ✅ 배치 데이터 저장
     @PostMapping("/batch")
     public ResponseEntity<?> saveTrips(@RequestBody List<TripRequestDto> tripRequestDtos) {
         List<Trip> trips = tripRequestDtos.stream()
@@ -50,15 +50,15 @@ public class TripController {
     // ✅ TripRequestDto → Trip 변환 메서드 (단일 & 배치 공통)
     private Trip convertToTrip(TripRequestDto dto) {
         Trip trip = new Trip();
-        trip.setVehicleId(dto.getVehicleId()); // 🔥 수정된 DTO 필드 사용
+        trip.setVehicleId(dto.getVehicleId());
         trip.setLatitude(dto.getLatitude());
         trip.setLongitude(dto.getLongitude());
 
-        // 🔥 'time' 값을 LocalDateTime으로 변환
+        // ✅ 'time' 값을 LocalDateTime으로 변환
         trip.setTimestamp(LocalDateTime.parse(dto.getTime(), formatter));
 
-        // 🔥 기본 배터리 값 설정 (100부터 시작)
-        trip.setBatteryLevel(100);
+        // ✅ 배터리 값 반영 (null이면 100으로 설정)
+        trip.setBatteryLevel(dto.getBatteryLevel() != null ? dto.getBatteryLevel() : 100);
 
         return trip;
     }

@@ -19,4 +19,7 @@ public class TripRequestDto {
 
     private Double latitude;
     private Double longitude;
+
+    @JsonProperty("battery_level") // ✅ 배터리 값 추가
+    private Integer batteryLevel;
 }
