@@ -10,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -23,7 +22,8 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/trip")
 public class TripController {
-    private final TripService tripService;
+
+    private final TripService tripService;  // ✅ `@Autowired` 제거하고 `final` 유지
 
     private static int tripInterval = 60;
 
@@ -47,11 +47,10 @@ public class TripController {
     @Operation(summary = "📌 단일 GPS 데이터 저장", description = "🚗 하나의 GPS 데이터를 저장합니다.")
     @PostMapping
     public ResponseEntity<?> saveTrip(@RequestBody TripRequestDto tripDto) {
-        // ✅ 요청 로깅
         System.out.println("✅ [API 요청 수신] " + tripDto);
         System.out.println("📌 type: " + tripDto.getType());
         System.out.println("📌 vehicleId: " + tripDto.getVehicleId());
-        System.out.printf("\uD83D\uDCCC timestamp: %s%n", tripDto.getTime());  // JSON의 "time"이 여기로 매핑됨
+        System.out.println("📌 time: " + tripDto.getTime());
         System.out.println("📌 latitude: " + tripDto.getLatitude());
         System.out.println("📌 longitude: " + tripDto.getLongitude());
 
@@ -59,15 +58,22 @@ public class TripController {
             Trip trip = new Trip();
             trip.setVehicleId(tripDto.getVehicleId());
 
-            // ✅ `timestamp` 값 변환 (밀리초 포함 여부 체크)
-            String fixedTimestamp = tripDto.getTime().replace(".00", "").trim(); // .00 제거 및 공백 제거
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            LocalDateTime parsedTimestamp = LocalDateTime.parse(fixedTimestamp, formatter);
+            // ✅ `time` 값 변환 (밀리초 포함 여부 고려)
+            String fixedTime = tripDto.getTime().replace(".00", "").trim();
+            DateTimeFormatter formatter;
+            if (fixedTime.contains(".")) {
+                formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");  // 밀리초 포함
+            } else {
+                formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");  // 밀리초 없음
+            }
+            LocalDateTime parsedTimestamp = LocalDateTime.parse(fixedTime, formatter);
             trip.setTimestamp(parsedTimestamp);
 
             trip.setLatitude(tripDto.getLatitude());
             trip.setLongitude(tripDto.getLongitude());
-            trip.setBatteryLevel(tripDto.getBatteryLevel());
+
+            // ✅ `battery_level` 기본값 처리
+            trip.setBatteryLevel(tripDto.getBatteryLevel() != null ? tripDto.getBatteryLevel() : 100);
 
             tripService.saveTrip(trip);
             return ResponseEntity.ok().body("{\"message\": \"Success\"}");
@@ -95,8 +101,13 @@ public class TripController {
 
                 try {
                     // ✅ `time`을 LocalDateTime으로 변환
-                    String fixedTime = dto.getTime().replace(".00", "").trim(); // .00 제거 및 공백 제거
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                    String fixedTime = dto.getTime().replace(".00", "").trim();
+                    DateTimeFormatter formatter;
+                    if (fixedTime.contains(".")) {
+                        formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");  // 밀리초 포함
+                    } else {
+                        formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");  // 밀리초 없음
+                    }
                     LocalDateTime timestamp = LocalDateTime.parse(fixedTime, formatter);
                     trip.setTimestamp(timestamp);
                 } catch (Exception e) {
@@ -106,12 +117,8 @@ public class TripController {
                 trip.setLatitude(dto.getLatitude());
                 trip.setLongitude(dto.getLongitude());
 
-                // ✅ `battery_level`이 없는 경우 기본값 설정 (예: 100)
-                if (dto.getBatteryLevel() == null) {
-                    trip.setBatteryLevel(100);  // 기본값 설정
-                } else {
-                    trip.setBatteryLevel(dto.getBatteryLevel());
-                }
+                // ✅ `battery_level`이 없는 경우 기본값 설정 (100)
+                trip.setBatteryLevel(dto.getBatteryLevel() != null ? dto.getBatteryLevel() : 100);
 
                 System.out.println("✅ 변환된 Trip 데이터: " + trip);
                 return trip;
