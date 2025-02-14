@@ -50,7 +50,8 @@ public class TripController {
         System.out.println("✅ [API 요청 수신] " + tripDto);
         System.out.println("📌 type: " + tripDto.getType());
         System.out.println("📌 vehicleId: " + tripDto.getVehicleId());
-        System.out.println("📌 time: " + tripDto.getTime());
+        System.out.println("📌 date: " + tripDto.getDate());
+        System.out.println("📌 time: " + tripDto.getTimestamp());  // JSON의 "time"이 여기에 매핑됨
         System.out.println("📌 latitude: " + tripDto.getLatitude());
         System.out.println("📌 longitude: " + tripDto.getLongitude());
 
@@ -58,15 +59,16 @@ public class TripController {
             Trip trip = new Trip();
             trip.setVehicleId(tripDto.getVehicleId());
 
-            // ✅ `time` 값 변환 (밀리초 포함 여부 고려)
-            String fixedTime = tripDto.getTime().replace(".00", "").trim();
+            // ✅ `date`가 비어 있지 않으면 "yyyy-MM-dd HH:mm:ss" 형식으로 조합
+            String datePart = tripDto.getDate() == null || tripDto.getDate().isEmpty() ? "1970-01-01" : tripDto.getDate();
+            String fixedTimestamp = (datePart + " " + tripDto.getTimestamp()).replace(".00", "").trim();
             DateTimeFormatter formatter;
-            if (fixedTime.contains(".")) {
+            if (fixedTimestamp.contains(".")) {
                 formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");  // 밀리초 포함
             } else {
                 formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");  // 밀리초 없음
             }
-            LocalDateTime parsedTimestamp = LocalDateTime.parse(fixedTime, formatter);
+            LocalDateTime parsedTimestamp = LocalDateTime.parse(fixedTimestamp, formatter);
             trip.setTimestamp(parsedTimestamp);
 
             trip.setLatitude(tripDto.getLatitude());
@@ -78,7 +80,7 @@ public class TripController {
             tripService.saveTrip(trip);
             return ResponseEntity.ok().body("{\"message\": \"Success\"}");
         } catch (Exception e) {
-            System.err.println("🚨 Timestamp 변환 실패: " + tripDto.getTime());
+            System.err.println("🚨 Timestamp 변환 실패: " + tripDto.getTimestamp());
             return ResponseEntity.badRequest().body("{\"error\": \"Invalid timestamp format\"}");
         }
     }
@@ -100,18 +102,19 @@ public class TripController {
                 trip.setVehicleId(dto.getVehicleId());
 
                 try {
-                    // ✅ `time`을 LocalDateTime으로 변환
-                    String fixedTime = dto.getTime().replace(".00", "").trim();
+                    // ✅ `date`가 비어있으면 기본값을 "1970-01-01"로 설정
+                    String datePart = dto.getDate() == null || dto.getDate().isEmpty() ? "1970-01-01" : dto.getDate();
+                    String fixedTimestamp = (datePart + " " + dto.getTimestamp()).replace(".00", "").trim();
                     DateTimeFormatter formatter;
-                    if (fixedTime.contains(".")) {
+                    if (fixedTimestamp.contains(".")) {
                         formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");  // 밀리초 포함
                     } else {
                         formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");  // 밀리초 없음
                     }
-                    LocalDateTime timestamp = LocalDateTime.parse(fixedTime, formatter);
+                    LocalDateTime timestamp = LocalDateTime.parse(fixedTimestamp, formatter);
                     trip.setTimestamp(timestamp);
                 } catch (Exception e) {
-                    throw new IllegalArgumentException("🚨 Timestamp 변환 실패: " + dto.getTime());
+                    throw new IllegalArgumentException("🚨 Timestamp 변환 실패: " + dto.getTimestamp());
                 }
 
                 trip.setLatitude(dto.getLatitude());
@@ -135,17 +138,6 @@ public class TripController {
     @GetMapping
     public ResponseEntity<List<Trip>> getAllTrips() {
         return ResponseEntity.ok(tripService.getAllTrips());
-    }
-
-    @Operation(summary = "📌 주기별 GPS 데이터 조회", description = "설정된 주기(60, 120, 180초)마다 저장된 GPS 데이터를 조회합니다.")
-    @GetMapping("/gpsData")
-    public ResponseEntity<List<Trip>> getGpsData(@RequestParam int interval) {
-        if (interval == 60 || interval == 120 || interval == 180) {
-            List<Trip> trips = tripService.getTripsByInterval(interval);
-            return ResponseEntity.ok(trips.isEmpty() ? List.of() : trips);
-        } else {
-            return ResponseEntity.badRequest().body(List.of());
-        }
     }
 
     @Operation(summary = "📌 특정 차량 최신 GPS 데이터 조회", description = "🚗 특정 차량의 가장 최근 GPS 데이터를 조회합니다.")

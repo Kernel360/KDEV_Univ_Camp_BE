@@ -7,14 +7,18 @@ import lombok.Setter;
 @Getter
 @Setter
 public class TripRequestDto {
-    @JsonProperty("type")  // ✅ JSON 필드명과 매핑
+
+    @JsonProperty("type")
     private String type;
 
-    @JsonProperty("vehicle_id")  // ✅ JSON 필드명과 매핑
+    @JsonProperty("vehicle_id")  // JSON의 "vehicle_id" 필드와 매핑
     private String vehicleId;
 
-    @JsonProperty("time")  // ✅ JSON 필드명과 매핑 (timestamp → time)
-    private String time;
+    @JsonProperty("date")  // JSON의 "date" 필드 추가
+    private String date;
+
+    @JsonProperty("time")  // JSON의 "time" 필드와 매핑
+    private String timestamp;
 
     @JsonProperty("latitude")
     private Double latitude;
