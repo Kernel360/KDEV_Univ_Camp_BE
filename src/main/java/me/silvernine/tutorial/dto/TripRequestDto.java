@@ -1,15 +1,20 @@
 package me.silvernine.tutorial.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
 public class TripRequestDto {
-    private String type;
-    private String date;
-    private String time;  // 🔥 'time' 값을 변환해야 함
-    private String vehicle_id;
-    private Double latitude;
-    private Double longitude;
+    private String vehicleId;
+    private double latitude;
+    private double longitude;
+    private int batteryLevel;
+
+    // ✅ timestamp 자동 변환 추가
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss.SSSSSS")
+    private LocalDateTime timestamp;
 }

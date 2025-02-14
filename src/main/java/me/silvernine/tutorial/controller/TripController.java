@@ -1,11 +1,13 @@
 package me.silvernine.tutorial.controller;
 
+import me.silvernine.tutorial.dto.TripRequestDto;
 import me.silvernine.tutorial.model.Trip;
 import me.silvernine.tutorial.service.TripService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/trip")
@@ -17,30 +19,21 @@ public class TripController {
         this.tripService = tripService;
     }
 
-    // ✅ 단일 데이터 저장 API (기존 코드 유지)
+    // ✅ 단일 저장 요청 (유지)
     @PostMapping
-    public ResponseEntity<Trip> saveTrip(@RequestBody Trip trip) {
-        Trip savedTrip = tripService.saveTrip(trip);
+    public ResponseEntity<Trip> saveTrip(@RequestBody TripRequestDto tripRequestDto) {
+        Trip savedTrip = tripService.saveTrip(tripRequestDto);
         return ResponseEntity.ok(savedTrip);
     }
 
-    // ✅ 배치 데이터 저장 API (단일 저장 방식과 동일하게 수정)
+    // ✅ 배치 저장 요청 (변경)
     @PostMapping("/batch")
-    public ResponseEntity<?> saveTrips(@RequestBody List<Trip> tripList) {
-        tripList.forEach(trip -> {
-            // ✅ timestamp 변환 (기존 단일 데이터 로직 유지)
-            if (trip.getTimestamp() == null || trip.getTimestamp().isEmpty()) {
-                trip.setTimestamp("1970-01-01 00:00:00.000000"); // 기본값 설정
-            }
-        });
+    public ResponseEntity<?> saveTrips(@RequestBody List<TripRequestDto> tripRequestDtoList) {
+        List<Trip> trips = tripRequestDtoList.stream()
+                .map(tripService::convertToEntity) // ✅ DTO를 Entity로 변환
+                .collect(Collectors.toList());
 
-        tripService.saveTrips(tripList);
-        return ResponseEntity.ok("Batch data saved successfully");
-    }
-
-    // ✅ 최근 데이터 조회 API (기존 유지)
-    @GetMapping("/recent")
-    public ResponseEntity<List<Trip>> getRecentTrips(@RequestParam String since) {
-        return ResponseEntity.ok(tripService.getRecentTrips(since));
+        List<Trip> savedTrips = tripService.saveTrips(trips);
+        return ResponseEntity.ok(savedTrips);
     }
 }
