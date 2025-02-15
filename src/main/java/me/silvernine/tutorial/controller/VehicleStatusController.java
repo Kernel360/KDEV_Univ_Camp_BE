@@ -70,14 +70,12 @@ public class VehicleStatusController {
                             "vehicleNumber": "12가1234",
                             "batteryLevel": 85,
                             "status": "운행 중",
-                            "rentalLocation": "서울",
-                            "rentalDateTime": "2025-01-01T09:00:00",
+                            "startLocation": "서울",
+                            "startDate": "2025-01-01 09:00:00.00",
                             "returnLocation": "부산",
-                            "returnDateTime": "2025-03-24T23:00:00",
-                            "startDate": "2025-01-01",
-                            "endDate": "2025-03-24",
-                            "totalDrivingHours": "283시간",
-                            "dailyDrivingHours": "4시간 30분"
+                            "returnDate": "2025-03-24 23:00:00.00",
+                            "totalDrivingTime": 1018800000,
+                            "dailyDrivingTime": 16200000
                         }
                     """)
                             )
@@ -143,34 +141,26 @@ public class VehicleStatusController {
         Map<String, Object> response = new HashMap<>();
         List<Map<String, Object>> weeklyData = new ArrayList<>();
 
-        // 기본 거리값 설정 (이미지의 데이터와 유사하게)
-        int[] thisWeekDistances = {120, 200, 150, 80, 70, 110, 130};
-        int[] lastWeekDistances = {90, 150, 120, 60, 50, 90, 100};
+        // 이번 주 (월~토) 및 지난 주 (월~일) 거리값 설정
+        int[] thisWeekDistances = {120, 200, 150, 80, 70, 110}; // 월~토
+        int[] lastWeekDistances = {90, 150, 120, 60, 50, 90, 100}; // 월~일
 
         String[] daysOfWeek = {"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"};
 
-        // 현재 요일 가져오기 (1: 월요일, 7: 일요일)
-        LocalDate today = LocalDate.now();
-        int currentDayOfWeek = today.getDayOfWeek().getValue();
-
-        // 총 주행거리 계산 (현재 요일까지만)
+        // 총 주행거리 계산 (이번 주, 월~토)
         double totalDistance = 0;
-        for (int i = 0; i < currentDayOfWeek; i++) {
-            totalDistance += thisWeekDistances[i];
+        for (int distance : thisWeekDistances) {
+            totalDistance += distance;
         }
 
-        // 요일별 데이터 생성 (현재 요일까지만)
-        for (int i = 0; i < currentDayOfWeek; i++) {
+        // 요일별 데이터 생성
+        for (int i = 0; i < daysOfWeek.length; i++) {
             Map<String, Object> dayData = new HashMap<>();
             dayData.put("dayOfWeek", daysOfWeek[i]);
 
-            // 이번 주 데이터에 ±10km 랜덤값 추가
-            int thisWeekDistance = thisWeekDistances[i] + random.nextInt(21) - 10;
-            dayData.put("thisWeek", thisWeekDistance);
-
-            // 지난 주 데이터에 ±10km 랜덤값 추가
-            int lastWeekDistance = lastWeekDistances[i] + random.nextInt(21) - 10;
-            dayData.put("lastWeek", lastWeekDistance);
+            // 이번 주 (월~토까지만) 및 지난 주 (월~일)
+            dayData.put("thisWeek", i < thisWeekDistances.length ? thisWeekDistances[i] : null);
+            dayData.put("lastWeek", i < lastWeekDistances.length ? lastWeekDistances[i] : null);
 
             weeklyData.add(dayData);
         }
@@ -189,26 +179,14 @@ public class VehicleStatusController {
         return switch (vehicleNumber) {
             case "12가1234" -> generateVehicleData(
                     "12가1234", 85, "운행 중",
-                    "서울", "2025-01-01T09:00:00",
-                    "부산", "2025-03-24T23:00:00"
-            );
-            case "34나5678" -> generateVehicleData(
-                    "34나5678", 20, "미운행",
-                    "대전", "2025-02-15T10:30:00",
-                    "광주", "2025-03-20T18:45:00"
-            );
-            case "78다9012" -> generateVehicleData(
-                    "78다9012", 45, "미관제",
-                    "인천", "2025-03-10T14:15:00",
-                    "울산", "2025-03-25T22:10:00"
+                    "서울", "2025-01-01 09:00:00.00",
+                    "부산", "2025-03-24 23:00:00.00"
             );
             default -> null;
         };
     }
 
-    /**
-     * ✅ 차량 데이터를 생성하는 메서드 (HashMap 사용)
-     */
+    /** ✅ 차량 데이터를 생성하는 메서드 (랜덤값 제거, 고정값 사용) */
     private Map<String, Object> generateVehicleData(String vehicleNumber, int batteryLevel, String status,
                                                     String rentalLocation, String rentalDateTime,
                                                     String returnLocation, String returnDateTime) {
@@ -222,30 +200,35 @@ public class VehicleStatusController {
         // 전체 대여 기간 (일) 계산
         long totalDays = ChronoUnit.DAYS.between(rentalDate, returnDate);
 
-        // 평균 일일 운행시간을 3~6시간으로 가정하고 랜덤값 생성
-        int avgDailyHours = random.nextInt(4) + 3;
+        // 평균 일일 운행시간 고정값 사용 (5시간)
+        int avgDailyHours = 5;
 
         // 전체 운행 시간 계산 (일일 운행시간 * 대여 일수)
         long totalDrivingHours = totalDays * avgDailyHours;
 
-        // 당일 운행 시간 계산 (0~avgDailyHours 시간 + 0~59분)
-        int dailyHours = random.nextInt(avgDailyHours + 1);
-        int dailyMinutes = random.nextInt(60);
+        // 당일 운행 시간 고정값 사용 (4시간 30분)
+        int dailyHours = 4;
+        int dailyMinutes = 30;
 
-        // 시간대별 주행거리 데이터 생성
+        // 전체 운행 시간 (ms 단위)
+        long totalDrivingTime = totalDays * avgDailyHours * 60L * 60 * 1000;
+
+// 당일 운행 시간 (ms 단위)
+        long dailyDrivingTime = (dailyHours * 60L * 60 * 1000) + (dailyMinutes * 60 * 1000);
+
+
+        // 시간대별 주행거리 데이터 (고정값 사용)
         List<Map<String, Object>> hourlyDistances = generateHourlyDistances();
 
         vehicleData.put("vehicleNumber", vehicleNumber);
         vehicleData.put("batteryLevel", batteryLevel);
         vehicleData.put("status", status);
         vehicleData.put("rentalLocation", rentalLocation);
-        vehicleData.put("rentalDateTime", rentalDateTime);
         vehicleData.put("returnLocation", returnLocation);
-        vehicleData.put("returnDateTime", returnDateTime);
         vehicleData.put("startDate", rentalDateTime.substring(0, 10));
         vehicleData.put("endDate", returnDateTime.substring(0, 10));
-        vehicleData.put("totalDrivingHours", totalDrivingHours + "시간");
-        vehicleData.put("dailyDrivingHours", String.format("%d시간 %d분", dailyHours, dailyMinutes));
+        vehicleData.put("totalDrivingTime", totalDrivingTime); // ms 단위
+        vehicleData.put("dailyDrivingTime", dailyDrivingTime);
         vehicleData.put("hourlyDistances", hourlyDistances);
 
         return vehicleData;
@@ -254,6 +237,7 @@ public class VehicleStatusController {
     /**
      * ✅ 2시간 단위로 주행거리 데이터 생성
      */
+    /** ✅ 2시간 단위로 주행거리 데이터 생성 (랜덤값 제거) */
     private List<Map<String, Object>> generateHourlyDistances() {
         List<Map<String, Object>> hourlyDistances = new ArrayList<>();
         String[] timeRanges = {
@@ -261,7 +245,7 @@ public class VehicleStatusController {
                 "12-14", "14-16", "16-18", "18-20", "20-22", "22-24"
         };
 
-        // 기본 거리값 설정 (이미지의 데이터와 유사하게)
+        // 고정 거리값 설정 (랜덤 없이 고정값 반환)
         int[] baseDistances = {
                 85, 132, 45, 167, 93, 223,
                 156, 78, 189, 112, 145, 92
@@ -270,11 +254,7 @@ public class VehicleStatusController {
         for (int i = 0; i < timeRanges.length; i++) {
             Map<String, Object> distanceData = new HashMap<>();
             distanceData.put("timeRange", timeRanges[i]);
-
-            // 기본 거리에서 ±10km 정도의 랜덤값 추가
-            int distance = baseDistances[i] + random.nextInt(21) - 10;
-            distanceData.put("distance", distance);
-
+            distanceData.put("distance", baseDistances[i]);
             hourlyDistances.add(distanceData);
         }
 
