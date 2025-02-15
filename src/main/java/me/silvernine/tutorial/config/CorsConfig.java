@@ -12,12 +12,13 @@ public class CorsConfig {
    public CorsFilter corsFilter() {
       UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
       CorsConfiguration config = new CorsConfiguration();
+
+      config.addAllowedOrigin("https://kdev-univ-camp-fe.vercel.app");
       config.setAllowCredentials(true);
-      config.addAllowedOriginPattern("*");
       config.addAllowedHeader("*");
       config.addAllowedMethod("*");
+      source.registerCorsConfiguration("/**", config);
 
-      source.registerCorsConfiguration("/api/**", config);
       return new CorsFilter(source);
    }
 }
