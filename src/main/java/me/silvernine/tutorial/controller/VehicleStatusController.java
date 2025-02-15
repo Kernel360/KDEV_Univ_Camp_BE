@@ -193,9 +193,9 @@ public class VehicleStatusController {
         Map<String, Object> vehicleData = new HashMap<>();
 
         // 날짜 파싱
-        DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-        LocalDateTime rentalDate = LocalDateTime.parse(rentalDateTime, formatter);
-        LocalDateTime returnDate = LocalDateTime.parse(returnDateTime, formatter);
+        DateTimeFormatter customFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SS");
+        LocalDateTime rentalDate = LocalDateTime.parse(rentalDateTime, customFormatter);
+        LocalDateTime returnDate = LocalDateTime.parse(returnDateTime, customFormatter);
 
         // 전체 대여 기간 (일) 계산
         long totalDays = ChronoUnit.DAYS.between(rentalDate, returnDate);
