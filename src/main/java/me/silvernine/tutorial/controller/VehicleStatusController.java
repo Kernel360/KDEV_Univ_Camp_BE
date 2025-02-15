@@ -192,10 +192,18 @@ public class VehicleStatusController {
                                                     String returnLocation, String returnDateTime) {
         Map<String, Object> vehicleData = new HashMap<>();
 
-        // 날짜 파싱
-        DateTimeFormatter customFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SS");
-        LocalDateTime rentalDate = LocalDateTime.parse(rentalDateTime, customFormatter);
-        LocalDateTime returnDate = LocalDateTime.parse(returnDateTime, customFormatter);
+        // ✅ 포맷 설정 (두 포맷 모두 지원)
+        DateTimeFormatter responseFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+        DateTimeFormatter formatterSS = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SS");
+        DateTimeFormatter formatterSSS = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+
+        // ✅ 날짜 파싱 (두 포맷 시도)
+        LocalDateTime rentalDate = parseDateWithMultipleFormats(rentalDateTime, formatterSS, formatterSSS);
+        LocalDateTime returnDate = parseDateWithMultipleFormats(returnDateTime, formatterSS, formatterSSS);
+
+        // ✅ startDate 및 endDate 반환
+        vehicleData.put("startDate", rentalDate.format(responseFormatter));
+        vehicleData.put("endDate", returnDate.format(responseFormatter));
 
         // 전체 대여 기간 (일) 계산
         long totalDays = ChronoUnit.DAYS.between(rentalDate, returnDate);
@@ -213,9 +221,8 @@ public class VehicleStatusController {
         // 전체 운행 시간 (ms 단위)
         long totalDrivingTime = totalDays * avgDailyHours * 60L * 60 * 1000;
 
-// 당일 운행 시간 (ms 단위)
+        // 당일 운행 시간 (ms 단위)
         long dailyDrivingTime = (dailyHours * 60L * 60 * 1000) + (dailyMinutes * 60 * 1000);
-
 
         // 시간대별 주행거리 데이터 (고정값 사용)
         List<Map<String, Object>> hourlyDistances = generateHourlyDistances();
@@ -225,14 +232,30 @@ public class VehicleStatusController {
         vehicleData.put("status", status);
         vehicleData.put("rentalLocation", rentalLocation);
         vehicleData.put("returnLocation", returnLocation);
-        vehicleData.put("startDate", rentalDateTime.substring(0, 10));
-        vehicleData.put("endDate", returnDateTime.substring(0, 10));
         vehicleData.put("totalDrivingTime", totalDrivingTime); // ms 단위
         vehicleData.put("dailyDrivingTime", dailyDrivingTime);
         vehicleData.put("hourlyDistances", hourlyDistances);
 
         return vehicleData;
     }
+
+    /**
+     * ✅ 여러 포맷을 시도해 LocalDateTime 파싱
+     * .SS 및 .SSS 포맷 모두 지원
+     */
+    private LocalDateTime parseDateWithMultipleFormats(String dateTime,
+                                                       DateTimeFormatter... formatters) {
+        for (DateTimeFormatter formatter : formatters) {
+            try {
+                return LocalDateTime.parse(dateTime, formatter);
+            } catch (Exception ignored) {
+                // 실패 시 무시하고 다음 포맷 시도
+            }
+        }
+        throw new RuntimeException("지원하지 않는 날짜 형식: " + dateTime);
+    }
+
+
 
     /**
      * ✅ 2시간 단위로 주행거리 데이터 생성
