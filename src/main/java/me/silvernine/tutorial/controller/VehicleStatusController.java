@@ -30,13 +30,13 @@ public class VehicleStatusController {
                             content = @Content(
                                     mediaType = "application/json",
                                     examples = @ExampleObject(value = """
-                        {
-                            "totalVehicles": 50,
-                            "unmonitoredVehicles": 10,
-                            "nonOperatingVehicles": 15,
-                            "operatingVehicles": 25
-                        }
-                    """)
+                                                {
+                                                    "totalVehicles": 50,
+                                                    "unmonitoredVehicles": 10,
+                                                    "nonOperatingVehicles": 15,
+                                                    "operatingVehicles": 25
+                                                }
+                                            """)
                             )
                     )
             }
@@ -66,18 +66,18 @@ public class VehicleStatusController {
                             content = @Content(
                                     mediaType = "application/json",
                                     examples = @ExampleObject(value = """
-                        {
-                            "vehicleNumber": "12가1234",
-                            "batteryLevel": 85,
-                            "status": "운행 중",
-                            "startLocation": "서울",
-                            "startDate": "2025-01-01 09:00:00.00",
-                            "returnLocation": "부산",
-                            "returnDate": "2025-03-24 23:00:00.00",
-                            "totalDrivingTime": 1018800000,
-                            "dailyDrivingTime": 16200000
-                        }
-                    """)
+                                                {
+                                                    "vehicleNumber": "12가1234",
+                                                    "batteryLevel": 85,
+                                                    "status": "운행 중",
+                                                    "startLocation": "서울",
+                                                    "startDate": "2025-01-01 09:00:00.00",
+                                                    "returnLocation": "부산",
+                                                    "returnDate": "2025-03-24 23:00:00.00",
+                                                    "totalDrivingTime": 1018800000,
+                                                    "dailyDrivingTime": 16200000
+                                                }
+                                            """)
                             )
                     ),
                     @ApiResponse(
@@ -105,22 +105,22 @@ public class VehicleStatusController {
                             content = @Content(
                                     mediaType = "application/json",
                                     examples = @ExampleObject(value = """
-                    {
-                        "totalDistance": 236.0,
-                        "weeklyData": [
-                            {
-                                "dayOfWeek": "MON",
-                                "thisWeek": 120,
-                                "lastWeek": 90
-                            },
-                            {
-                                "dayOfWeek": "TUE",
-                                "thisWeek": 200,
-                                "lastWeek": 150
-                            }
-                        ]
-                    }
-                """)
+                                                {
+                                                    "totalDistance": 236.0,
+                                                    "weeklyData": [
+                                                        {
+                                                            "dayOfWeek": "MON",
+                                                            "thisWeek": 120,
+                                                            "lastWeek": 90
+                                                        },
+                                                        {
+                                                            "dayOfWeek": "TUE",
+                                                            "thisWeek": 200,
+                                                            "lastWeek": 150
+                                                        }
+                                                    ]
+                                                }
+                                            """)
                             )
                     )
             }
@@ -164,7 +164,6 @@ public class VehicleStatusController {
     }
 
 
-
     /**
      * ✅ 차량 개별 상태 및 운행 정보 조회용 더미 데이터
      */
@@ -179,7 +178,9 @@ public class VehicleStatusController {
         };
     }
 
-    /** ✅ 차량 데이터를 생성하는 메서드 (랜덤값 제거, 고정값 사용) */
+    /**
+     * ✅ 차량 데이터를 생성하는 메서드 (랜덤값 제거, 고정값 사용)
+     */
     private Map<String, Object> generateVehicleData(String vehicleNumber, int batteryLevel, String status,
                                                     String rentalLocation, String rentalDateTime,
                                                     String returnLocation, String returnDateTime) {
@@ -249,31 +250,29 @@ public class VehicleStatusController {
     }
 
 
-
     /**
-     * ✅ 2시간 단위로 주행거리 데이터 생성
+     * ✅ 2시간 단위로 주행거리 데이터 생성 (리스트 형태)
      */
-    /** ✅ 2시간 단위로 주행거리 데이터 생성 (랜덤값 제거) */
     private List<Map<String, Object>> generateHourlyDistances() {
-        List<Map<String, Object>> hourlyDistances = new ArrayList<>();
         String[] timeRanges = {
                 "0-2", "2-4", "4-6", "6-8", "8-10", "10-12",
                 "12-14", "14-16", "16-18", "18-20", "20-22", "22-24"
         };
 
-        // 고정 거리값 설정 (랜덤 없이 고정값 반환)
         int[] baseDistances = {
                 85, 132, 45, 167, 93, 223,
                 156, 78, 189, 112, 145, 92
         };
 
-        for (int i = 0; i < timeRanges.length; i++) {
-            Map<String, Object> distanceData = new HashMap<>();
-            distanceData.put("timeRange", timeRanges[i]);
-            distanceData.put("distance", baseDistances[i]);
-            hourlyDistances.add(distanceData);
-        }
+        // 리스트 형태로 응답 구성
+        List<Map<String, Object>> response = new ArrayList<>();
 
-        return hourlyDistances;
+        Map<String, Object> distanceMap = new HashMap<>();
+        distanceMap.put("timeRanges", Arrays.asList(timeRanges));
+        distanceMap.put("distances", Arrays.stream(baseDistances).boxed().toList());
+
+        response.add(distanceMap);
+        return response;
     }
+
 }
