@@ -91,7 +91,8 @@ public class SecurityConfig {
                 new AntPathRequestMatcher("/api/trip/**"),
                 new AntPathRequestMatcher("/api/token/validate"),
                 new AntPathRequestMatcher("/favicon.ico"),
-                new AntPathRequestMatcher("/error")
+                new AntPathRequestMatcher("/error"),
+                new AntPathRequestMatcher("/api/vehicle-status")
 
 
         };
