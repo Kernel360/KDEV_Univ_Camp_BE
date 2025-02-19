@@ -1,5 +1,7 @@
 package me.silvernine.tutorial.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import me.silvernine.tutorial.dto.TripRequestDto;
 import me.silvernine.tutorial.model.Trip;
 import me.silvernine.tutorial.service.TripService;
@@ -50,24 +52,29 @@ public class TripController {
     }
 
     // ✅ 차량 번호 + 기간별 GPS 정보 조회
+    @Operation(summary = "차량 번호 + 기간별 Trip 데이터 조회", description = "특정 차량의 위치 데이터를 특정 기간 동안 조회합니다.")
     @GetMapping("/search")
     public ResponseEntity<List<Trip>> searchTrips(
+            @Parameter(description = "차량 ID (예: 12가1234)", required = true, example = "12가1234")
             @RequestParam String vehicleId,
+
+            @Parameter(description = "검색 시작 날짜 (yyyy-MM-dd)", required = true, example = "2025-01-01")
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
+
+            @Parameter(description = "검색 종료 날짜 (yyyy-MM-dd) [선택]", required = false, example = "2025-02-01")
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate) {
 
-        // 종료 날짜(endDate)가 없으면 시작 날짜만 검색
         if (endDate == null) {
             endDate = startDate;
         }
 
-        // 시작일 00:00:00, 종료일 23:59:59.99 설정
         LocalDateTime startDateTime = startDate.atStartOfDay();
         LocalDateTime endDateTime = endDate.atTime(23, 59, 59, 999_999_999);
 
         List<Trip> trips = tripService.getTripsByVehicleAndDateRange(vehicleId, startDateTime, endDateTime);
         return ResponseEntity.ok(trips);
     }
+
 
     // ✅ TripRequestDto → Trip 변환 메서드 (단일 & 배치 공통)
     private Trip convertToTrip(TripRequestDto dto) {
