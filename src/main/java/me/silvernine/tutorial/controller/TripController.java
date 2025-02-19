@@ -3,9 +3,11 @@ package me.silvernine.tutorial.controller;
 import me.silvernine.tutorial.dto.TripRequestDto;
 import me.silvernine.tutorial.model.Trip;
 import me.silvernine.tutorial.service.TripService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -45,6 +47,26 @@ public class TripController {
     @GetMapping("/recent")
     public ResponseEntity<List<Trip>> getRecentTrips(@RequestParam LocalDateTime since) {
         return ResponseEntity.ok(tripService.getRecentTrips(since));
+    }
+
+    // ✅ 차량 번호 + 기간별 GPS 정보 조회
+    @GetMapping("/search")
+    public ResponseEntity<List<Trip>> searchTrips(
+            @RequestParam String vehicleId,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate) {
+
+        // 종료 날짜(endDate)가 없으면 시작 날짜만 검색
+        if (endDate == null) {
+            endDate = startDate;
+        }
+
+        // 시작일 00:00:00, 종료일 23:59:59.99 설정
+        LocalDateTime startDateTime = startDate.atStartOfDay();
+        LocalDateTime endDateTime = endDate.atTime(23, 59, 59, 999_999_999);
+
+        List<Trip> trips = tripService.getTripsByVehicleAndDateRange(vehicleId, startDateTime, endDateTime);
+        return ResponseEntity.ok(trips);
     }
 
     // ✅ TripRequestDto → Trip 변환 메서드 (단일 & 배치 공통)

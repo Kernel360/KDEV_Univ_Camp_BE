@@ -27,4 +27,9 @@ public class TripService {
     public List<Trip> getRecentTrips(LocalDateTime since) {
         return tripRepository.findByTimestampAfter(since);
     }
+
+    // ✅ 차량 번호 + 기간별 GPS 정보 조회 (위도 & 경도만 반환)
+    public List<Trip> getTripsByVehicleAndDateRange(String vehicleId, LocalDateTime startDateTime, LocalDateTime endDateTime) {
+        return tripRepository.findByVehicleIdAndTimestampBetween(vehicleId, startDateTime, endDateTime);
+    }
 }
