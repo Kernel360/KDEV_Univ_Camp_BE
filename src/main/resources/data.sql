@@ -23,3 +23,8 @@ ALTER TABLE trip_data
 DROP COLUMN IF EXISTS date,
 DROP COLUMN IF EXISTS time,
 ADD COLUMN IF NOT EXISTS timestamp VARCHAR(255);
+
+INSERT INTO data_table (date, value) VALUES ('2024-02-17', 10.5);
+INSERT INTO data_table (date, value) VALUES ('2024-02-17', 20.0);
+INSERT INTO data_table (date, value) VALUES ('2024-02-17', 30.3);
+
