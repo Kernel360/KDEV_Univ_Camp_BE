@@ -24,7 +24,8 @@ public class BatchService {
         this.dataRepository = dataRepository;
     }
 
-    @Scheduled(cron = "0 5 0 * * ?") // ✅ 매일 00:05 실행
+    //@Scheduled(cron = "0 5 0 * * ?") // ✅ 매일 00:05 실행
+    @Scheduled(cron = "0 * * * * ?") //1분에 한번씩 테스트
     @Transactional
     public void runDailyBatch() {
         log.info("📊 [일 단위 배치] 실행 시작 - {}", LocalDateTime.now());
