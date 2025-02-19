@@ -13,7 +13,7 @@ VALUES ((SELECT user_id FROM `user` WHERE id='admin'), 'ROLE_ADMIN');
 CREATE TABLE IF NOT EXISTS trip_data (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     vehicle_id VARCHAR(50),
-    timestamp DATETIME NOT NULL, -- ✅ VARCHAR(255) → DATETIME 변경
+    timestamp DATETIME NOT NULL,
     latitude DOUBLE,
     longitude DOUBLE
 );

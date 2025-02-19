@@ -16,9 +16,9 @@ public class BatchStatistics {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private LocalDateTime timestamp;  // ✅ LocalDate → LocalDateTime 변경
-    private long count;      // 데이터 개수
-    private double avgValue; // 평균 값
+    private LocalDateTime timestamp;  // ✅ LocalDateTime으로 저장
+    private long count;
+    private double avgValue;
 
     public BatchStatistics(LocalDateTime timestamp, long count, double avgValue) {
         this.timestamp = timestamp;

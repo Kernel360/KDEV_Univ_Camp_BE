@@ -29,7 +29,7 @@ public class DailyStatisticsBatch {
 
         log.info("📊 [일 단위 배치] {} 데이터 통계 계산 시작...", yesterdayStart.toLocalDate());
 
-        List<BatchData> dataList = batchDataRepository.findDataForDateRange(yesterdayStart, yesterdayEnd);
+        List<BatchData> dataList = batchDataRepository.findByTimestampBetween(yesterdayStart, yesterdayEnd);
 
         long count = dataList.size();
         double avgValue = dataList.stream().mapToDouble(BatchData::getValue).average().orElse(0.0);
