@@ -49,6 +49,6 @@ public class BatchService {
         long count = dataList.size();
         double avgValue = dataList.stream().mapToDouble(BatchData::getValue).average().orElse(0);
 
-        return new BatchStatistics(date, count, avgValue);
+        return new BatchStatistics(date.atStartOfDay(), count, avgValue);
     }
 }
