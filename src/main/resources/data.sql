@@ -40,8 +40,3 @@ CREATE TABLE IF NOT EXISTS data_table (
     timestamp DATETIME NOT NULL,
     value DOUBLE
 );
-
--- ✅ 데이터 삽입 예제
-INSERT INTO data_table (timestamp, value) VALUES ('2024-02-17 00:00:00', 10.5);
-INSERT INTO data_table (timestamp, value) VALUES ('2024-02-17 00:05:00', 20.0);
-INSERT INTO data_table (timestamp, value) VALUES ('2024-02-17 00:10:00', 30.3);
