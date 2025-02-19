@@ -16,8 +16,8 @@ public class BatchData {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private LocalDateTime timestamp; // ✅ LocalDate → LocalDateTime으로 변경
-    private double value; // 데이터 값
+    private LocalDateTime timestamp; // ✅ LocalDateTime을 그대로 유지
+    private double value;
 
     public BatchData(LocalDateTime timestamp, double value) {
         this.timestamp = timestamp;
