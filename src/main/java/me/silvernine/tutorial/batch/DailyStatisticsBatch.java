@@ -1,22 +1,42 @@
 package me.silvernine.tutorial.batch;
 
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.silvernine.tutorial.entity.BatchData;
+import me.silvernine.tutorial.entity.BatchStatistics;
+import me.silvernine.tutorial.repository.BatchDataRepository;
+import me.silvernine.tutorial.repository.StatisticsRepository;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import java.time.LocalDate;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Component
 @Slf4j
-@Component // Spring Bean 등록
+@RequiredArgsConstructor
 public class DailyStatisticsBatch {
 
-    //@Scheduled(cron = "0 5 0 * * ?") // 매일 00:05 실행
-    @Scheduled(cron = "0 * * * * ?") //테스트용 1분 간격 실행
-    public void runDailyBatch() {
-        LocalDate yesterday = LocalDate.now().minusDays(1);
-        log.info("📊 [일 단위 배치] {} 데이터 통계 계산 시작...", yesterday);
+    private final BatchDataRepository batchDataRepository;
+    private final StatisticsRepository statisticsRepository;
 
-        // TODO: 여기에 전날 데이터 통계를 계산하고 통계 테이블에 저장하는 로직 추가
+    @Scheduled(cron = "5 0 0 * * ?") // ✅ 매일 00:05 실행
+    @Transactional
+    public void calculateDailyStatistics() {
+        LocalDateTime yesterdayStart = LocalDateTime.now().minusDays(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime yesterdayEnd = yesterdayStart.plusDays(1);
 
-        log.info("✅ [일 단위 배치] {} 데이터 통계 계산 완료!", yesterday);
+        log.info("📊 [일 단위 배치] {} 데이터 통계 계산 시작...", yesterdayStart.toLocalDate());
+
+        List<BatchData> dataList = batchDataRepository.findDataForDateRange(yesterdayStart, yesterdayEnd);
+
+        long count = dataList.size();
+        double avgValue = dataList.stream().mapToDouble(BatchData::getValue).average().orElse(0.0);
+
+        BatchStatistics statistics = new BatchStatistics(yesterdayStart, count, avgValue);
+        statisticsRepository.save(statistics);
+
+        log.info("✅ [일 단위 배치] {} 데이터 통계 계산 완료!", yesterdayStart.toLocalDate());
     }
 }

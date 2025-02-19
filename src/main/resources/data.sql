@@ -1,30 +1,47 @@
--- 중복 방지를 위해 INSERT IGNORE 또는 REPLACE 사용
+-- ✅ 중복 방지를 위해 INSERT IGNORE 또는 REPLACE 사용
 INSERT IGNORE INTO authority (authority_name) VALUES ('ROLE_ADMIN');
 
--- admin 계정이 없는 경우에만 추가
+-- ✅ admin 계정이 없는 경우에만 추가
 INSERT IGNORE INTO `user` (id, password, nickname, activated)
 VALUES ('admin', '$2a$08$lDnHPz7eUkSi6ao14Twuau08mzhWrL4kyZGGU5xfiGALO/Vxd5DOi', 'admin', 1);
 
--- user_authority 테이블에 ROLE_ADMIN이 없을 경우만 추가
+-- ✅ user_authority 테이블에 ROLE_ADMIN이 없을 경우만 추가
 INSERT IGNORE INTO user_authority (user_id, authority_name)
 VALUES ((SELECT user_id FROM `user` WHERE id='admin'), 'ROLE_ADMIN');
 
--- trip_data 테이블 생성 (없을 경우에만)
+-- ✅ trip_data 테이블 생성 (없을 경우에만)
 CREATE TABLE IF NOT EXISTS trip_data (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     vehicle_id VARCHAR(50),
-    timestamp VARCHAR(255),
+    timestamp DATETIME NOT NULL, -- ✅ VARCHAR(255) → DATETIME 변경
     latitude DOUBLE,
     longitude DOUBLE
 );
 
--- 기존 테이블 컬럼 수정 (기존 date, time 필드를 제거하고 timestamp 추가)
+-- ✅ 기존 테이블 컬럼 수정 (VARCHAR → DATETIME)
 ALTER TABLE trip_data
-DROP COLUMN IF EXISTS date,
-DROP COLUMN IF EXISTS time,
-ADD COLUMN IF NOT EXISTS timestamp VARCHAR(255);
+MODIFY COLUMN timestamp DATETIME NOT NULL;
 
-INSERT INTO data_table (date, value) VALUES ('2024-02-17', 10.5);
-INSERT INTO data_table (date, value) VALUES ('2024-02-17', 20.0);
-INSERT INTO data_table (date, value) VALUES ('2024-02-17', 30.3);
+-- ✅ 데이터 삽입 예제 (테스트 데이터)
+INSERT INTO trip_data (vehicle_id, timestamp, latitude, longitude)
+VALUES ('V1234', '2025-02-18 12:00:00', 37.5665, 126.9780);
 
+-- ✅ 통계 테이블 생성
+CREATE TABLE IF NOT EXISTS statistics_table (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    timestamp DATETIME NOT NULL,
+    count BIGINT,
+    avg_value DOUBLE
+);
+
+-- ✅ 데이터 테이블 생성
+CREATE TABLE IF NOT EXISTS data_table (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    timestamp DATETIME NOT NULL,
+    value DOUBLE
+);
+
+-- ✅ 데이터 삽입 예제
+INSERT INTO data_table (timestamp, value) VALUES ('2024-02-17 00:00:00', 10.5);
+INSERT INTO data_table (timestamp, value) VALUES ('2024-02-17 00:05:00', 20.0);
+INSERT INTO data_table (timestamp, value) VALUES ('2024-02-17 00:10:00', 30.3);

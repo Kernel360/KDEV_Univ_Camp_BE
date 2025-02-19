@@ -3,7 +3,7 @@ package me.silvernine.tutorial.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "data_table")
@@ -16,11 +16,11 @@ public class BatchData {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private LocalDate date; // 데이터 날짜
-    private double value;   // 데이터 값
+    private LocalDateTime timestamp; // ✅ LocalDate → LocalDateTime으로 변경
+    private double value; // 데이터 값
 
-    public BatchData(LocalDate date, double value) {
-        this.date = date;
+    public BatchData(LocalDateTime timestamp, double value) {
+        this.timestamp = timestamp;
         this.value = value;
     }
 }
