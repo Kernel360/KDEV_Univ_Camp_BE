@@ -18,8 +18,8 @@ public class Trip {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "vehicle_id", nullable = false)
-    private String vehicleId;
+    @Column(name = "car_number", nullable = false)
+    private String carNumber;
 
     @Column(nullable = false)
     private Double latitude;

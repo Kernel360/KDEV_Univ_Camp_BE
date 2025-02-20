@@ -14,9 +14,9 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
     List<Trip> findByTimestampAfter(LocalDateTime timestamp);
 
     // ✅ 차량 번호 + 특정 기간의 위도 & 경도만 조회
-    @Query("SELECT t FROM Trip t WHERE t.vehicleId = :vehicleId AND t.timestamp BETWEEN :startDateTime AND :endDateTime")
-    List<Trip> findByVehicleIdAndTimestampBetween(
-            @Param("vehicleId") String vehicleId,
+    @Query("SELECT t FROM Trip t WHERE t.carNumber = :carNumber AND t.timestamp BETWEEN :startDateTime AND :endDateTime")
+    List<Trip> findByCarNumberAndTimestampBetween(
+            @Param("carNumber") String carNumber,
             @Param("startDateTime") LocalDateTime startDateTime,
             @Param("endDateTime") LocalDateTime endDateTime);
 }
