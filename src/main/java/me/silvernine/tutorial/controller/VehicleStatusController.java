@@ -5,21 +5,20 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
-import me.silvernine.tutorial.dto.CarResponse;
-import me.silvernine.tutorial.entity.Car;
-import me.silvernine.tutorial.service.CarService;
 import org.springframework.web.bind.annotation.*;
+import java.time.LocalDate;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Tag(name = "차량 상태 정보", description = "전체 차량 상태 및 특정 차량의 운행 정보를 제공합니다.")
 @RestController
 @RequestMapping("/api/vehicle-status")
-@RequiredArgsConstructor
 public class VehicleStatusController {
 
-    private final CarService carService; // ✅ CarService 추가 (DB 조회용)
+    private final Random random = new Random();
 
     @Operation(
             summary = "전체 차량 운행 상태 조회",
@@ -89,16 +88,12 @@ public class VehicleStatusController {
     )
     @GetMapping("/details/{vehicleNumber}")
     public Map<String, Object> getVehicleDetails(@PathVariable String vehicleNumber) {
-        CarResponse carResponse = carService.getCarByCarNumber(vehicleNumber); // ✅ Use CarResponse instead of Car
-
-        Map<String, Object> vehicleData = new HashMap<>();
-        vehicleData.put("vehicleNumber", carResponse.getCarNumber());
-        vehicleData.put("carName", carResponse.getCarName());
-        vehicleData.put("ownerUsername", carResponse.getOwnerUsername());
-
+        Map<String, Object> vehicleData = getDummyVehicleData(vehicleNumber);
+        if (vehicleData == null) {
+            throw new RuntimeException("해당 차량 번호를 찾을 수 없습니다: " + vehicleNumber);
+        }
         return vehicleData;
     }
-
 
     @Operation(
             summary = "차량 주간 주행거리 조회",
@@ -167,4 +162,117 @@ public class VehicleStatusController {
 
         return response;
     }
+
+
+    /**
+     * ✅ 차량 개별 상태 및 운행 정보 조회용 더미 데이터
+     */
+    private Map<String, Object> getDummyVehicleData(String vehicleNumber) {
+        return switch (vehicleNumber) {
+            case "12가1234" -> generateVehicleData(
+                    "12가1234", 85, "운행 중",
+                    "서울", "2025-01-01 09:00:00.00",
+                    "부산", "2025-03-24 23:00:00.00"
+            );
+            default -> null;
+        };
+    }
+
+    /**
+     * ✅ 차량 데이터를 생성하는 메서드 (랜덤값 제거, 고정값 사용)
+     */
+    private Map<String, Object> generateVehicleData(String vehicleNumber, int batteryLevel, String status,
+                                                    String rentalLocation, String rentalDateTime,
+                                                    String returnLocation, String returnDateTime) {
+        Map<String, Object> vehicleData = new HashMap<>();
+
+        // ✅ 포맷 설정 (두 포맷 모두 지원)
+        DateTimeFormatter responseFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+        DateTimeFormatter formatterSS = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SS");
+        DateTimeFormatter formatterSSS = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+
+        // ✅ 날짜 파싱 (두 포맷 시도)
+        LocalDateTime rentalDate = parseDateWithMultipleFormats(rentalDateTime, formatterSS, formatterSSS);
+        LocalDateTime returnDate = parseDateWithMultipleFormats(returnDateTime, formatterSS, formatterSSS);
+
+        // ✅ startDate 및 endDate 반환
+        vehicleData.put("startDate", rentalDate.format(responseFormatter));
+        vehicleData.put("endDate", returnDate.format(responseFormatter));
+
+        // 전체 대여 기간 (일) 계산
+        long totalDays = ChronoUnit.DAYS.between(rentalDate, returnDate);
+
+        // 평균 일일 운행시간 고정값 사용 (5시간)
+        int avgDailyHours = 5;
+
+        // 전체 운행 시간 계산 (일일 운행시간 * 대여 일수)
+        long totalDrivingHours = totalDays * avgDailyHours;
+
+        // 당일 운행 시간 고정값 사용 (4시간 30분)
+        int dailyHours = 4;
+        int dailyMinutes = 30;
+
+        // 전체 운행 시간 (ms 단위)
+        long totalDrivingTime = totalDays * avgDailyHours * 60L * 60 * 1000;
+
+        // 당일 운행 시간 (ms 단위)
+        long dailyDrivingTime = (dailyHours * 60L * 60 * 1000) + (dailyMinutes * 60 * 1000);
+
+        // 시간대별 주행거리 데이터 (고정값 사용)
+        List<Map<String, Object>> hourlyDistances = generateHourlyDistances();
+
+        vehicleData.put("vehicleNumber", vehicleNumber);
+        vehicleData.put("batteryLevel", batteryLevel);
+        vehicleData.put("status", status);
+        vehicleData.put("rentalLocation", rentalLocation);
+        vehicleData.put("returnLocation", returnLocation);
+        vehicleData.put("totalDrivingTime", totalDrivingTime); // ms 단위
+        vehicleData.put("dailyDrivingTime", dailyDrivingTime);
+        vehicleData.put("hourlyDistances", hourlyDistances);
+
+        return vehicleData;
+    }
+
+    /**
+     * ✅ 여러 포맷을 시도해 LocalDateTime 파싱
+     * .SS 및 .SSS 포맷 모두 지원
+     */
+    private LocalDateTime parseDateWithMultipleFormats(String dateTime,
+                                                       DateTimeFormatter... formatters) {
+        for (DateTimeFormatter formatter : formatters) {
+            try {
+                return LocalDateTime.parse(dateTime, formatter);
+            } catch (Exception ignored) {
+                // 실패 시 무시하고 다음 포맷 시도
+            }
+        }
+        throw new RuntimeException("지원하지 않는 날짜 형식: " + dateTime);
+    }
+
+
+    /**
+     * ✅ 2시간 단위로 주행거리 데이터 생성 (리스트 형태)
+     */
+    private List<Map<String, Object>> generateHourlyDistances() {
+        String[] timeRanges = {
+                "0-2", "2-4", "4-6", "6-8", "8-10", "10-12",
+                "12-14", "14-16", "16-18", "18-20", "20-22", "22-24"
+        };
+
+        int[] baseDistances = {
+                85, 132, 45, 167, 93, 223,
+                156, 78, 189, 112, 145, 92
+        };
+
+        // 리스트 형태로 응답 구성
+        List<Map<String, Object>> response = new ArrayList<>();
+
+        Map<String, Object> distanceMap = new HashMap<>();
+        distanceMap.put("timeRanges", Arrays.asList(timeRanges));
+        distanceMap.put("distances", Arrays.stream(baseDistances).boxed().toList());
+
+        response.add(distanceMap);
+        return response;
+    }
+
 }
