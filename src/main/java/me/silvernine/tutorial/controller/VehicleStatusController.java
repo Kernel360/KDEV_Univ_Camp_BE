@@ -67,7 +67,7 @@ public class VehicleStatusController {
                                     mediaType = "application/json",
                                     examples = @ExampleObject(value = """
                                                 {
-                                                    "vehicleNumber": "12가1234",
+                                                    "vehicleNumber": "12가 1234",
                                                     "batteryLevel": 85,
                                                     "status": "운행 중",
                                                     "startLocation": "서울",
@@ -161,8 +161,8 @@ public class VehicleStatusController {
      */
     private Map<String, Object> getDummyVehicleData(String vehicleNumber) {
         return switch (vehicleNumber) {
-            case "12가1234" -> generateVehicleData(
-                    "12가1234", 85, "운행 중",
+            case "12가 1234" -> generateVehicleData(
+                    "12가 1234", 85, "운행 중",
                     "서울", "2025-01-01 09:00:00.00",
                     "부산", "2025-03-24 23:00:00.00"
             );
