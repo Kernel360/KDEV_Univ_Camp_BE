@@ -12,4 +12,5 @@ public class CarResponse {
     private String carName;
     private String carNumber;
     private String ownerUsername;
+    private String vehicleId;
 }
