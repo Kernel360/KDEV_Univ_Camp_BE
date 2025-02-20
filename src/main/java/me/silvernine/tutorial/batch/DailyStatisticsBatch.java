@@ -23,6 +23,7 @@ public class DailyStatisticsBatch {
     private final StatisticsRepository statisticsRepository;
 
     //@Scheduled(cron = "5 0 0 * * ?") // ✅ 매일 00:05 실행
+    @Scheduled(cron = "0 * * * * ?") //1분에 한번씩 테스트
     @Transactional
     public void calculateDailyStatistics() {
         LocalDateTime yesterdayStart = LocalDate.now().minusDays(1).atStartOfDay(); // ✅ timestamp 통일
