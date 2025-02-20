@@ -51,18 +51,21 @@ public class TripController {
         return ResponseEntity.ok(tripService.getRecentTrips(since));
     }
 
-    // ✅ 차량 번호 + 기간별 GPS 정보 조회
-    @Operation(summary = "차량 번호 + 기간별 Trip 데이터 조회", description = "특정 차량의 위치 데이터를 특정 기간 동안 조회합니다.")
+    // ✅ 차량 번호 + 기간별 GPS 정보 조회 (주기 적용)
+    @Operation(summary = "차량 번호 + 기간별 Trip 데이터 조회", description = "특정 차량의 위치 데이터를 특정 기간 동안 조회합니다. 주기를 설정하면 해당 간격으로 데이터를 필터링합니다.")
     @GetMapping("/search")
     public ResponseEntity<List<Trip>> searchTrips(
             @Parameter(description = "차량 번호 (예: 12가1234)", required = true, example = "12가1234")
-            @RequestParam String carNumber, // ✅ 기존 `vehicleId` → `carNumber` 변경
+            @RequestParam String carNumber,
 
             @Parameter(description = "검색 시작 날짜 (yyyy-MM-dd)", required = true, example = "2025-01-01")
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
 
             @Parameter(description = "검색 종료 날짜 (yyyy-MM-dd) [선택]", required = false, example = "2025-02-01")
-            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate) {
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
+
+            @Parameter(description = "주기 (초 단위, 예: 60, 120, 180) [선택]", required = false, example = "60")
+            @RequestParam(required = false) Integer interval) {
 
         if (endDate == null) {
             endDate = startDate;
@@ -71,10 +74,19 @@ public class TripController {
         LocalDateTime startDateTime = startDate.atStartOfDay();
         LocalDateTime endDateTime = endDate.atTime(23, 59, 59, 999_999_999);
 
-        // ✅ 기존 `getTripsByCarNumberAndDateRange` → `getTripsByCarNumberAndTimestampBetween`로 변경
-        List<Trip> trips = tripService.getTripsByCarNumberAndTimestampBetween(carNumber, startDateTime, endDateTime);
+        List<Trip> trips;
+
+        if (interval != null && (interval == 60 || interval == 120 || interval == 180)) {
+            // ✅ interval이 지정된 경우 주기 적용
+            trips = tripService.getTripsByCarNumberAndInterval(carNumber, startDateTime, endDateTime, interval);
+        } else {
+            // ✅ interval이 없으면 기존 방식으로 조회
+            trips = tripService.getTripsByCarNumberAndTimestampBetween(carNumber, startDateTime, endDateTime);
+        }
+
         return ResponseEntity.ok(trips);
     }
+
 
 
     // ✅ TripRequestDto → Trip 변환 메서드
