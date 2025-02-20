@@ -16,11 +16,11 @@ public class BatchData {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private LocalDateTime timestamp; // ✅ DATETIME 필드 유지
+    private LocalDateTime timestamp;
     private double value;
 
     public BatchData(LocalDateTime timestamp, double value) {
-        this.timestamp = timestamp;
+        this.timestamp = timestamp.withNano(0); // ✅ 나노초 제거
         this.value = value;
     }
 }
