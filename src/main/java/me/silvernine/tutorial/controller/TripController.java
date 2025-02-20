@@ -38,7 +38,7 @@ public class TripController {
     @PostMapping("/batch")
     public ResponseEntity<?> saveTrips(@RequestBody List<TripRequestDto> tripRequestDtos) {
         List<Trip> trips = tripRequestDtos.stream()
-                .map(this::convertToTrip) // 🔥 각 DTO를 Trip 객체로 변환
+                .map(this::convertToTrip)
                 .collect(Collectors.toList());
 
         tripService.saveTrips(trips);
@@ -55,8 +55,8 @@ public class TripController {
     @Operation(summary = "차량 번호 + 기간별 Trip 데이터 조회", description = "특정 차량의 위치 데이터를 특정 기간 동안 조회합니다.")
     @GetMapping("/search")
     public ResponseEntity<List<Trip>> searchTrips(
-            @Parameter(description = "차량 ID (예: 12가1234)", required = true, example = "12가1234")
-            @RequestParam String vehicleId,
+            @Parameter(description = "차량 번호 (예: 12가1234)", required = true, example = "12가1234")
+            @RequestParam String carNumber, // ✅ 기존 `vehicleId` → `carNumber` 변경
 
             @Parameter(description = "검색 시작 날짜 (yyyy-MM-dd)", required = true, example = "2025-01-01")
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
@@ -71,19 +71,23 @@ public class TripController {
         LocalDateTime startDateTime = startDate.atStartOfDay();
         LocalDateTime endDateTime = endDate.atTime(23, 59, 59, 999_999_999);
 
-        List<Trip> trips = tripService.getTripsByVehicleAndDateRange(vehicleId, startDateTime, endDateTime);
+        // ✅ 기존 `getTripsByCarNumberAndDateRange` → `getTripsByCarNumberAndTimestampBetween`로 변경
+        List<Trip> trips = tripService.getTripsByCarNumberAndTimestampBetween(carNumber, startDateTime, endDateTime);
         return ResponseEntity.ok(trips);
     }
 
 
-    // ✅ TripRequestDto → Trip 변환 메서드 (단일 & 배치 공통)
+    // ✅ TripRequestDto → Trip 변환 메서드
     private Trip convertToTrip(TripRequestDto dto) {
         Trip trip = new Trip();
-        trip.setVehicleId(dto.getVehicleId());
+
+        // ✅ 기존 `vehicleId` → `carNumber` 변경
+        trip.setCarNumber(dto.getCarNumber());
+
         trip.setLatitude(dto.getLatitude());
         trip.setLongitude(dto.getLongitude());
 
-        // ✅ 'time' 값을 LocalDateTime으로 변환
+        // ✅ 'time' 값을 LocalDateTime으로 변환 (.SS 포맷 유지)
         trip.setTimestamp(LocalDateTime.parse(dto.getTime(), formatter));
 
         // ✅ 배터리 값 반영 (null이면 100으로 설정)
