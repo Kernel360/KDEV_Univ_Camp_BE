@@ -5,7 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
-    // 차량 ID로 조회하는 메서드 추가
-    Vehicle findByVehicleId(String vehicleId);
+public interface VehicleRepository extends JpaRepository<Vehicle, String> { // ✅ ID 타입 변경 (Long → String)
+    Vehicle findByVehicleId(String vehicleId); // ✅ 차량 ID로 조회
+    boolean existsByVehicleId(String vehicleId); // ✅ 중복 확인
+    boolean existsByRegistrationNumber(String registrationNumber); // ✅ 차량 번호 중복 확인
 }

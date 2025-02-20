@@ -125,14 +125,6 @@ public class VehicleStatusController {
                     )
             }
     )
-    @GetMapping("/weekly-distance/{vehicleNumber}")
-    public Map<String, Object> getWeeklyDistance(@PathVariable String vehicleNumber) {
-        Map<String, Object> weeklyData = generateWeeklyDistanceData();
-        if (weeklyData == null) {
-            throw new RuntimeException("해당 차량 번호를 찾을 수 없습니다: " + vehicleNumber);
-        }
-        return weeklyData;
-    }
 
     /**
      * ✅ 주간 주행거리 데이터 생성
