@@ -23,11 +23,11 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
             @Param("endDateTime") LocalDateTime endDateTime);
 
     // ✅ 차량 번호 + 특정 기간의 GPS 데이터 중 interval 간격으로 필터링된 데이터 조회
-// 방법 2: MySQL 전용 함수를 사용한 JPQL
-    @Query("SELECT t FROM Trip t WHERE t.carNumber = :carNumber " +
+// 방법 1: nativeQuery 사용
+    @Query(value = "SELECT * FROM trip t WHERE t.car_number = :carNumber " +
             "AND t.timestamp BETWEEN :startDateTime AND :endDateTime " +
-            "AND function('mod', function('unix_timestamp', t.timestamp), :interval) = 0 " +
-            "ORDER BY t.timestamp")
+            "AND MOD(UNIX_TIMESTAMP(t.timestamp), :interval) = 0 " +
+            "ORDER BY t.timestamp", nativeQuery = true)
     List<Trip> findByCarNumberAndInterval(
             @Param("carNumber") String carNumber,
             @Param("startDateTime") LocalDateTime startDateTime,
