@@ -9,18 +9,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class VehicleService {
     private final VehicleRepository vehicleRepository;
-    private final CarRepository carRepository;  // ✅ cars 테이블과 연동하기 위해 추가
+    private final CarRepository carRepository;  // ✅ cars 테이블과 연동
 
     @Transactional
     public Vehicle saveVehicle(Vehicle vehicle) {
-        // ✅ vehicleId가 없으면 registrationNumber 사용
+        // ✅ vehicleId가 없으면 UUID 자동 생성
         if (vehicle.getVehicleId() == null || vehicle.getVehicleId().isBlank()) {
-            vehicle.setVehicleId(vehicle.getRegistrationNumber());
+            vehicle.setVehicleId(UUID.randomUUID().toString());
         }
 
         // ✅ 중복 등록 방지
@@ -34,7 +35,7 @@ public class VehicleService {
         // ✅ 차량 정보 저장 (vehicle 테이블)
         Vehicle savedVehicle = vehicleRepository.save(vehicle);
 
-        // ✅ cars 테이블에 vehicle_id 추가
+        // ✅ cars 테이블에 vehicle_id 추가 (등록번호 기준 매칭)
         Optional<Car> carOptional = carRepository.findByCarNumber(vehicle.getRegistrationNumber());
         carOptional.ifPresent(car -> {
             car.setVehicleId(savedVehicle.getVehicleId()); // ✅ vehicle_id 설정
