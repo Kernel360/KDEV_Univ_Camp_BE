@@ -24,7 +24,7 @@ ALTER TABLE trip_data
 MODIFY COLUMN timestamp DATETIME NOT NULL;
 
 -- ✅ 데이터 삽입 (value 필드 추가)
-INSERT INTO trip_data (vehicle_id, timestamp, latitude, longitude, value)
+INSERT INTO trip_data (car_number, timestamp, latitude, longitude, value)
 VALUES ('V1234', '2025-02-18 12:00:00', 37.5665, 126.9780, 0.0);
 
 -- ✅ 통계 테이블 생성
