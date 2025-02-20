@@ -55,7 +55,7 @@ public class TripController {
     @Operation(summary = "차량 번호 + 기간별 Trip 데이터 조회", description = "특정 차량의 위치 데이터를 특정 기간 동안 조회합니다. 주기를 설정하면 해당 간격으로 데이터를 필터링합니다.")
     @GetMapping("/search")
     public ResponseEntity<List<Trip>> searchTrips(
-            @Parameter(description = "차량 번호 (예: 12가1234)", required = true, example = "12가1234")
+            @Parameter(description = "차량 번호 (예: 12가 1234)", required = true, example = "12가 1234")
             @RequestParam String carNumber,
 
             @Parameter(description = "검색 시작 날짜 (yyyy-MM-dd)", required = true, example = "2025-01-01")

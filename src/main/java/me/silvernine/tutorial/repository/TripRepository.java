@@ -25,7 +25,7 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
     // ✅ 차량 번호 + 특정 기간의 GPS 데이터 중 interval 간격으로 필터링된 데이터 조회
 // 방법 1: nativeQuery 사용
     @Query(value = """
-    SELECT * FROM trip_data 
+    SELECT * FROM trip_data
     WHERE car_number = :carNumber 
     AND timestamp BETWEEN :startDateTime AND :endDateTime
     AND UNIX_TIMESTAMP(timestamp) % :interval = 0
