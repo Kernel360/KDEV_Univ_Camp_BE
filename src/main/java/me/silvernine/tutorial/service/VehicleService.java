@@ -2,14 +2,21 @@ package me.silvernine.tutorial.service;
 
 import lombok.RequiredArgsConstructor;
 import me.silvernine.tutorial.entity.Vehicle;
+import me.silvernine.tutorial.entity.Car;
 import me.silvernine.tutorial.repository.VehicleRepository;
+import me.silvernine.tutorial.repository.CarRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class VehicleService {
     private final VehicleRepository vehicleRepository;
+    private final CarRepository carRepository;  // ✅ cars 테이블과 연동하기 위해 추가
 
+    @Transactional
     public Vehicle saveVehicle(Vehicle vehicle) {
         // ✅ vehicleId가 없으면 registrationNumber 사용
         if (vehicle.getVehicleId() == null || vehicle.getVehicleId().isBlank()) {
@@ -24,7 +31,17 @@ public class VehicleService {
             throw new IllegalArgumentException("이미 등록된 차량 번호입니다: " + vehicle.getRegistrationNumber());
         }
 
-        return vehicleRepository.save(vehicle);
+        // ✅ 차량 정보 저장 (vehicle 테이블)
+        Vehicle savedVehicle = vehicleRepository.save(vehicle);
+
+        // ✅ cars 테이블에 vehicle_id 추가
+        Optional<Car> carOptional = carRepository.findByCarNumber(vehicle.getRegistrationNumber());
+        carOptional.ifPresent(car -> {
+            car.setVehicleId(savedVehicle.getVehicleId()); // ✅ vehicle_id 설정
+            carRepository.save(car); // ✅ cars 테이블에 업데이트
+        });
+
+        return savedVehicle;
     }
 
     public Vehicle findVehicleById(String vehicleId) {

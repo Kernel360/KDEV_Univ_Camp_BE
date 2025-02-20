@@ -24,4 +24,7 @@ public class Car {
 
     @Column(name = "owner_username", nullable = false)
     private String ownerUsername; // 차량 소유자 (사용자 이름)
+
+    @Column(name = "vehicle_id", length = 50)  // ✅ vehicle_id 컬럼 추가
+    private String vehicleId;  // ✅ 필드 추가
 }
