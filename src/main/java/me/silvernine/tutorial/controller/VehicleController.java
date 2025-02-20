@@ -12,10 +12,15 @@ import org.springframework.web.bind.annotation.*;
 public class VehicleController {
     private final VehicleService vehicleService;
 
-    // ✅ 차량 등록 (중복 방지 추가)
+    // ✅ 차량 등록 (중복 방지 및 vehicleId 자동 설정 추가)
     @PostMapping
     public ResponseEntity<?> registerVehicle(@RequestBody Vehicle vehicle) {
         try {
+            // ✅ vehicleId가 없으면 registrationNumber를 vehicleId로 설정
+            if (vehicle.getVehicleId() == null || vehicle.getVehicleId().isBlank()) {
+                vehicle.setVehicleId(vehicle.getRegistrationNumber());
+            }
+
             Vehicle savedVehicle = vehicleService.saveVehicle(vehicle);
             return ResponseEntity.ok(savedVehicle);
         } catch (IllegalArgumentException e) {

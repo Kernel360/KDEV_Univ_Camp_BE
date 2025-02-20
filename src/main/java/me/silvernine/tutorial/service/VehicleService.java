@@ -11,6 +11,11 @@ public class VehicleService {
     private final VehicleRepository vehicleRepository;
 
     public Vehicle saveVehicle(Vehicle vehicle) {
+        // ✅ vehicleId가 없으면 registrationNumber 사용
+        if (vehicle.getVehicleId() == null || vehicle.getVehicleId().isBlank()) {
+            vehicle.setVehicleId(vehicle.getRegistrationNumber());
+        }
+
         // ✅ 중복 등록 방지
         if (vehicleRepository.existsByVehicleId(vehicle.getVehicleId())) {
             throw new IllegalArgumentException("이미 등록된 차량 ID입니다: " + vehicle.getVehicleId());
@@ -18,6 +23,7 @@ public class VehicleService {
         if (vehicleRepository.existsByRegistrationNumber(vehicle.getRegistrationNumber())) {
             throw new IllegalArgumentException("이미 등록된 차량 번호입니다: " + vehicle.getRegistrationNumber());
         }
+
         return vehicleRepository.save(vehicle);
     }
 

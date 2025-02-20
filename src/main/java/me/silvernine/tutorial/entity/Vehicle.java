@@ -16,16 +16,14 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class Vehicle {
     @Id
-    @Column(name = "vehicle_id", length = 50, nullable = false, unique = true) // ✅ 차량 ID는 기본 키로 사용됨
+    @Column(name = "vehicle_id", length = 50, nullable = false)  // ✅ NULL 방지
     private String vehicleId;
 
-    @Column(nullable = false) // ✅ NULL 방지
     private String model;
 
-    @Column(name = "registration_number", nullable = false, unique = true) // ✅ 중복 방지
+    @Column(name = "registration_number")
     private String registrationNumber;
 
-    @Column(nullable = false)
     private String owner;
 
     @CreationTimestamp
