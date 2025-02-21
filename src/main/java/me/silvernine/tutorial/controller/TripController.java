@@ -51,10 +51,10 @@ public class TripController {
         return ResponseEntity.ok(tripService.getRecentTrips(since));
     }
 
-    // ✅ 차량 번호 + 기간별 GPS 정보 조회 (startDate, endDate 없을 경우 날짜 목록 반환)
-    @Operation(summary = "차량 번호 + 기간별 Trip 데이터 조회", description = "특정 차량의 위치 데이터를 특정 기간 동안 조회합니다. startDate와 endDate를 입력하지 않으면, 해당 차량이 기록된 날짜 목록을 반환합니다.")
+    // ✅ 차량 번호 + 기간별 GPS 정보 조회 (startDate, endDate 없을 경우 전체 데이터 조회)
+    @Operation(summary = "차량 번호 + 기간별 Trip 데이터 조회", description = "특정 차량의 위치 데이터를 특정 기간 동안 조회합니다. startDate와 endDate를 입력하지 않으면 해당 차량의 전체 기간 데이터를 조회합니다.")
     @GetMapping("/search")
-    public ResponseEntity<?> searchTrips(
+    public ResponseEntity<List<Trip>> searchTrips(
             @Parameter(description = "차량 번호 (예: 12가 1234)", required = true, example = "12가 1234")
             @RequestParam String carNumber,
 
@@ -67,10 +67,10 @@ public class TripController {
             @Parameter(description = "주기 (초 단위, 예: 60, 120, 180) [선택]", required = false, example = "60")
             @RequestParam(required = false) Integer interval) {
 
-        // ✅ startDate, endDate가 없으면 해당 차량의 기록된 날짜 목록을 반환
+        // ✅ startDate와 endDate가 없으면 전체 GPS 데이터 조회
         if (startDate == null && endDate == null) {
-            List<LocalDate> dates = tripService.getAvailableDatesByCarNumber(carNumber);
-            return ResponseEntity.ok(dates);
+            List<Trip> allTrips = tripService.getAllTripsByCarNumber(carNumber);
+            return ResponseEntity.ok(allTrips);
         }
 
         if (endDate == null) {
