@@ -94,10 +94,9 @@ public class VehicleStatusController {
         }
         return vehicleData;
     }
-
     @Operation(
             summary = "차량 주간 주행거리 조회",
-            description = "차량의 이번 주와 지난 주의 요일별 주행거리를 반환합니다.",
+            description = "차량의 이번 주와 지난 주의 주행거리를 반환합니다.",
             responses = {
                     @ApiResponse(
                             responseCode = "200",
@@ -107,9 +106,10 @@ public class VehicleStatusController {
                                     examples = @ExampleObject(value = """
                                         {
                                             "carNumber": "12가 1234",
-                                            "daysOfWeek": ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
-                                            "thisWeekDistances": [120, 200, 150, 80, 70, 110, 0],
-                                            "lastWeekDistances": [90, 150, 120, 60, 50, 90, 100],
+                                            "weeklyDistance": {
+                                                "thisWeek": [120, 200, 150, 80, 70, 110, 0],
+                                                "lastWeek": [90, 150, 120, 60, 50, 90, 100]
+                                            },
                                             "totalDistance": 730.0
                                         }
                                     """)
@@ -123,7 +123,7 @@ public class VehicleStatusController {
     }
 
     /**
-     * ✅ 주간 주행거리 데이터 생성 (thisWeekDistances, lastWeekDistances 분리)
+     * ✅ 주간 주행거리 데이터 생성 (`weeklyDistance`로 묶음)
      */
     private Map<String, Object> generateWeeklyDistanceData(String carNumber) {
         Map<String, Object> response = new HashMap<>();
@@ -131,7 +131,6 @@ public class VehicleStatusController {
         // 기본 거리값 (예제용 고정값)
         Integer[] thisWeekDistances = {120, 200, 150, 80, 70, 110, 0};
         Integer[] lastWeekDistances = {90, 150, 120, 60, 50, 90, 100};
-        String[] daysOfWeek = {"MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"};
 
         // 총 주행거리 계산 (이번 주 합산)
         double totalDistance = Arrays.stream(thisWeekDistances)
@@ -139,11 +138,13 @@ public class VehicleStatusController {
                 .mapToDouble(Integer::doubleValue)
                 .sum();
 
-        // 응답 데이터 구성
+        // ✅ `weeklyDistance`로 묶어서 응답 구성
+        Map<String, Object> weeklyDistance = new HashMap<>();
+        weeklyDistance.put("thisWeek", thisWeekDistances);
+        weeklyDistance.put("lastWeek", lastWeekDistances);
+
         response.put("carNumber", carNumber);
-        response.put("daysOfWeek", daysOfWeek);
-        response.put("thisWeekDistances", thisWeekDistances);
-        response.put("lastWeekDistances", lastWeekDistances);
+        response.put("weeklyDistance", weeklyDistance);
         response.put("totalDistance", totalDistance);
 
         return response;
