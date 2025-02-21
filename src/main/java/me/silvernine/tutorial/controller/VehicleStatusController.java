@@ -6,7 +6,6 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
-import java.time.LocalDate;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
