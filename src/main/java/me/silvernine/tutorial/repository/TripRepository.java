@@ -34,4 +34,15 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
             @Param("startDateTime") LocalDateTime startDateTime,
             @Param("endDateTime") LocalDateTime endDateTime,
             @Param("interval") int interval);
+
+    // ✅ 전체 기간에서 interval 적용된 데이터 조회 (새로운 쿼리 추가)
+    @Query(value = """
+    SELECT * FROM trip_data
+    WHERE car_number = :carNumber 
+    AND UNIX_TIMESTAMP(timestamp) % :interval = 0
+    ORDER BY timestamp
+    """, nativeQuery = true)
+    List<Trip> findByCarNumberAndIntervalForAllDates(
+            @Param("carNumber") String carNumber,
+            @Param("interval") int interval);
 }

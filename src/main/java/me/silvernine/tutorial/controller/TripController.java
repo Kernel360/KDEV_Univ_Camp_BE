@@ -51,8 +51,8 @@ public class TripController {
         return ResponseEntity.ok(tripService.getRecentTrips(since));
     }
 
-    // ✅ 차량 번호 + 기간별 GPS 정보 조회 (startDate, endDate 없을 경우 전체 데이터 조회)
-    @Operation(summary = "차량 번호 + 기간별 Trip 데이터 조회", description = "특정 차량의 위치 데이터를 특정 기간 동안 조회합니다. startDate와 endDate를 입력하지 않으면 해당 차량의 전체 기간 데이터를 조회합니다.")
+    // ✅ 차량 번호 + 기간별 GPS 정보 조회 (전체 데이터에서 interval 적용 가능)
+    @Operation(summary = "차량 번호 + 기간별 Trip 데이터 조회", description = "특정 차량의 위치 데이터를 특정 기간 동안 조회합니다. startDate와 endDate를 입력하지 않으면 해당 차량의 전체 기간 데이터를 조회합니다. 주기(interval)를 설정하면 주기 간격으로 데이터를 필터링합니다.")
     @GetMapping("/search")
     public ResponseEntity<List<Trip>> searchTrips(
             @Parameter(description = "차량 번호 (예: 12가 1234)", required = true, example = "12가 1234")
@@ -67,10 +67,18 @@ public class TripController {
             @Parameter(description = "주기 (초 단위, 예: 60, 120, 180) [선택]", required = false, example = "60")
             @RequestParam(required = false) Integer interval) {
 
+        List<Trip> trips;
+
+        // ✅ startDate, endDate가 없지만 interval이 있으면 전체 데이터에서 interval 적용
+        if (startDate == null && endDate == null && interval != null) {
+            trips = tripService.getAllTripsByCarNumberWithInterval(carNumber, interval);
+            return ResponseEntity.ok(trips);
+        }
+
         // ✅ startDate와 endDate가 없으면 전체 GPS 데이터 조회
         if (startDate == null && endDate == null) {
-            List<Trip> allTrips = tripService.getAllTripsByCarNumber(carNumber);
-            return ResponseEntity.ok(allTrips);
+            trips = tripService.getAllTripsByCarNumber(carNumber);
+            return ResponseEntity.ok(trips);
         }
 
         if (endDate == null) {
@@ -79,8 +87,6 @@ public class TripController {
 
         LocalDateTime startDateTime = startDate.atStartOfDay();
         LocalDateTime endDateTime = endDate.atTime(23, 59, 59, 999_999_999);
-
-        List<Trip> trips;
 
         if (interval != null && (interval == 60 || interval == 120 || interval == 180)) {
             trips = tripService.getTripsByCarNumberAndInterval(carNumber, startDateTime, endDateTime, interval);

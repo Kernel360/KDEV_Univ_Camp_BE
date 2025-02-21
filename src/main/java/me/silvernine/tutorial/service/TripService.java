@@ -32,6 +32,10 @@ public class TripService {
         return tripRepository.findByCarNumber(carNumber);
     }
 
+    public List<Trip> getAllTripsByCarNumberWithInterval(String carNumber, int interval) {
+        return tripRepository.findByCarNumberAndIntervalForAllDates(carNumber, interval);
+    }
+
     public List<Trip> getTripsByCarNumberAndTimestampBetween(String carNumber, LocalDateTime startDateTime, LocalDateTime endDateTime) {
         return tripRepository.findByCarNumberAndTimestampBetween(carNumber, startDateTime, endDateTime);
     }
