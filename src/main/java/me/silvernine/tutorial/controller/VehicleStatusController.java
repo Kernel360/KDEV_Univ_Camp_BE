@@ -104,15 +104,15 @@ public class VehicleStatusController {
                             content = @Content(
                                     mediaType = "application/json",
                                     examples = @ExampleObject(value = """
-                                        {
-                                            "carNumber": "12가 1234",
-                                            "weeklyDistance": {
-                                                "thisWeekDistances": [120, 200, 150, 80, 70, 110, 0],
-                                                "lastWeekDistances": [90, 150, 120, 60, 50, 90, 100],
-                                                "totalDistance": 730.0
-                                            }
+                                    {
+                                        "carNumber": "12가 1234",
+                                        "weeklyDistance": {
+                                            "thisWeekDistances": [120, 200, 150, 80, 70, 110, 0],
+                                            "lastWeekDistances": [90, 150, 120, 60, 50, 90, 100],
+                                            "totalDistance": 730.0
                                         }
-                                    """)
+                                    }
+                                """)
                             )
                     )
             }
@@ -129,11 +129,11 @@ public class VehicleStatusController {
         Map<String, Object> response = new HashMap<>();
 
         // 기본 거리값 (예제용 고정값)
-        Integer[] thisWeekDistances = {120, 200, 150, 80, 70, 110, 0};
-        Integer[] lastWeekDistances = {90, 150, 120, 60, 50, 90, 100};
+        List<Integer> thisWeekDistances = List.of(120, 200, 150, 80, 70, 110, 0);
+        List<Integer> lastWeekDistances = List.of(90, 150, 120, 60, 50, 90, 100);
 
         // 총 주행거리 계산 (이번 주 합산)
-        double totalDistance = Arrays.stream(thisWeekDistances)
+        double totalDistance = thisWeekDistances.stream()
                 .filter(Objects::nonNull)
                 .mapToDouble(Integer::doubleValue)
                 .sum();
@@ -142,13 +142,14 @@ public class VehicleStatusController {
         Map<String, Object> weeklyDistance = new HashMap<>();
         weeklyDistance.put("thisWeekDistances", thisWeekDistances);
         weeklyDistance.put("lastWeekDistances", lastWeekDistances);
+        weeklyDistance.put("totalDistance", totalDistance);  // ✅ 올바른 위치로 이동
 
         response.put("carNumber", carNumber);
         response.put("weeklyDistance", weeklyDistance);
-        response.put("totalDistance", totalDistance);
 
         return response;
     }
+
 
 
     /**
