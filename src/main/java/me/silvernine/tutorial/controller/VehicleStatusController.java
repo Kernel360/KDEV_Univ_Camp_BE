@@ -95,10 +95,6 @@ public class VehicleStatusController {
         return vehicleData;
     }
 
-
-
-
-
     @Operation(
             summary = "차량 주간 주행거리 조회",
             description = "차량의 이번 주와 지난 주의 주행거리를 반환합니다.",
@@ -153,8 +149,6 @@ public class VehicleStatusController {
 
         return response;
     }
-
-
 
     /**
      * ✅ 차량 개별 상태 및 운행 정보 조회용 더미 데이터
@@ -256,15 +250,18 @@ public class VehicleStatusController {
                 156, 78, 189, 112, 145, 92
         };
 
+        // ✅ 총 주행거리 계산 (모든 2시간 단위 거리 합산)
+        int totalHourlyDistance = Arrays.stream(baseDistances).sum();
+
         // 리스트 형태로 응답 구성
         List<Map<String, Object>> response = new ArrayList<>();
 
         Map<String, Object> distanceMap = new HashMap<>();
         distanceMap.put("timeRanges", Arrays.asList(timeRanges));
         distanceMap.put("distances", Arrays.stream(baseDistances).boxed().toList());
+        distanceMap.put("totalHourlyDistance", totalHourlyDistance); // ✅ 총 주행거리 추가
 
         response.add(distanceMap);
         return response;
     }
-
 }
