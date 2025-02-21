@@ -67,7 +67,7 @@ public class VehicleStatusController {
                                     mediaType = "application/json",
                                     examples = @ExampleObject(value = """
                                                 {
-                                                    "vehicleNumber": "12가 1234",
+                                                    "carNumber": "12가 1234",
                                                     "batteryLevel": 85,
                                                     "status": "운행 중",
                                                     "startLocation": "서울",
@@ -86,11 +86,11 @@ public class VehicleStatusController {
                     )
             }
     )
-    @GetMapping("/details/{vehicleNumber}")
-    public Map<String, Object> getVehicleDetails(@PathVariable String vehicleNumber) {
-        Map<String, Object> vehicleData = getDummyVehicleData(vehicleNumber);
+    @GetMapping("/details/{carNumber}")
+    public Map<String, Object> getVehicleDetails(@PathVariable String carNumber) {
+        Map<String, Object> vehicleData = getDummyVehicleData(carNumber);
         if (vehicleData == null) {
-            throw new RuntimeException("해당 차량 번호를 찾을 수 없습니다: " + vehicleNumber);
+            throw new RuntimeException("해당 차량 번호를 찾을 수 없습니다: " + carNumber);
         }
         return vehicleData;
     }
