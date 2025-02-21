@@ -140,8 +140,8 @@ public class VehicleStatusController {
 
         // ✅ `weeklyDistance`로 묶어서 응답 구성
         Map<String, Object> weeklyDistance = new HashMap<>();
-        weeklyDistance.put("thisWeek", thisWeekDistances);
-        weeklyDistance.put("lastWeek", lastWeekDistances);
+        weeklyDistance.put("thisWeekDistances", thisWeekDistances);
+        weeklyDistance.put("lastWeekDistances", lastWeekDistances);
 
         response.put("carNumber", carNumber);
         response.put("weeklyDistance", weeklyDistance);
