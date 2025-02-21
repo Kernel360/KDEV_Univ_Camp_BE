@@ -129,7 +129,7 @@ public class VehicleStatusController {
         Map<String, Object> response = new HashMap<>();
 
         // 기본 거리값 (예제용 고정값)
-        List<Integer> thisWeekDistances = List.of(120, 200, 150, 80, 70, 110, 0);
+        List<Integer> thisWeekDistances = List.of(120, 200, 150, 80, 70, 110, null);
         List<Integer> lastWeekDistances = List.of(90, 150, 120, 60, 50, 90, 100);
 
         // 총 주행거리 계산 (이번 주 합산)
