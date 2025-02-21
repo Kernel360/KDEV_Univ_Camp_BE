@@ -106,7 +106,7 @@ public class VehicleStatusController {
                                     mediaType = "application/json",
                                     examples = @ExampleObject(value = """
                                         {
-                                            "carNumber": "77다7777",
+                                            "carNumber": "12가 1234",
                                             "weeklyData": [
                                                 {"dayOfWeek": "MON", "thisWeek": 120, "lastWeek": 90},
                                                 {"dayOfWeek": "TUE", "thisWeek": 200, "lastWeek": 150},
