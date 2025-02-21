@@ -77,34 +77,29 @@ public class TripController {
         List<Trip> trips;
 
         if (interval != null && (interval == 60 || interval == 120 || interval == 180)) {
-            // ✅ interval이 지정된 경우 주기 적용
             trips = tripService.getTripsByCarNumberAndInterval(carNumber, startDateTime, endDateTime, interval);
         } else {
-            // ✅ interval이 없으면 기존 방식으로 조회
             trips = tripService.getTripsByCarNumberAndTimestampBetween(carNumber, startDateTime, endDateTime);
         }
 
         return ResponseEntity.ok(trips);
     }
 
+    // ✅ 차량 번호별 기록된 날짜 조회 API 추가
+    @Operation(summary = "차량 번호별 기록된 날짜 조회", description = "특정 차량의 기록된 날짜 목록을 조회합니다.")
+    @GetMapping("/dates")
+    public ResponseEntity<List<LocalDate>> getTripDatesByCarNumber(@RequestParam String carNumber) {
+        List<LocalDate> dates = tripService.getAvailableDatesByCarNumber(carNumber);
+        return ResponseEntity.ok(dates);
+    }
 
-
-    // ✅ TripRequestDto → Trip 변환 메서드
     private Trip convertToTrip(TripRequestDto dto) {
         Trip trip = new Trip();
-
-        // ✅ 기존 `vehicleId` → `carNumber` 변경
         trip.setCarNumber(dto.getCarNumber());
-
         trip.setLatitude(dto.getLatitude());
         trip.setLongitude(dto.getLongitude());
-
-        // ✅ 'time' 값을 LocalDateTime으로 변환 (.SS 포맷 유지)
         trip.setTimestamp(LocalDateTime.parse(dto.getTime(), formatter));
-
-        // ✅ 배터리 값 반영 (null이면 100으로 설정)
         trip.setBatteryLevel(dto.getBatteryLevel() != null ? dto.getBatteryLevel() : 100);
-
         return trip;
     }
 }
