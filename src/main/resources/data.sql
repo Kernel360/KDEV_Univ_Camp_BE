@@ -12,8 +12,8 @@ VALUES ((SELECT id FROM `user` WHERE id='admin'), 'ROLE_ADMIN');
 -- ✅ trip_data 테이블 생성 (없을 경우에만)
 CREATE TABLE IF NOT EXISTS trip_data (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    vehicle_id VARCHAR(50) NOT NULL,
-    timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- ✅ 기본값 추가
+    vehicle_id VARCHAR(50) NOT NULL, -- ✅ 추가 (외래키 가능)
+    timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     latitude DOUBLE,
     longitude DOUBLE,
     value DOUBLE DEFAULT 0.0
