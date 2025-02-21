@@ -51,21 +51,27 @@ public class TripController {
         return ResponseEntity.ok(tripService.getRecentTrips(since));
     }
 
-    // ✅ 차량 번호 + 기간별 GPS 정보 조회 (주기 적용)
-    @Operation(summary = "차량 번호 + 기간별 Trip 데이터 조회", description = "특정 차량의 위치 데이터를 특정 기간 동안 조회합니다. 주기를 설정하면 해당 간격으로 데이터를 필터링합니다.")
+    // ✅ 차량 번호 + 기간별 GPS 정보 조회 (startDate, endDate 없을 경우 날짜 목록 반환)
+    @Operation(summary = "차량 번호 + 기간별 Trip 데이터 조회", description = "특정 차량의 위치 데이터를 특정 기간 동안 조회합니다. startDate와 endDate를 입력하지 않으면, 해당 차량이 기록된 날짜 목록을 반환합니다.")
     @GetMapping("/search")
-    public ResponseEntity<List<Trip>> searchTrips(
+    public ResponseEntity<?> searchTrips(
             @Parameter(description = "차량 번호 (예: 12가 1234)", required = true, example = "12가 1234")
             @RequestParam String carNumber,
 
-            @Parameter(description = "검색 시작 날짜 (yyyy-MM-dd)", required = true, example = "2025-01-01")
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
+            @Parameter(description = "검색 시작 날짜 (yyyy-MM-dd) [선택]", required = false, example = "2025-01-01")
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
 
             @Parameter(description = "검색 종료 날짜 (yyyy-MM-dd) [선택]", required = false, example = "2025-02-01")
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
 
             @Parameter(description = "주기 (초 단위, 예: 60, 120, 180) [선택]", required = false, example = "60")
             @RequestParam(required = false) Integer interval) {
+
+        // ✅ startDate, endDate가 없으면 해당 차량의 기록된 날짜 목록을 반환
+        if (startDate == null && endDate == null) {
+            List<LocalDate> dates = tripService.getAvailableDatesByCarNumber(carNumber);
+            return ResponseEntity.ok(dates);
+        }
 
         if (endDate == null) {
             endDate = startDate;
@@ -85,14 +91,7 @@ public class TripController {
         return ResponseEntity.ok(trips);
     }
 
-    // ✅ 차량 번호별 기록된 날짜 조회 API 추가
-    @Operation(summary = "차량 번호별 기록된 날짜 조회", description = "특정 차량의 기록된 날짜 목록을 조회합니다.")
-    @GetMapping("/dates")
-    public ResponseEntity<List<LocalDate>> getTripDatesByCarNumber(@RequestParam String carNumber) {
-        List<LocalDate> dates = tripService.getAvailableDatesByCarNumber(carNumber);
-        return ResponseEntity.ok(dates);
-    }
-
+    // ✅ TripRequestDto → Trip 변환 메서드
     private Trip convertToTrip(TripRequestDto dto) {
         Trip trip = new Trip();
         trip.setCarNumber(dto.getCarNumber());
