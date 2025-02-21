@@ -11,6 +11,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DuplicateMemberException.class)
     public ResponseEntity<ApiResponse<Void>> handleDuplicateMemberException(DuplicateMemberException ex) {
+        ex.printStackTrace();
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(ApiResponse.<Void>builder()
                         .status(409)
@@ -20,6 +21,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(NotFoundMemberException.class)
     public ResponseEntity<ApiResponse<Void>> handleNotFoundMemberException(NotFoundMemberException ex) {
+        ex.printStackTrace();
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(ApiResponse.<Void>builder()
                         .status(404)
@@ -29,6 +31,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGeneralException(Exception ex) {
+        ex.printStackTrace();
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.<Void>builder()
                         .status(500)

@@ -108,9 +108,9 @@ public class VehicleStatusController {
                                             "carNumber": "12가 1234",
                                             "weeklyDistance": {
                                                 "thisWeekDistances": [120, 200, 150, 80, 70, 110, 0],
-                                                "lastWeekDistances": [90, 150, 120, 60, 50, 90, 100]
-                                            },
-                                            "totalDistance": 730.0
+                                                "lastWeekDistances": [90, 150, 120, 60, 50, 90, 100],
+                                                "totalDistance": 730.0
+                                            }
                                         }
                                     """)
                             )
