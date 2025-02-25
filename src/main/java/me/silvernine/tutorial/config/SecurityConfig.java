@@ -33,7 +33,7 @@ public class SecurityConfig {
         this.jwtFilter = jwtFilter;
     }
 
-    // ✅ CORS 설정 (CorsConfig.java 삭제하고 여기에서 관리)
+    // ✅ CORS 설정 (모든 출처에서 접근 가능하도록 설정)
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
@@ -98,7 +98,7 @@ public class SecurityConfig {
 
         return http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // ✅ CORS 적용
-                .csrf(csrf -> csrf.disable())
+                .csrf(csrf -> csrf.disable()) // ✅ CSRF 비활성화
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
@@ -106,10 +106,11 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
                 .headers(headers -> headers
                         .frameOptions(frameOptions -> frameOptions.sameOrigin())
-                        // ✅ Content Security Policy (CSP) 설정 추가
+                        // ✅ HTTP(8080) & HTTPS(8443) 허용하도록 CSP 설정
                         .contentSecurityPolicy(csp -> csp
                                 .policyDirectives("default-src 'self'; " +
                                         "connect-src 'self' " +
+                                        "http://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8080 " +  // ✅ HTTP 추가
                                         "https://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8443 " +
                                         "wss://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8443; " +
                                         "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
@@ -117,7 +118,7 @@ public class SecurityConfig {
                                         "img-src 'self' data:; " +
                                         "font-src 'self' data:;"))
                 )
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) // ✅ Spring Bean 사용
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) // ✅ JWT 필터 추가
                 .build();
     }
 }
