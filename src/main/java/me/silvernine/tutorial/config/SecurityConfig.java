@@ -33,18 +33,22 @@ public class SecurityConfig {
         this.jwtFilter = jwtFilter;
     }
 
-    // ✅ CORS 설정 (모든 출처에서 접근 가능하도록 설정)
+    // ✅ CORS 설정 (외부 API 및 폰트 허용)
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:5173",
-                "http://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com",
-                "https://kdev-univ-camp-fe.vercel.app" // ✅ 프론트엔드 도메인 추가
-        ));
+
+        // ✅ 모든 도메인 허용
+        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
+
+        // ✅ 모든 HTTP 메서드 허용
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+
+        // ✅ 모든 헤더 허용
         configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setExposedHeaders(Arrays.asList("Authorization")); // ✅ Authorization 헤더 노출 추가
+        configuration.setExposedHeaders(Arrays.asList("Authorization")); // ✅ Authorization 헤더 허용
+
+        // ✅ 자격 증명 (Credentials) 허용
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -106,21 +110,14 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
                 .headers(headers -> headers
                         .frameOptions(frameOptions -> frameOptions.sameOrigin())
-                        // ✅ HTTP(8080) & HTTPS(8443) 허용하도록 CSP 설정
+                        // ✅ CSP 설정 (외부 API 요청 및 폰트 허용)
                         .contentSecurityPolicy(csp -> csp
-                                .policyDirectives("default-src 'self'; " +
-                                        "connect-src 'self' " +
-                                        "http://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8080 " +
-                                        "https://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8443 " +
-                                        "wss://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8443; " +
-                                        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
-                                        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
-                                        "img-src 'self' data:; " +
-                                        "font-src 'self' https://fonts.gstatic.com; " + // ✅ 외부 폰트 허용
-                                        "connect-src 'self' " +
-                                        "http://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8080 " +
-                                        "https://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8443;")) // ✅ API 요청 허용
-                )
+                                .policyDirectives("default-src *; " +  // ✅ 모든 도메인 허용
+                                        "connect-src * ws: wss:; " +  // ✅ API 및 웹소켓 허용
+                                        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +  // ✅ JS 허용
+                                        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +  // ✅ Google Fonts 허용
+                                        "img-src 'self' data: https://*; " +  // ✅ 이미지 허용
+                                        "font-src 'self' https://fonts.gstatic.com data:; ")))  // ✅ 폰트 허용
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) // ✅ JWT 필터 추가
                 .build();
     }

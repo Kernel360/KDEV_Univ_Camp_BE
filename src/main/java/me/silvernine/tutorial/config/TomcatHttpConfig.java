@@ -18,9 +18,9 @@ public class TomcatHttpConfig {
     private Connector httpConnector() {
         Connector connector = new Connector(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
         connector.setScheme("http");
-        connector.setPort(8080);  // HTTP 포트 추가
+        connector.setPort(8080);
         connector.setSecure(false);
-        connector.setRedirectPort(8443); // HTTP → HTTPS 리다이렉트 (선택사항)
+        connector.setRedirectPort(8443); // HTTP → HTTPS 리디렉션
         return connector;
     }
 }

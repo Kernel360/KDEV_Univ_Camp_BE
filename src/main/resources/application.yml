@@ -63,18 +63,13 @@ server:
     enabled: true
     port: 8080
 
----
-# ✅ **배치 스케줄링 설정**
 batch:
   scheduling:
     enabled: true  # 배치 스케줄링 활성화
     cron: "0 5 0 * * ?"  # 매일 00:05 실행
 
----
-# ✅ **WebSocket 설정**
 websocket:
   enabled: true  # WebSocket 활성화
   endpoint: "/battery-status"  # WebSocket 엔드포인트 설정
   allowed-origins: "*"  # 모든 출처 허용 (보안 설정 필요하면 변경)
   buffer-size: 8192  # 메시지 버퍼 크기 (기본값: 8192)
-
