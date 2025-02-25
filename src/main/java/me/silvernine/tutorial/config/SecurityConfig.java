@@ -110,13 +110,13 @@ public class SecurityConfig {
                         .contentSecurityPolicy(csp -> csp
                                 .policyDirectives("default-src 'self'; " +
                                         "connect-src 'self' " +
-                                        "http://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8080 " +  // ✅ HTTP 추가
+                                        "http://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8080 " +
                                         "https://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8443 " +
                                         "wss://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8443; " +
                                         "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
-                                        "style-src 'self' 'unsafe-inline'; " +
+                                        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +  // ✅ Google Fonts 허용
                                         "img-src 'self' data:; " +
-                                        "font-src 'self' data:;"))
+                                        "font-src 'self' https://fonts.gstatic.com;")) // ✅ Google Fonts 폰트 허용
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) // ✅ JWT 필터 추가
                 .build();
