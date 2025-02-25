@@ -122,8 +122,7 @@ public class SecurityConfig {
                                         "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
                                         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +  // ✅ Google Fonts 스타일 허용
                                         "img-src 'self' data: https://*; " +
-                                        "font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com https://fonts.gstatic.com/ea/notosanskr/v2; "))) // ✅ 폰트 허용
-
+                                        "font-src 'self' https://fonts.gstatic.com data:;"))) // ✅ 수정된 font-src 설정
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) // ✅ JWT 필터 추가
                 .build();
     }
