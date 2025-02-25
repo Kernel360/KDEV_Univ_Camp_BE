@@ -50,20 +50,17 @@ server:
   ssl:
     enabled: true
     key-store: classpath:keystore.p12
-    key-store-password: mypassword  # keystore 생성 시 사용한 비밀번호
+    key-store-password: mypassword
     key-store-type: PKCS12
-    key-alias: mykey  # 🔹 keytool에서 확인한 alias 값으로 변경
+    key-alias: mykey
 
   # ✅ HTTP(8080) 포트도 활성화
-  http:
-    enabled: true
-  additional-ports:
-    - 8080
-
+  additional-ports: 8080
 
   tomcat:
     keep-alive-timeout: 86400000
     connection-timeout: 86400000
+
 
 ---
 # ✅ **배치 스케줄링 설정**
