@@ -50,7 +50,7 @@ server:
   ssl:
     enabled: true
     key-store: classpath:keystore.p12
-    key-store-password: nioud8219@  # 생성 시 입력한 비밀번호로 변경
+    key-store-password: mypassword  # 생성 시 입력한 비밀번호로 변경
     key-store-type: PKCS12
     key-alias: tomcat
 
