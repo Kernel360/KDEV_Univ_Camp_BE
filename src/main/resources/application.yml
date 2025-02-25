@@ -46,11 +46,11 @@ logging:
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE # SQL 파라미터 로그
 
 server:
-  port: 443
+  port: 8443
   ssl:
     enabled: true
     key-store: file:/home/ec2-user/KDEV_Univ_Camp_BE/keystore.p12
-    key-store-password: nioud8219@  # keystore.p12 생성 시 사용한 비밀번호
+    key-store-password: nioud8219@
     key-store-type: PKCS12
     key-alias: tomcat
 
