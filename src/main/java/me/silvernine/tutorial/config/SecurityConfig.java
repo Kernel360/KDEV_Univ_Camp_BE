@@ -9,13 +9,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -23,6 +23,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 
 @Configuration
+@EnableWebSecurity
 public class SecurityConfig {
 
     private final TokenProvider tokenProvider;
@@ -33,22 +34,18 @@ public class SecurityConfig {
         this.jwtFilter = jwtFilter;
     }
 
-    // ✅ CORS 설정 (외부 API 및 폰트 허용)
+    // ✅ CORS 설정
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-
-        // ✅ 모든 도메인 허용
-        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
-
-        // ✅ 모든 HTTP 메서드 허용
+        configuration.setAllowedOrigins(Arrays.asList(
+                "http://localhost:5173",
+                "http://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com",
+                "https://kdev-univ-camp-fe.vercel.app"
+        ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-
-        // ✅ 모든 헤더 허용
         configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setExposedHeaders(Arrays.asList("Authorization")); // ✅ Authorization 헤더 허용
-
-        // ✅ 자격 증명 (Credentials) 허용
+        configuration.setExposedHeaders(Arrays.asList("Authorization"));
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -81,49 +78,47 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        AntPathRequestMatcher[] publicMatchers = {
-                new AntPathRequestMatcher("/swagger-ui/**"),
-                new AntPathRequestMatcher("/swagger-ui.html"),
-                new AntPathRequestMatcher("/swagger-resources/**"),
-                new AntPathRequestMatcher("/v3/api-docs/**"),
-                new AntPathRequestMatcher("/webjars/**"),
-                new AntPathRequestMatcher("/h2-console/**"),
-                new AntPathRequestMatcher("/api/signup"),
-                new AntPathRequestMatcher("/api/authenticate"),
-                new AntPathRequestMatcher("/api/auth-header-check"),
-                new AntPathRequestMatcher("/api/user"),
-                new AntPathRequestMatcher("/api/trip/**"),
-                new AntPathRequestMatcher("/api/token/validate"),
-                new AntPathRequestMatcher("/favicon.ico"),
-                new AntPathRequestMatcher("/error"),
-                new AntPathRequestMatcher("/api/vehicle-status")
-        };
-
-        return http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // ✅ CORS 적용
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable()) // ✅ CSRF 비활성화
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(publicMatchers).permitAll()
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/swagger-resources/**",
+                                "/v3/api-docs/**",
+                                "/webjars/**",
+                                "/h2-console/**",
+                                "/api/signup",
+                                "/api/authenticate",
+                                "/api/auth-header-check",
+                                "/api/user",
+                                "/api/trip/**",
+                                "/api/token/validate",
+                                "/favicon.ico",
+                                "/error",
+                                "/api/vehicle-status"
+                        ).permitAll()
                         .anyRequest().authenticated())
                 .headers(headers -> headers
                         .frameOptions(frameOptions -> frameOptions.sameOrigin())
                         .contentSecurityPolicy(csp -> csp
                                 .policyDirectives("default-src 'self'; " +
-                                        "font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com data:; " +
-                                        "img-src 'self' data: https://*; " +
-                                        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
-                                        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
-                                        "connect-src 'self' http://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8080 " +
+                                        "connect-src 'self' " +
+                                        "http://localhost:8080 " +
+                                        "http://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8080 " +
                                         "https://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8443 " +
-                                        "wss://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8443 " +
-                                        "https://fonts.googleapis.com; " +
-                                        "frame-ancestors 'self'; " +
-                                        "upgrade-insecure-requests;"))
-                        .xssProtection(xss -> xss.disable()))
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) // ✅ JWT 필터 추가
-                .build();
+                                        "wss://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8443; " +
+                                        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+                                        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+                                        "img-src 'self' data: https://*; " +
+                                        "font-src 'self' data: https://fonts.gstatic.com https://fonts.googleapis.com https://fonts.gstatic.com/ea/notosanskr/v2; "))
+                )
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
     }
 }
