@@ -112,12 +112,16 @@ public class SecurityConfig {
                         .frameOptions(frameOptions -> frameOptions.sameOrigin())
                         // ✅ CSP 설정 (외부 API 요청 및 폰트 허용)
                         .contentSecurityPolicy(csp -> csp
-                                .policyDirectives("default-src *; " +  // ✅ 모든 도메인 허용
-                                        "connect-src * ws: wss:; " +  // ✅ API 및 웹소켓 허용
-                                        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +  // ✅ JS 허용
-                                        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +  // ✅ Google Fonts 허용
-                                        "img-src 'self' data: https://*; " +  // ✅ 이미지 허용
-                                        "font-src 'self' https://fonts.gstatic.com data:; ")))  // ✅ 폰트 허용
+                                .policyDirectives("default-src 'self'; " +
+                                        "connect-src 'self' " +
+                                        "http://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8080 " +
+                                        "https://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8443 " +
+                                        "wss://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8443; " +
+                                        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+                                        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " + // ✅ Google Fonts 허용
+                                        "img-src 'self' data: https://*; " +
+                                        "font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com https://fonts.gstatic.com/ea/notosanskr/v2; "))) // ✅ NotoSansKR 폰트 허용
+
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) // ✅ JWT 필터 추가
                 .build();
     }
