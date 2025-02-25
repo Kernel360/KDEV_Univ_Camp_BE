@@ -39,7 +39,8 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList(
                 "http://localhost:5173",
-                "http://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com"
+                "http://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com",
+                "https://kdev-univ-camp-fe.vercel.app" // ✅ 프론트엔드 도메인 추가
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
@@ -93,8 +94,6 @@ public class SecurityConfig {
                 new AntPathRequestMatcher("/favicon.ico"),
                 new AntPathRequestMatcher("/error"),
                 new AntPathRequestMatcher("/api/vehicle-status")
-
-
         };
 
         return http
@@ -106,7 +105,16 @@ public class SecurityConfig {
                         .requestMatchers(publicMatchers).permitAll()
                         .anyRequest().authenticated())
                 .headers(headers -> headers
-                        .frameOptions(frameOptions -> frameOptions.sameOrigin()))
+                        .frameOptions(frameOptions -> frameOptions.sameOrigin())
+                        // ✅ Content Security Policy (CSP) 설정 추가
+                        .contentSecurityPolicy(csp -> csp
+                                .policyDirectives("default-src 'self'; " +
+                                        "connect-src 'self' https://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8080; " +
+                                        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+                                        "style-src 'self' 'unsafe-inline'; " +
+                                        "img-src 'self' data:; " +
+                                        "font-src 'self' data:;"))
+                )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) // ✅ Spring Bean 사용
                 .build();
     }
