@@ -34,14 +34,14 @@ public class SecurityConfig {
         this.jwtFilter = jwtFilter;
     }
 
-    // ✅ CORS 설정
+    // ✅ CORS 설정 (프론트엔드 URL 허용)
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList(
                 "http://localhost:5173",
-                "http://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com",
-                "https://kdev-univ-camp-fe.vercel.app"
+                "https://kdev-univ-camp-fe.vercel.app",  // ✅ Vercel 프론트엔드 추가
+                "https://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
@@ -85,15 +85,21 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/**").permitAll()  // ✅ 모든 요청 허용 (임시)
-                        .anyRequest().permitAll())  // ✅ 완전 개방
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()  // ✅ Swagger UI 허용
+                        .requestMatchers("/api/**").permitAll()  // ✅ 모든 API 요청 허용
+                        .anyRequest().authenticated())  // ✅ 나머지는 인증 필요
                 .headers(headers -> headers
                         .frameOptions(frameOptions -> frameOptions.sameOrigin())
                         .contentSecurityPolicy(csp -> csp
-                                .policyDirectives("default-src * 'unsafe-inline' 'unsafe-eval'; connect-src *;")));
-
-        // 🔥 JWT 필터 제거 (403 문제 원인 확인용)
-        // .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                                .policyDirectives("default-src 'self'; " +
+                                        "connect-src 'self' " +
+                                        "https://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8443 " +  // ✅ 백엔드 API 허용
+                                        "https://kdev-univ-camp-fe.vercel.app; " +  // ✅ Vercel 프론트엔드 허용
+                                        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+                                        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+                                        "img-src 'self' data: https://*; " +
+                                        "font-src 'self' data: https://fonts.gstatic.com https://fonts.googleapis.com; ")))
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
