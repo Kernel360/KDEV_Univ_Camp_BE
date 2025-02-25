@@ -109,7 +109,9 @@ public class SecurityConfig {
                         // ✅ Content Security Policy (CSP) 설정 추가
                         .contentSecurityPolicy(csp -> csp
                                 .policyDirectives("default-src 'self'; " +
-                                        "connect-src 'self' https://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8080; " +
+                                        "connect-src 'self' " +
+                                        "https://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8443 " +
+                                        "wss://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8443; " +
                                         "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
                                         "style-src 'self' 'unsafe-inline'; " +
                                         "img-src 'self' data:; " +
