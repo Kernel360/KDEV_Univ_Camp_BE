@@ -64,17 +64,9 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(HttpSecurity http,
-                                                       UserDetailsService userDetailsService,
-                                                       PasswordEncoder passwordEncoder) throws Exception {
-        AuthenticationManagerBuilder authenticationManagerBuilder =
-                http.getSharedObject(AuthenticationManagerBuilder.class);
-
-        authenticationManagerBuilder
-                .userDetailsService(userDetailsService)
-                .passwordEncoder(passwordEncoder);
-
-        return authenticationManagerBuilder.build();
+    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+        return http.getSharedObject(AuthenticationManagerBuilder.class)
+                .build();
     }
 
     @Bean
@@ -110,12 +102,13 @@ public class SecurityConfig {
                                         "connect-src 'self' " +
                                         "http://localhost:8080 " +  // ✅ 로컬 환경 추가
                                         "http://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8080 " +
+                                        "https://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8080 " + // HTTPS 8080 포트 추가
                                         "https://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8443 " +
                                         "wss://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8443; " +
                                         "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
                                         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
                                         "img-src 'self' data: https://*; " +
-                                        "font-src 'self' data: https://fonts.gstatic.com https://fonts.googleapis.com https://fonts.gstatic.com/ea/notosanskr/v2; "))) // ✅ API 요청 허용
+                                        "font-src 'self' data: https://fonts.gstatic.com https://fonts.googleapis.com https://fonts.gstatic.com/ea/notosanskr/v2; ")))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
