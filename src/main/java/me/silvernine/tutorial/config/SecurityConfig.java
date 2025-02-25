@@ -85,30 +85,15 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/swagger-ui/**",
-                                "/swagger-ui.html",
-                                "/swagger-resources/**",
-                                "/v3/api-docs/**",
-                                "/webjars/**",
-                                "/h2-console/**",
-                                "/api/**",
-                                "/api/signup",
-                                "/api/authenticate",
-                                "/api/auth-header-check",
-                                "/api/user",
-                                "/api/trip/**",
-                                "/api/token/validate",
-                                "/favicon.ico",
-                                "/error",
-                                "/api/vehicle-status"
-                        ).permitAll()
-                        .anyRequest().authenticated())
+                        .requestMatchers("/**").permitAll()  // ✅ 모든 요청 허용 (임시)
+                        .anyRequest().permitAll())  // ✅ 완전 개방
                 .headers(headers -> headers
                         .frameOptions(frameOptions -> frameOptions.sameOrigin())
                         .contentSecurityPolicy(csp -> csp
-                                .policyDirectives("default-src * 'unsafe-inline' 'unsafe-eval'; connect-src *;"))) // ✅ 최신 방식
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                                .policyDirectives("default-src * 'unsafe-inline' 'unsafe-eval'; connect-src *;")));
+
+        // 🔥 JWT 필터 제거 (403 문제 원인 확인용)
+        // .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
