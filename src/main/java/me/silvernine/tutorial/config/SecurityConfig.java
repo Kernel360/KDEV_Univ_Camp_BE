@@ -106,17 +106,7 @@ public class SecurityConfig {
                 .headers(headers -> headers
                         .frameOptions(frameOptions -> frameOptions.sameOrigin())
                         .contentSecurityPolicy(csp -> csp
-                                .policyDirectives("default-src 'self'; " +
-                                        "connect-src 'self' " + // 'self' 허용
-                                        "http://localhost:8080 " +
-                                        "http://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8080 " +
-                                        "https://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8080 " +
-                                        "https://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8443 " +
-                                        "wss://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8443; " +
-                                        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
-                                        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
-                                        "img-src 'self' data: https://*; " +
-                                        "font-src 'self' data: https://fonts.gstatic.com https://fonts.googleapis.com https://fonts.gstatic.com/ea/notosanskr/v2;")))
+                                .policyDirectives("default-src * 'unsafe-inline' 'unsafe-eval'; connect-src *;"))) // ✅ 최신 방식
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
