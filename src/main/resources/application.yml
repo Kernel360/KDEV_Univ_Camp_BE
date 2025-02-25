@@ -46,13 +46,13 @@ logging:
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE # SQL 파라미터 로그
 
 server:
-  port: 8443  # 기본 포트(HTTPS)
+  port: 8443
   ssl:
     enabled: true
     key-store: classpath:keystore.p12
-    key-store-password: mypassword  # 생성 시 입력한 비밀번호로 변경
+    key-store-password: mypassword  # keystore 생성 시 사용한 비밀번호
     key-store-type: PKCS12
-    key-alias: tomcat
+    key-alias: mykey  # 🔹 keytool에서 확인한 alias 값으로 변경
 
   # ✅ HTTP(8080) 포트도 활성화
   http:
