@@ -112,17 +112,17 @@ public class SecurityConfig {
                         .frameOptions(frameOptions -> frameOptions.sameOrigin())
                         .contentSecurityPolicy(csp -> csp
                                 .policyDirectives("default-src 'self'; " +
-                                        "upgrade-insecure-requests; " +  // ✅ HTTP → HTTPS 자동 업그레이드
-                                        "frame-ancestors 'self'; " +  // ✅ 프레임 허용
-                                        "connect-src 'self' " +
-                                        "http://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8080 " +
+                                        "font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com data:; " +
+                                        "img-src 'self' data: https://*; " +
+                                        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+                                        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+                                        "connect-src 'self' http://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8080 " +
                                         "https://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8443 " +
                                         "wss://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8443 " +
-                                        "https://fonts.googleapis.com; " +  // ✅ Google Fonts API 요청 허용
-                                        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
-                                        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +  // ✅ Google Fonts 스타일 허용
-                                        "img-src 'self' data: https://*; " +
-                                        "font-src 'self' https://fonts.gstatic.com data:;"))) // ✅ 수정된 font-src 설정
+                                        "https://fonts.googleapis.com; " +
+                                        "frame-ancestors 'self'; " +
+                                        "upgrade-insecure-requests;"))
+                        .xssProtection(xss -> xss.disable()))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) // ✅ JWT 필터 추가
                 .build();
     }
