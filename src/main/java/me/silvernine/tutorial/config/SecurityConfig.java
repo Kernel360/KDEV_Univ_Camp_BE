@@ -41,7 +41,7 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(Arrays.asList(
                 "http://localhost:5173",
                 "https://kdev-univ-camp-fe.vercel.app",  // ✅ Vercel 프론트엔드 추가
-                "https://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com"
+                "https://kernel360-fleet-manager.store" // ✅ HTTPS 도메인 추가
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
@@ -85,7 +85,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()  // ✅ Swagger UI 허용
+                        .requestMatchers("/", "/swagger-ui/**", "/v3/api-docs/**").permitAll()  // ✅ `/` 허용
                         .requestMatchers("/api/**").permitAll()  // ✅ 모든 API 요청 허용
                         .anyRequest().authenticated())  // ✅ 나머지는 인증 필요
                 .headers(headers -> headers
@@ -93,12 +93,12 @@ public class SecurityConfig {
                         .contentSecurityPolicy(csp -> csp
                                 .policyDirectives("default-src 'self'; " +
                                         "connect-src 'self' " +
-                                        "https://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8443 " +  // ✅ 백엔드 API 허용
-                                        "https://kdev-univ-camp-fe.vercel.app; " +  // ✅ Vercel 프론트엔드 허용
+                                        "https://kernel360-fleet-manager.store " +
+                                        "https://kdev-univ-camp-fe.vercel.app; " +
                                         "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
                                         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
                                         "img-src 'self' data: https://*; " +
-                                        "font-src 'self' data: https://fonts.gstatic.com https://fonts.googleapis.com; ")))
+                                        "font-src 'self' data: https://fonts.gstatic.com https://fonts.googleapis.com;")))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
