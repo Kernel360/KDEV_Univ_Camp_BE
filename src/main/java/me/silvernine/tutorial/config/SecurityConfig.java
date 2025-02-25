@@ -110,17 +110,19 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
                 .headers(headers -> headers
                         .frameOptions(frameOptions -> frameOptions.sameOrigin())
-                        // ✅ CSP 설정 (외부 API 요청 및 폰트 허용)
                         .contentSecurityPolicy(csp -> csp
                                 .policyDirectives("default-src 'self'; " +
+                                        "upgrade-insecure-requests; " +  // ✅ HTTP → HTTPS 자동 업그레이드
+                                        "frame-ancestors 'self'; " +  // ✅ 프레임 허용
                                         "connect-src 'self' " +
                                         "http://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8080 " +
                                         "https://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8443 " +
-                                        "wss://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8443; " +
+                                        "wss://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8443 " +
+                                        "https://fonts.googleapis.com; " +  // ✅ Google Fonts API 요청 허용
                                         "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
-                                        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " + // ✅ Google Fonts 허용
+                                        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +  // ✅ Google Fonts 스타일 허용
                                         "img-src 'self' data: https://*; " +
-                                        "font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com https://fonts.gstatic.com/ea/notosanskr/v2; "))) // ✅ NotoSansKR 폰트 허용
+                                        "font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com https://fonts.gstatic.com/ea/notosanskr/v2; "))) // ✅ 폰트 허용
 
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) // ✅ JWT 필터 추가
                 .build();
