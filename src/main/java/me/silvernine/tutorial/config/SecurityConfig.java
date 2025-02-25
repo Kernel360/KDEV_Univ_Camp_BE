@@ -64,9 +64,17 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
-        return http.getSharedObject(AuthenticationManagerBuilder.class)
-                .build();
+    public AuthenticationManager authenticationManager(HttpSecurity http,
+                                                       UserDetailsService userDetailsService,
+                                                       PasswordEncoder passwordEncoder) throws Exception {
+        AuthenticationManagerBuilder authenticationManagerBuilder =
+                http.getSharedObject(AuthenticationManagerBuilder.class);
+
+        authenticationManagerBuilder
+                .userDetailsService(userDetailsService)
+                .passwordEncoder(passwordEncoder);
+
+        return authenticationManagerBuilder.build();
     }
 
     @Bean
@@ -100,7 +108,7 @@ public class SecurityConfig {
                         .contentSecurityPolicy(csp -> csp
                                 .policyDirectives("default-src 'self'; " +
                                         "connect-src 'self' " +
-                                        "http://localhost:8080 " +  // ✅ 로컬 환경 추가
+                                        "http://localhost:8080 " +
                                         "http://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8080 " +
                                         "https://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8080 " + // HTTPS 8080 포트 추가
                                         "https://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8443 " +
