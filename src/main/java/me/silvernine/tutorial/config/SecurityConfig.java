@@ -114,9 +114,12 @@ public class SecurityConfig {
                                         "https://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8443 " +
                                         "wss://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8443; " +
                                         "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
-                                        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +  // ✅ Google Fonts 허용
+                                        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
                                         "img-src 'self' data:; " +
-                                        "font-src 'self' https://fonts.gstatic.com;")) // ✅ Google Fonts 폰트 허용
+                                        "font-src 'self' https://fonts.gstatic.com; " + // ✅ 외부 폰트 허용
+                                        "connect-src 'self' " +
+                                        "http://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8080 " +
+                                        "https://ec2-52-79-227-43.ap-northeast-2.compute.amazonaws.com:8443;")) // ✅ API 요청 허용
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) // ✅ JWT 필터 추가
                 .build();
