@@ -4,8 +4,7 @@ spring:
       enabled: true  # WebSocket 활성화
 
   datasource:
-    url: jdbc:mysql://todo-car.cv8eyc8867ij.ap-northeast-2.rds.amazonaws.com:3306/todo-car?autoReconnect=true&useSSL=false
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://todo-car.cv8eyc8867ij.ap-northeast-2.rds.amazonaws.com:3306/todo-car?autoReconnect=true&useSSL=true&requireSSL=false
     username: admin
     password: 1q2w3e4r!!
     hikari:
@@ -47,7 +46,14 @@ logging:
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE # SQL 파라미터 로그
 
 server:
-  port: 8080  # 서버 포트 설정
+  port: 8443  # 기본 포트 8080에서 8443으로 변경
+  ssl:
+    enabled: true
+    key-store: classpath:keystore.p12
+    key-store-password: yourpassword
+    key-store-type: PKCS12
+    key-alias: tomcat
+
   tomcat:
     keep-alive-timeout: 86400000
     connection-timeout: 86400000
