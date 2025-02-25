@@ -54,13 +54,14 @@ server:
     key-store-type: PKCS12
     key-alias: mykey
 
-  # ✅ HTTP(8080) 포트도 활성화
-  additional-ports: 8080
-
   tomcat:
     keep-alive-timeout: 86400000
     connection-timeout: 86400000
 
+  # ✅ HTTP(8080) 포트도 함께 활성화 (HTTPS와 병행)
+  http:
+    enabled: true
+    port: 8080
 
 ---
 # ✅ **배치 스케줄링 설정**
