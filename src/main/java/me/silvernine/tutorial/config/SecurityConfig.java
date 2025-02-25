@@ -92,6 +92,7 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/webjars/**",
                                 "/h2-console/**",
+                                "/api/**",
                                 "/api/signup",
                                 "/api/authenticate",
                                 "/api/auth-header-check",
