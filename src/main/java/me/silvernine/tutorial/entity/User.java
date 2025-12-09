@@ -49,15 +49,15 @@ public class User {
    private Set<Authority> authorities = new HashSet<>();
 
    public Collection<? extends GrantedAuthority> getAuthorities() {
-      System.out.println("🔍 [DEBUG] User.getAuthorities() 호출됨");
+      System.out.println("[DEBUG] User.getAuthorities() 호출됨");
 
       if (authorities == null || authorities.isEmpty()) {
-         System.out.println("⚠️ [ERROR] 사용자 권한 없음, 기본 권한 추가 (ROLE_USER)");
+         System.out.println("[ERROR] 사용자 권한 없음, 기본 권한 추가 (ROLE_USER)");
          authorities = Set.of(new Authority("ROLE_USER"));
       }
 
       authorities.forEach(auth ->
-              System.out.println("✅ [DEBUG] 사용자 권한 로드: " + auth.getAuthority())
+              System.out.println("[DEBUG] 사용자 권한 로드: " + auth.getAuthority())
       );
 
       return authorities.stream()
@@ -69,11 +69,10 @@ public class User {
    public void prePersist() {
       if (this.userId == null || this.userId.isEmpty()) {
          this.userId = UUID.randomUUID().toString();
-         System.out.println("✅ [DEBUG] 새 UUID 생성됨: " + this.userId);
+         System.out.println("[DEBUG] 새 UUID 생성됨: " + this.userId);
       }
    }
 
-   // ✅ 생성자 추가 (테스트 코드에서 사용 가능)
    public User(String id, String password, boolean activated) {
       this.id = id;
       this.password = password;
