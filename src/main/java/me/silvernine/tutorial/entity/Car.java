@@ -17,11 +17,11 @@ public class Car {
     private Long id;
 
     @Column(name = "car_name", nullable = false)
-    private String carName; // 차량 이름
+    private String carName;
 
     @Column(name = "car_number", nullable = false, unique = true)
-    private String carNumber; // 차량 번호
+    private String carNumber;
 
     @Column(name = "owner_username", nullable = false)
-    private String ownerUsername; // 차량 소유자 (사용자 이름)
+    private String ownerUsername;
 }
