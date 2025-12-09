@@ -20,7 +20,6 @@ public class CarService {
 
     private final CarRepository carRepository;
 
-    // 차량 등록
     public CarResponse registerCar(CarRequest request, Principal principal) {
         Car car = Car.builder()
                 .carName(request.getCarName())
@@ -37,7 +36,6 @@ public class CarService {
                 .build();
     }
 
-    // 차량 번호로 조회
     public CarResponse getCarByCarNumber(String carNumber) {
         Optional<Car> carOptional = carRepository.findByCarNumber(carNumber);
         if (carOptional.isPresent()) {
@@ -53,7 +51,6 @@ public class CarService {
         }
     }
 
-    // 차량 전체 조회
     public List<CarResponse> getAllCars() {
         return carRepository.findAll().stream()
                 .map(car -> CarResponse.builder()
