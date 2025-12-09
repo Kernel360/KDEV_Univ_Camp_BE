@@ -33,14 +33,13 @@ public class SecurityConfig {
         this.jwtFilter = jwtFilter;
     }
 
-    // CORS 설정
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173")); // 프론트엔드 도메인 추가
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setExposedHeaders(Arrays.asList("Authorization")); // ✅ Authorization 헤더 노출 추가
+        configuration.setExposedHeaders(Arrays.asList("Authorization"));
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -88,7 +87,7 @@ public class SecurityConfig {
         };
 
         return http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // CORS 설정 추가
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -97,7 +96,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
                 .headers(headers -> headers
                         .frameOptions(frameOptions -> frameOptions.sameOrigin()))
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) // ✅ Spring Bean 사용
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 }
