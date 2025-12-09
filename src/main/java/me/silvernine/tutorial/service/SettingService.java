@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 public class SettingService {
 
     public SettingResponseDto processSetting(SettingRequestDto request) {
-        // 입력값 검증
         if (request.getMdn() == null || request.getOTime() == null) {
             return SettingResponseDto.builder()
                     .rstCd(ResponseCode.MISSING_PARAMETER)
@@ -19,7 +18,6 @@ public class SettingService {
                     .build();
         }
 
-        // 처리 로직 (필요한 경우)
         return SettingResponseDto.builder()
                 .rstCd(ResponseCode.SUCCESS)
                 .rstMsg("Success")
