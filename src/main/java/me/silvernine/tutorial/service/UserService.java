@@ -36,9 +36,6 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    /**
-     * ✅ 회원가입 기능 (UUID 기반)
-     */
     @Transactional
     public UserDto signup(UserDto userDto) {
         if (userDto.getId() == null || userDto.getId().isEmpty()) {
@@ -49,13 +46,10 @@ public class UserService {
             throw new IllegalArgumentException("이미 사용 중인 ID입니다.");
         }
 
-        // ✅ 비밀번호 암호화
         String encryptedPassword = passwordEncoder.encode(userDto.getPassword());
 
-        // ✅ UUID 기반의 user_id 생성
         String generatedUserUUID = UUID.randomUUID().toString();
 
-        // ✅ User 엔티티 생성
         User user = User.builder()
                 .userId(generatedUserUUID)
                 .id(userDto.getId())
@@ -66,9 +60,8 @@ public class UserService {
                 .build();
 
         userRepository.save(user);
-        System.out.println("✅ 회원가입 성공: user_id(UUID) = " + user.getUserId());
+        System.out.println("회원가입 성공: user_id(UUID) = " + user.getUserId());
 
-        // ✅ 기본 권한(ROLE_USER) 추가
         Authority authority = authorityRepository.findById("ROLE_USER")
                 .orElseGet(() -> authorityRepository.save(new Authority("ROLE_USER")));
 
@@ -78,35 +71,26 @@ public class UserService {
                 .build();
 
         userAuthorityRepository.save(userAuthority);
-        System.out.println("✅ user_authority 저장 완료: user_id(UUID) = " + user.getUserId());
+        System.out.println("user_authority 저장 완료: user_id(UUID) = " + user.getUserId());
 
         return UserDto.from(user);
     }
 
-    /**
-     * ✅ 로그인 시 비밀번호 검증 기능 (UUID 기반)
-     */
     public boolean validatePassword(String id, String rawPassword) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundMemberException("해당 ID의 사용자를 찾을 수 없습니다."));
 
         boolean isValid = passwordEncoder.matches(rawPassword, user.getPassword());
-        System.out.println("✅ 비밀번호 검증: 입력값=" + rawPassword + ", DB 저장값=" + user.getPassword() + ", 검증결과=" + isValid);
+        System.out.println("비밀번호 검증: 입력값=" + rawPassword + ", DB 저장값=" + user.getPassword() + ", 검증결과=" + isValid);
         return isValid;
     }
 
-    /**
-     * ✅ 특정 ID의 사용자 닉네임 가져오기
-     */
     public String getUserNickname(String id) {
         return userRepository.findById(id)
                 .map(User::getNickname)
                 .orElseThrow(() -> new NotFoundMemberException("해당 ID에 대한 닉네임을 찾을 수 없습니다."));
     }
 
-    /**
-     * ✅ 현재 로그인한 사용자 정보 가져오기
-     */
     public UserDto getMyUserWithAuthorities() {
         return SecurityUtil.getCurrentId()
                 .flatMap(userRepository::findById)
@@ -114,18 +98,12 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundMemberException("로그인한 사용자의 정보를 찾을 수 없습니다."));
     }
 
-    /**
-     * ✅ 특정 사용자 정보 가져오기 (관리자 전용)
-     */
     public UserDto getUserWithAuthorities(String id) {
         return userRepository.findById(id)
                 .map(UserDto::from)
                 .orElseThrow(() -> new NotFoundMemberException("해당 ID의 사용자를 찾을 수 없습니다."));
     }
 
-    /**
-     * ✅ 특정 사용자 정보 가져오기 (일반 사용자 및 관리자가 사용 가능)
-     */
     public User getUserById(String userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
