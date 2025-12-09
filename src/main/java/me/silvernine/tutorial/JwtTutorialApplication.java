@@ -1,4 +1,4 @@
-package me.silvernine.tutorial; // ✅ 올바른 패키지로 변경
+package me.silvernine.tutorial;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
