@@ -15,7 +15,7 @@ import jakarta.validation.constraints.Size;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@JsonPropertyOrder({"id", "password", "nickname"}) // ✅ JSON 응답 순서 지정
+@JsonPropertyOrder({"id", "password", "nickname"})
 public class UserDto {
 
    @NotNull
@@ -25,15 +25,14 @@ public class UserDto {
 
    @NotNull
    @Size(min = 3, max = 100)
-   @JsonInclude(JsonInclude.Include.NON_NULL)  // ✅ null 값이 아닐 때만 JSON 포함
-   @Schema(description = "사용자의 비밀번호", example = "mysecurepassword")  // ✅ Swagger 문서화
+   @JsonInclude(JsonInclude.Include.NON_NULL)
+   @Schema(description = "사용자의 비밀번호", example = "mysecurepassword")
    private String password;
 
    @NotNull
    @Size(min = 3, max = 50)
    private String nickname;
 
-   // ✅ 비밀번호를 제외한 응답용 DTO 생성
    public static UserDto from(User user) {
       if (user == null) return null;
 
