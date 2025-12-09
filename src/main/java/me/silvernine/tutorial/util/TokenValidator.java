@@ -28,13 +28,13 @@ public class TokenValidator {
                     .parseClaimsJws(token);
             return true;
         } catch (ExpiredJwtException e) {
-            logger.error("❌ JWT 만료됨: {}", e.getMessage());
+            logger.error("JWT 만료됨: {}", e.getMessage());
         } catch (MalformedJwtException e) {
-            logger.error("❌ JWT 형식 오류: {}", e.getMessage());
+            logger.error("JWT 형식 오류: {}", e.getMessage());
         } catch (JwtException e) {
-            logger.error("❌ JWT 검증 오류: {}", e.getMessage());
+            logger.error("JWT 검증 오류: {}", e.getMessage());
         } catch (Exception e) {
-            logger.error("❌ 기타 JWT 검증 오류: {}", e.getMessage());
+            logger.error("기타 JWT 검증 오류: {}", e.getMessage());
         }
         return false;
     }
