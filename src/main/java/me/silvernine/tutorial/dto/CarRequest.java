@@ -6,6 +6,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class CarRequest {
-    private String carName;   // 차량 이름
-    private String carNumber; // 차량 번호
+    private String carName;
+    private String carNumber;
 }
