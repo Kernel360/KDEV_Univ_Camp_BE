@@ -1,10 +1,5 @@
 name: Deploy to EC2
 
-#on:
-#  push:
-#    branches:
-#      - dev  # dev 브랜치에 푸시될 때 실행
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
