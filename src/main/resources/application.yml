@@ -31,7 +31,7 @@ spring:
 
 jwt:
   header: Authorization
-  token-validity-in-seconds: 86400  # ✅ 토큰 유효시간 직접 추가 (24시간)
+  token-validity-in-seconds: 86400
 
 logging:
   level:
