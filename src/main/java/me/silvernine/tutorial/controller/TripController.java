@@ -16,14 +16,12 @@ public class TripController {
         this.tripService = tripService;
     }
 
-    // 데이터 저장 API
     @PostMapping
     public ResponseEntity<Trip> saveTrip(@RequestBody Trip trip) {
         Trip savedTrip = tripService.saveTrip(trip);
         return ResponseEntity.ok(savedTrip);
     }
 
-    // 저장된 데이터 조회 API
     @GetMapping
     public ResponseEntity<List<Trip>> getAllTrips() {
         return ResponseEntity.ok(tripService.getAllTrips());
