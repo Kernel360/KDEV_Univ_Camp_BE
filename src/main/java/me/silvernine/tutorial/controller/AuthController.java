@@ -70,14 +70,14 @@ public class AuthController {
                     return new IllegalArgumentException("사용자가 존재하지 않습니다.");
                 });
 
-        System.out.println("✅ 조회된 user_id(UUID): " + user.getUserId());
-        System.out.println("✅ 조회된 사용자 닉네임: " + user.getNickname());
+        System.out.println("조회된 user_id(UUID): " + user.getUserId());
+        System.out.println("조회된 사용자 닉네임: " + user.getNickname());
 
         if (!passwordEncoder.matches(loginDto.getPassword(), user.getPassword())) {
-            System.err.println("❌ 비밀번호가 일치하지 않습니다.");
+            System.err.println("비밀번호가 일치하지 않습니다.");
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
-        System.out.println("✅ 비밀번호 검증 통과");
+        System.out.println("비밀번호 검증 통과");
 
         Collection<? extends GrantedAuthority> authorities = user.getAuthorities();
         List<SimpleGrantedAuthority> grantedAuthorities = authorities.stream()
@@ -94,14 +94,14 @@ public class AuthController {
         Authentication authentication = authenticationManager.authenticate(authenticationToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        System.out.println("✅ Spring Security 인증 성공");
+        System.out.println("Spring Security 인증 성공");
 
         String jwt = tokenProvider.createToken(authentication);
 
         if (jwt == null || jwt.isEmpty()) {
             throw new IllegalArgumentException("JWT 생성 실패");
         }
-        System.out.println("✅ [JWT 발급 성공] " + jwt);
+        System.out.println("[JWT 발급 성공] " + jwt);
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add(JwtFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
