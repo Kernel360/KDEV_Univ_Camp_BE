@@ -1,6 +1,5 @@
 package me.silvernine.tutorial.jwt;
 
-// TokenProvider+JwtFilter를 SecurityConfig할 때 사용할 파일
 import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.DefaultSecurityFilterChain;
