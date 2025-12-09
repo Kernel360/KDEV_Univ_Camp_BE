@@ -11,9 +11,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ControlInfoService {
 
-    // 기존 getControlInfo 메서드 유지
     public ControlInfoResponseDto getControlInfo(ControlInfoRequestDto request) {
-        // 입력값 검증
         if (request.getMdn() == null || request.getTid() == null) {
             ControlInfoResponseDto response = new ControlInfoResponseDto();
             response.setRstCd("301"); // Required parameter error
@@ -21,7 +19,6 @@ public class ControlInfoService {
             return response;
         }
 
-        // Mock 데이터 생성
         ControlInfoResponseDto response = new ControlInfoResponseDto();
         response.setRstCd("000");
         response.setRstMsg("Success");
@@ -30,7 +27,6 @@ public class ControlInfoService {
         response.setCtrCnt("2");
         response.setGeoCnt("2");
 
-        // 제어 리스트 예시
         ControlInfoResponseDto.ControlList control1 = new ControlInfoResponseDto.ControlList();
         control1.setCtrId("1");
         control1.setCtrCd("05");
@@ -43,7 +39,6 @@ public class ControlInfoService {
 
         response.setCtrList(List.of(control1, control2));
 
-        // 지오펜싱 리스트 예시
         ControlInfoResponseDto.GeoList geo1 = new ControlInfoResponseDto.GeoList();
         geo1.setGeoCtrId("267");
         geo1.setUpVal("0");
@@ -73,17 +68,15 @@ public class ControlInfoService {
         return response;
     }
 
-    // 새로운 processCycleInfo 메서드 추가
     public boolean processCycleInfo(ControlInfoRequestDto request) {
         if (request.getCList() == null || request.getCList().isEmpty()) {
-            return false; // 데이터가 없을 경우 실패 처리
+            return false;
         }
 
-        // 요청 데이터를 처리
         request.getCList().forEach(data -> {
             System.out.println("Processing cycle data: " + data.toString());
         });
 
-        return true; // 성공적으로 처리한 경우
+        return true;
     }
 }
